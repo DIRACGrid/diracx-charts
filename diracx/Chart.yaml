@@ -14,3 +14,17 @@ version: 0.1.0
 # follow Semantic Versioning. They should reflect the version the application is using.
 # It is recommended to use it with quotes.
 appVersion: "0.0.1a"
+
+
+dependencies:
+
+- name: opensearch
+  version: 2.13.1
+  repository:  https://opensearch-project.github.io/helm-charts/
+  condition: opensearch.enabled
+
+
+- name: dex
+  version: 0.14.2
+  repository: https://charts.dexidp.io/
+  condition: dex.enabled

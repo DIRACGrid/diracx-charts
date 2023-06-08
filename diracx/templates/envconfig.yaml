@@ -1,0 +1,9 @@
+# # This is the environment variable configuration
+# # used by DIRAC to point at various things
+# apiVersion: v1
+# kind: ConfigMap
+# metadata:
+#   name: diracx-env-config
+# data: 
+# {{ .Values.diracx.environment | toYaml | indent 4 }}
+

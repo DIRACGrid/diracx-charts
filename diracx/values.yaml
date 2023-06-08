@@ -6,7 +6,9 @@ replicaCount: 1
 
 image:
   repository: gitlab-registry.cern.ch/chaen/chrissquare-hack-a-ton/diracx
-  pullPolicy: IfNotPresent
+  # repository: ghcr.io/diracgrid/diracx/server
+  # pullPolicy: IfNotPresent
+  pullPolicy: Always 
   # Overrides the image tag whose default is the chart appVersion.
   tag: "latest"
 
@@ -15,8 +17,8 @@ image:
 # --from-file=.dockerconfigjson=/home/chaen/.docker/config.json \
 # --type=kubernetes.io/dockerconfigjson
 
-imagePullSecrets:
-  - name: regcred
+# imagePullSecrets:
+#   - name: regcred
 
 nameOverride: ""
 fullnameOverride: ""
@@ -43,21 +45,143 @@ securityContext: {}
   # runAsNonRoot: true
   # runAsUser: 1000
 
+
+
+#################
+
+
+
+developer:
+  enabled: true
+  # Path from which to mount source of DIRACX 
+  diracxSourcePath: /diracx_source/
+  diracxInstallationPath: /opt/conda/lib/python3.11/site-packages/diracx
+  # If set, mount the CS stored localy instead of initializing a default one
+  # localCSPath: /local_cs_store
+  
+
+diracx:
+  # Name of the volume on which the CS repo is stored
+  csVolumeName: pv-cs-store
+  secrets:
+    # This corresponds to the basic dirac.cfg
+    # which must be present on all the servers
+    DIRACX_SERVICE_CONFIG_BACKEND_URL: "file:///cs_store/initialRepo"
+    DIRACX_DB_URL_AUTHDB: "sqlite+aiosqlite:///:memory:"
+    # mysql+aiomysql://
+    DIRACX_DB_URL_JOBDB: "sqlite+aiosqlite:///:memory:"
+    DIRACX_SERVICE_AUTH_TOKEN_KEY: "file:///signing-key/rs256.key"
+  
+##########################
+
+opensearch:
+  enabled: false
+  opensearchJavaOpts: "-Xms256m -Xmx256m"
+  # replicas: 1
+  singleNode: true
+  config:
+    cluster.routing.allocation.disk.threshold_enabled: "true"
+    cluster.routing.allocation.disk.watermark.flood_stage: 200mb
+    cluster.routing.allocation.disk.watermark.low: 500mb
+    cluster.routing.allocation.disk.watermark.high: 300mb
+    plugins.security.disabled: "true"
+
+##########################
+
+dex:
+  enabled: true
+  https.enabled: false
+  
+  service:
+      ports:
+        http:
+          port: 8000
+
+  ingress:
+    enabled: true
+    hosts:
+      - host: diracx-demo-dex
+        paths:
+          - path: /dex/
+            pathType: Prefix
+            backend:
+              service:
+                name: diracx-demo-dex
+                port:
+                  number: 8000
+    
+
+
+  config:
+    issuer: http://diracx-demo-dex:8000/dex
+
+    storage:
+      type: sqlite3
+      config:
+        file: /tmp/dex.db
+    
+
+    web:
+      http: 8000
+    
+
+    expiry:
+      deviceRequests: 5m
+      signingKeys: 6h
+      idTokens: 24h
+      authRequests: 24h
+
+    logger:
+      level: "debug"
+      format: text
+
+
+    oauth2:            
+      responseTypes: [code]
+      skipApprovalScreen: false
+      alwaysShowLoginScreen: false
+                                  
+    enablePasswordDB: true
+
+    staticClients:
+    - id: d396912e-2f04-439b-8ae7-d8c585a34790
+      public: true
+      name: 'CLI app'
+      redirectURIs:
+        - 'http://diracx-demo:8000/auth/device/complete'
+        - http://diracx-demo:8000/auth/authorize/complete
+
+    staticPasswords:
+      - email: "admin@example.com"
+        hash: "$2a$10$2b2cU8CPhOTaGrs1HRQuAueS7JTT5ZHsHSzYiFPm1leZck7Mc8T4W"
+        username: "admin"
+##########################
+
 service:
   type: ClusterIP
-  port: 80
+  port: 8000
 
 ingress:
-  enabled: false
+  enabled: true
   className: ""
-  annotations: {}
+  annotations:
     # kubernetes.io/ingress.class: nginx
     # kubernetes.io/tls-acme: "true"
+    # Needed if you want to use a base path different from /
+    # #Use rewrite rules https://kubernetes.github.io/ingress-nginx/examples/rewrite/
+    nginx.ingress.kubernetes.io/use-regex: "true"
+    # nginx.ingress.kubernetes.io/rewrite-target: "/$2"
   hosts:
-    - host: chart-example.local
+    - host: diracx-demo
       paths:
         - path: /
-          pathType: ImplementationSpecific
+          pathType: Prefix
+          backend:
+            service:
+              name: diracx-demo
+              port:
+                number: 8000
+    
   tls: []
   #  - secretName: chart-example-tls
   #    hosts:

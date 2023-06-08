@@ -1,0 +1,28 @@
+kind: Cluster
+apiVersion: kind.x-k8s.io/v1alpha4
+nodes:
+- role: control-plane
+  
+  # Ingress node tagging
+  # https://kind.sigs.k8s.io/docs/user/ingress/
+  kubeadmConfigPatches:
+  - |
+    kind: InitConfiguration
+    nodeRegistration:
+      kubeletExtraArgs:
+        node-labels: "ingress-ready=true"
+  extraMounts:
+  # Mount the local CS repo in the controle plane
+  # Then the PV will mount it from this controle plane "local" directory
+  - hostPath: /home/chaen/dirac/chris-hackaton-cs/
+    containerPath: /local_cs_store
+  # For developer to be able to edit
+  - hostPath: /home/chaen/dirac/chrissquare-hack-a-ton/src/diracx
+    containerPath: /diracx_source
+  
+  # Expose the ingress port 
+  extraPortMappings:
+  - containerPort: 80
+    hostPort: 8000
+    protocol: TCP
+  

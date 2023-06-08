@@ -1,0 +1,9 @@
+dependencies:
+- name: opensearch
+  repository: https://opensearch-project.github.io/helm-charts/
+  version: 2.13.1
+- name: dex
+  repository: https://charts.dexidp.io/
+  version: 0.14.2
+digest: sha256:d463cc540b411da27d0bc59cd69327afbe17135d287a6a0c84b49b5c6385c3cf
+generated: "2023-06-22T13:54:40.898528987+02:00"
