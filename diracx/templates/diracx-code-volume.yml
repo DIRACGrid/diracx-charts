@@ -4,7 +4,7 @@ kind: PersistentVolume
 metadata:
   name: pv-diracx-code
 spec:
-  storageClassName: standard
+  storageClassName: ""
   accessModes:
     - ReadOnlyMany
   capacity:
@@ -17,6 +17,7 @@ kind: PersistentVolumeClaim
 metadata:
   name: pvc-diracx-code
 spec:
+  storageClassName: ""
   volumeName: pv-diracx-code
   accessModes:
     - ReadOnlyMany
