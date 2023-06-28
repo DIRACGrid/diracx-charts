@@ -1,0 +1,23 @@
+name: Basic Tests
+
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+    branches:
+      - master
+
+
+defaults:
+  run:
+    shell: bash -el {0}
+
+jobs:
+  main:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+      - uses: pre-commit-ci/lite-action@v1.0.1
+        if: always()
