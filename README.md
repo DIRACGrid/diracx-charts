@@ -59,7 +59,7 @@ A Helm chart for deploying DiracX
 | diracx.settings.DIRACX_DB_URL_JOBDB | string | `"sqlite+aiosqlite:///:memory:"` |  |
 | diracx.settings.DIRACX_SERVICE_AUTH_ALLOWED_REDIRECTS | string | `"[\"http://pclhcb211:8000/docs/oauth2-redirect\"]"` |  |
 | diracx.settings.DIRACX_SERVICE_AUTH_TOKEN_KEY | string | `"file:///signing-key/rs256.key"` |  |
-| diracx.settings.DIRACX_SERVICE_CONFIG_BACKEND_URL | string | `"file:///cs_store/initialRepo"` |  |
+| diracx.settings.DIRACX_SERVICE_CONFIG_BACKEND_URL | string | `"git+file:///cs_store/initialRepo"` |  |
 | fullnameOverride | string | `""` |  |
 | image.pullPolicy | string | `"Always"` |  |
 | image.repository | string | `"gitlab-registry.cern.ch/chaen/chrissquare-hack-a-ton/diracx"` |  |
