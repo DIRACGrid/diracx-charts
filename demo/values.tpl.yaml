@@ -7,8 +7,8 @@ replicaCount: 1
 image:
   repository: gitlab-registry.cern.ch/chaen/chrissquare-hack-a-ton/diracx
   # repository: ghcr.io/diracgrid/diracx/server
-  # pullPolicy: IfNotPresent
-  pullPolicy: Always 
+  pullPolicy: IfNotPresent
+  #pullPolicy: Always 
   # Overrides the image tag whose default is the chart appVersion.
   tag: "latest"
 
@@ -71,7 +71,7 @@ diracx:
     # mysql+aiomysql://
     DIRACX_DB_URL_JOBDB: "sqlite+aiosqlite:///:memory:"
     DIRACX_SERVICE_AUTH_TOKEN_KEY: "file:///signing-key/rs256.key"
-    DIRACX_SERVICE_AUTH_ALLOWED_REDIRECTS: '["http://pclhcb211:8000/docs/oauth2-redirect"]'
+    DIRACX_SERVICE_AUTH_ALLOWED_REDIRECTS: '["http://{{ hostname }}:8000/docs/oauth2-redirect"]'
   
 ##########################
 
@@ -101,7 +101,7 @@ dex:
   ingress:
     enabled: true
     hosts:
-      - host: anything
+      - host: {{ hostname }}
         paths:
           - path: /dex/
             pathType: Prefix
@@ -114,7 +114,7 @@ dex:
 
 
   config:
-    issuer: http://anything:8000/dex
+    issuer: http://{{ hostname }}:8000/dex
 
     storage:
       type: sqlite3
@@ -149,8 +149,8 @@ dex:
       public: true
       name: 'CLI app'
       redirectURIs:
-        - 'http://anything:8000/auth/device/complete'
-        - http://anything:8000/auth/authorize/complete
+        - 'http://{{ hostname }}:8000/auth/device/complete'
+        - http://{{ hostname }}:8000/auth/authorize/complete
 
     staticPasswords:
       - email: "admin@example.com"
@@ -173,7 +173,7 @@ ingress:
     nginx.ingress.kubernetes.io/use-regex: "true"
     # nginx.ingress.kubernetes.io/rewrite-target: "/$2"
   hosts:
-    - host: anything
+    - host: {{ hostname }}
       paths:
         - path: /
           pathType: Prefix

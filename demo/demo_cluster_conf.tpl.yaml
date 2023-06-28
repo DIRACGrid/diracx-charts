@@ -14,10 +14,10 @@ nodes:
   extraMounts:
   # Mount the local CS repo in the controle plane
   # Then the PV will mount it from this controle plane "local" directory
-  - hostPath: /home/chaen/dirac/diracx-project/chris-hackaton-cs/
-    containerPath: /local_cs_store
+  # - hostPath: /home/chaen/dirac/diracx-project/chris-hackaton-cs/
+  #   containerPath: /local_cs_store
   # For developer to be able to edit
-  - hostPath: /home/chaen/dirac/diracx-project/diracx/src/diracx
+  - hostPath: {{ diracx_src_dir }}
     containerPath: /diracx_source
   
   # Expose the ingress port 

@@ -46,7 +46,17 @@ spec:
       - name: init-cs
         image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
         command: [/dockerMicroMambaEntrypoint.sh]
-        args: ["diracx", "internal", "generate-cs", "/cs_store/initialRepo", "--vo", "diracAdmin", "--user-group", "admin", "--idp-url", "http://diracx-demo-dex:8000/dex", "--idp-client-id", "d396912e-2f04-439b-8ae7-d8c585a34790"]
+        args: 
+          - "diracx"
+          - "internal"
+          - "generate-cs"
+          - "/cs_store/initialRepo"
+          - "--vo=diracAdmin"
+          - "--user-group=admin"
+          - "--idp-url={{ .Values.dex.config.issuer }}"
+          {{- with (first .Values.dex.config.staticClients) }}
+          - "--idp-client-id={{ .id }}"
+          {{- end }}
         volumeMounts:
             - mountPath: /cs_store
               name: cs-store-mount
@@ -54,7 +64,14 @@ spec:
       - name: init-cs-user
         image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
         command: [/dockerMicroMambaEntrypoint.sh]
-        args: ["diracx", "internal", "add-user", "/cs_store/initialRepo", "--vo", "diracAdmin", "--user-group", "admin", "--sub", "EgVsb2NhbA"]
+        args:
+          - "diracx"
+          - "internal"
+          - "add-user"
+          - "/cs_store/initialRepo"
+          - "--vo=diracAdmin"
+          - "--user-group=admin"
+          - "--sub=EgVsb2NhbA"
         volumeMounts:
             - mountPath: /cs_store
               name: cs-store-mount
@@ -62,7 +79,14 @@ spec:
       - name: init-signing-key
         image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
         command: [/dockerMicroMambaEntrypoint.sh]
-        args: ["ssh-keygen", "-P", "", "-t", "rsa", "-b", "4096", "-m", "PEM", "-f", "/signing-key/rs256.key"]
+        args: 
+          - "ssh-keygen"
+          - "-P"
+          - ""
+          - "-trsa"
+          - "-b4096"
+          - "-mPEM"
+          - "-f/signing-key/rs256.key"
         volumeMounts:
             - mountPath: /signing-key/
               name: signing-key-mount
@@ -86,7 +110,10 @@ spec:
               path: /docs/
               port: http
           {{- if .Values.developer.enabled }}
-          args: ["--reload-dir", {{ .Values.developer.diracxInstallationPath }}, "--reload", "--proxy-headers"]
+          args: 
+            - "--reload-dir={{ .Values.developer.diracxInstallationPath }}"
+            - "--reload"
+            - "--proxy-headers"
           {{- end }}
 
           volumeMounts:
