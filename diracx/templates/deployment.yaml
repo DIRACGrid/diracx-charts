@@ -46,7 +46,7 @@ spec:
       - name: init-cs
         image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
         command: [/dockerMicroMambaEntrypoint.sh]
-        args: 
+        args:
           - "diracx"
           - "internal"
           - "generate-cs"
@@ -79,7 +79,7 @@ spec:
       - name: init-signing-key
         image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
         command: [/dockerMicroMambaEntrypoint.sh]
-        args: 
+        args:
           - "ssh-keygen"
           - "-P"
           - ""
@@ -110,7 +110,7 @@ spec:
               path: /docs/
               port: http
           {{- if .Values.developer.enabled }}
-          args: 
+          args:
             - "--reload-dir={{ .Values.developer.diracxInstallationPath }}"
             - "--reload"
             - "--proxy-headers"

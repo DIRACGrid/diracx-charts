@@ -1,0 +1,43 @@
+# See https://pre-commit.com for more information
+# See https://pre-commit.com/hooks.html for more hooks
+default_language_version:
+  python: python3
+
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.4.0
+    hooks:
+      - id: trailing-whitespace
+      - id: end-of-file-fixer
+      - id: check-added-large-files
+
+  # - repo: https://github.com/norwoodj/helm-docs
+  #   rev: v1.2.0
+  #   hooks:
+  #     - id: helm-docs
+  #       args:
+  #         # Make the tool search for charts only under the `example-charts` directory
+  #         - --chart-search-root=example-charts
+
+  #         # The `./` makes it relative to the chart-search-root set above
+  #         - --template-files=./_templates.gotmpl
+
+  #         # Repeating the flag adds this to the list, now [./_templates.gotmpl, README.md.gotmpl]
+  #         # A base filename makes it relative to each chart directory found
+  #         - --template-files=README.md.gotmpl
+
+  - repo: local
+    hooks:
+    - id: helm-docs
+      name: helm-docs
+      language: docker_image
+      entry: jnorwood/helm-docs:latest --chart-search-root=diracx --output-file=../README.md
+      always_run: true
+      pass_filenames: false
+
+    - id: helm-lint
+      name: helm-lint
+      language: docker_image
+      entry: alpine/helm:latest lint diracx/
+      always_run: true
+      pass_filenames: false
