@@ -62,7 +62,7 @@ fi
 printf "\U1F984 Generating Kind cluster template...\n"
 sed "s@{{ diracx_src_dir }}@${diracx_src_dir}@g" "${script_dir}/demo/demo_cluster_conf.tpl.yaml" > "${demo_dir}/demo_cluster_conf.yaml"
 if grep '{{' "${demo_dir}/demo_cluster_conf.yaml"; then
-  echo "Error generating Kind template. Found {{ in the template result"
+  printf "\U1F984 Error generating Kind template. Found {{ in the template result\n"
   exit 1
 fi
 
@@ -92,12 +92,12 @@ fi
 printf "\U1F984 Installing DiracX...\n"
 "${demo_dir}/helm" install diracx-demo "${script_dir}/diracx" --values "${demo_dir}/values.yaml"
 printf "\U1F984 Waiting for installation to finish...\n"
-"${demo_dir}/kubectl" wait \
-  --for=condition=ready pod \
-  --selector=app.kubernetes.io/name=diracx \
-  --timeout=300s
+if "${demo_dir}/kubectl" wait --for=condition=ready pod --selector=app.kubernetes.io/name=diracx --timeout=300s; then
+  printf "\U1F984 \U1F984 \U1F984 Installation did not start sucessfully! \U1F984 \U1F984 \U1F984\n"
+else
+  printf "\U1F389 \U1F389 \U1F389 Pods are ready! \U1F389 \U1F389 \U1F389\n"
+fi
 
-printf "\U1F389 \U1F389 \U1F389 Pods are ready! \U1F389 \U1F389 \U1F389\n"
 echo ""
 printf "\U2139 \UFE0F To interact with the cluster:\n"
 echo "export KUBECONFIG=${KUBECONFIG}"
