@@ -73,6 +73,16 @@ printf "\U1F984 Starting Kind cluster...\n"
   --config "${demo_dir}/demo_cluster_conf.yaml" \
   --name diracx-demo
 
+printf "\U1F984 Loading images from docker to Kind...\n"
+declare -a image_names
+image_names+=("registry.k8s.io/ingress-nginx/controller:v1.8.0")
+image_names+=("gitlab-registry.cern.ch/chaen/chrissquare-hack-a-ton/diracx:latest")
+image_names+=("ghcr.io/dexidp/dex:v2.36.0")
+for image_name in "${image_names[@]}"; do
+  docker pull "${image_name}"
+  "${demo_dir}/kind" --name diracx-demo load docker-image "${image_name}"
+done
+
 printf "\U1F984 Creating an ingress...\n"
 "${demo_dir}/kubectl" apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/main/deploy/static/provider/kind/deploy.yaml
 printf "\U1F984 Waiting for ingress controller to be created...\n"
