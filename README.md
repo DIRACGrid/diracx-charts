@@ -61,8 +61,8 @@ A Helm chart for deploying DiracX
 | diracx.settings.DIRACX_SERVICE_AUTH_ALLOWED_REDIRECTS | string | `"[\"http://pclhcb211:8000/docs/oauth2-redirect\"]"` |  |
 | diracx.settings.DIRACX_SERVICE_AUTH_TOKEN_KEY | string | `"file:///signing-key/rs256.key"` |  |
 | fullnameOverride | string | `""` |  |
-| image.pullPolicy | string | `"Always"` |  |
-| image.repository | string | `"gitlab-registry.cern.ch/chaen/chrissquare-hack-a-ton/diracx"` |  |
+| image.pullPolicy | string | `"IfNotPresent"` |  |
+| image.repository | string | `"ghcr.io/diracgrid/diracx/server"` |  |
 | image.tag | string | `"latest"` |  |
 | ingress.annotations."nginx.ingress.kubernetes.io/use-regex" | string | `"true"` |  |
 | ingress.className | string | `"nginx"` |  |

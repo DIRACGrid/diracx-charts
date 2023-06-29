@@ -5,10 +5,8 @@
 replicaCount: 1
 
 image:
-  repository: gitlab-registry.cern.ch/chaen/chrissquare-hack-a-ton/diracx
-  # repository: ghcr.io/diracgrid/diracx/server
+  repository: ghcr.io/diracgrid/diracx/server
   pullPolicy: IfNotPresent
-  #pullPolicy: Always
   # Overrides the image tag whose default is the chart appVersion.
   tag: "latest"
 
