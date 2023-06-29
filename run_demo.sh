@@ -82,7 +82,7 @@ printf "\U1F984 Waiting for ingress controller to be created...\n"
   --timeout=90s
 
 printf "\U1F984 Generating Helm templates\n"
-machine_hostname=$(hostname)
+machine_hostname=$(hostname | tr '[:upper:]' '[:lower:]')
 sed "s/{{ hostname }}/${machine_hostname}/g" "${script_dir}/demo/values.tpl.yaml" > "${demo_dir}/values.yaml"
 if grep '{{' "${demo_dir}/values.yaml"; then
   printf "\U1F984 Error generating template. Found {{ in the template result\n"
