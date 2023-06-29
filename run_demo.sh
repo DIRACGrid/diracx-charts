@@ -2,6 +2,8 @@
 set -euo pipefail
 IFS=$'\n\t'
 
+UNICORN_EMOJI="\U1F984"
+
 if [ -z "${1:-}" ]; then
   echo "Usage: $0 <diracx_src_dir>"
   exit 1
@@ -40,16 +42,16 @@ if [[ ! -f "${demo_dir}/helm" ]]; then
   fi
 
   # Download kind
-  printf "\U1F984 Downloading kind\n"
+  printf "%b Downloading kind\n" ${UNICORN_EMOJI}
   curl --no-progress-meter -L "https://kind.sigs.k8s.io/dl/v0.19.0/kind-${system_name}-${system_arch}" > "${demo_dir}/kind"
 
   # Download kubectl
-  printf "\U1F984 Downloading kubectl\n"
+  printf "%b Downloading kubectl\n" ${UNICORN_EMOJI}
   latest_version=$(curl -L -s https://dl.k8s.io/release/stable.txt)
   curl --no-progress-meter -L "https://dl.k8s.io/release/${latest_version}/bin/${system_name}/${system_arch}/kubectl" > "${demo_dir}/kubectl"
 
   # Download helm
-  printf "\U1F984 Downloading helm\n"
+  printf "%b Downloading helm\n" ${UNICORN_EMOJI}
   curl --no-progress-meter -L "https://get.helm.sh/helm-v3.12.0-${system_name}-${system_arch}.tar.gz" > "${tmp_dir}/helm.tar.gz"
   mkdir -p "${tmp_dir}/helm-tarball"
   tar xzf "${tmp_dir}/helm.tar.gz" -C "${tmp_dir}/helm-tarball"
@@ -59,51 +61,51 @@ if [[ ! -f "${demo_dir}/helm" ]]; then
   chmod +x "${demo_dir}/kubectl" "${demo_dir}/kind" "${demo_dir}/helm"
 fi
 
-printf "\U1F984 Generating Kind cluster template...\n"
+printf "%b Generating Kind cluster template...\n" ${UNICORN_EMOJI}
 sed "s@{{ diracx_src_dir }}@${diracx_src_dir}@g" "${script_dir}/demo/demo_cluster_conf.tpl.yaml" > "${demo_dir}/demo_cluster_conf.yaml"
 if grep '{{' "${demo_dir}/demo_cluster_conf.yaml"; then
-  printf "\U1F984 Error generating Kind template. Found {{ in the template result\n"
+  printf "%b Error generating Kind template. Found {{ in the template result\n" ${UNICORN_EMOJI}
   exit 1
 fi
 
-printf "\U1F984 Starting Kind cluster...\n"
+printf "%b Starting Kind cluster...\n" ${UNICORN_EMOJI}
 "${demo_dir}/kind" create cluster \
   --kubeconfig "${KUBECONFIG}" \
   --wait "1m" \
   --config "${demo_dir}/demo_cluster_conf.yaml" \
   --name diracx-demo
 
-printf "\U1F984 Loading images from docker to Kind...\n"
+printf "%b Loading images from docker to Kind...\n" ${UNICORN_EMOJI}
 declare -a image_names
 image_names+=("registry.k8s.io/ingress-nginx/controller:v1.8.0")
-image_names+=("gitlab-registry.cern.ch/chaen/chrissquare-hack-a-ton/diracx:latest")
+image_names+=("ghcr.io/diracgrid/diracx/server:latest")
 image_names+=("ghcr.io/dexidp/dex:v2.36.0")
 for image_name in "${image_names[@]}"; do
   docker pull "${image_name}"
   "${demo_dir}/kind" --name diracx-demo load docker-image "${image_name}"
 done
 
-printf "\U1F984 Creating an ingress...\n"
+printf "%b Creating an ingress...\n" ${UNICORN_EMOJI}
 "${demo_dir}/kubectl" apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/main/deploy/static/provider/kind/deploy.yaml
-printf "\U1F984 Waiting for ingress controller to be created...\n"
+printf "%b Waiting for ingress controller to be created...\n" ${UNICORN_EMOJI}
 "${demo_dir}/kubectl" wait --namespace ingress-nginx \
   --for=condition=ready pod \
   --selector=app.kubernetes.io/component=controller \
   --timeout=90s
 
-printf "\U1F984 Generating Helm templates\n"
+printf "%b Generating Helm templates\n" ${UNICORN_EMOJI}
 machine_hostname=$(hostname | tr '[:upper:]' '[:lower:]')
 sed "s/{{ hostname }}/${machine_hostname}/g" "${script_dir}/demo/values.tpl.yaml" > "${demo_dir}/values.yaml"
 if grep '{{' "${demo_dir}/values.yaml"; then
-  printf "\U1F984 Error generating template. Found {{ in the template result\n"
+  printf "%b Error generating template. Found {{ in the template result\n" ${UNICORN_EMOJI}
   exit 1
 fi
 
-printf "\U1F984 Installing DiracX...\n"
+printf "%b Installing DiracX...\n" ${UNICORN_EMOJI}
 "${demo_dir}/helm" install diracx-demo "${script_dir}/diracx" --values "${demo_dir}/values.yaml"
-printf "\U1F984 Waiting for installation to finish...\n"
+printf "%b Waiting for installation to finish...\n" ${UNICORN_EMOJI}
 if "${demo_dir}/kubectl" wait --for=condition=ready pod --selector=app.kubernetes.io/name=diracx --timeout=300s; then
-  printf "\U1F984 \U1F984 \U1F984 Installation did not start sucessfully! \U1F984 \U1F984 \U1F984\n"
+  printf "%b Installation did not start sucessfully!\n" ${UNICORN_EMOJI}
 else
   printf "\U1F389 \U1F389 \U1F389 Pods are ready! \U1F389 \U1F389 \U1F389\n"
 fi
