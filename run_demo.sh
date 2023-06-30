@@ -115,7 +115,7 @@ else
 fi
 
 echo ""
-printf "\U2139 \UFE0F To interact with the cluster:\n"
+printf "\U2139\UFE0F  To interact with the cluster:\n"
 echo "export KUBECONFIG=${KUBECONFIG}"
 echo "export PATH=${PATH}:${demo_dir}"
 echo ""
@@ -125,7 +125,7 @@ echo "in the DEX web interface"
 echo "Username: admin@example.com"
 echo "Password: password"
 echo ""
-printf "\U2139 \UFE0F Press Ctrl+C to clean up and exit\n"
+printf "\U2139\UFE0F  Press Ctrl+C to clean up and exit\n"
 
 while true; do
   sleep 1000;

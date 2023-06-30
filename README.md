@@ -9,6 +9,7 @@ A Helm chart for deploying DiracX
 | Repository | Name | Version |
 |------------|------|---------|
 | https://charts.dexidp.io/ | dex | 0.14.2 |
+| https://charts.min.io/ | minio | 5.0.11 |
 | https://opensearch-project.github.io/helm-charts/ | opensearch | 2.13.1 |
 
 ## Values
@@ -58,7 +59,7 @@ A Helm chart for deploying DiracX
 | diracx.settings.DIRACX_CONFIG_BACKEND_URL | string | `"git+file:///cs_store/initialRepo"` |  |
 | diracx.settings.DIRACX_DB_URL_AUTHDB | string | `"sqlite+aiosqlite:///:memory:"` |  |
 | diracx.settings.DIRACX_DB_URL_JOBDB | string | `"sqlite+aiosqlite:///:memory:"` |  |
-| diracx.settings.DIRACX_SERVICE_AUTH_ALLOWED_REDIRECTS | string | `"[\"http://pclhcb211:8000/docs/oauth2-redirect\"]"` |  |
+| diracx.settings.DIRACX_SERVICE_AUTH_ALLOWED_REDIRECTS | string | `"[\"http://anything:8000/docs/oauth2-redirect\"]"` |  |
 | diracx.settings.DIRACX_SERVICE_AUTH_TOKEN_KEY | string | `"file:///signing-key/rs256.key"` |  |
 | fullnameOverride | string | `""` |  |
 | image.pullPolicy | string | `"IfNotPresent"` |  |
@@ -73,6 +74,18 @@ A Helm chart for deploying DiracX
 | ingress.hosts[0].paths[0].path | string | `"/"` |  |
 | ingress.hosts[0].paths[0].pathType | string | `"Prefix"` |  |
 | ingress.tls | list | `[]` |  |
+| minio.consoleIngress.enabled | bool | `false` |  |
+| minio.consoleService.type | string | `"NodePort"` |  |
+| minio.enabled | bool | `true` |  |
+| minio.environment.MINIO_BROWSER_REDIRECT_URL | string | `"http://anything:32001/"` |  |
+| minio.ingress.enabled | bool | `false` |  |
+| minio.mode | string | `"standalone"` |  |
+| minio.persistence.enabled | bool | `false` |  |
+| minio.replicas | int | `1` |  |
+| minio.resources.requests.memory | string | `"512Mi"` |  |
+| minio.rootPassword | string | `"rootpass123"` |  |
+| minio.rootUser | string | `"rootuser"` |  |
+| minio.service.type | string | `"NodePort"` |  |
 | nameOverride | string | `""` | type=kubernetes.io/dockerconfigjson imagePullSecrets:   - name: regcred |
 | nodeSelector | object | `{}` |  |
 | opensearch.config."cluster.routing.allocation.disk.threshold_enabled" | string | `"true"` |  |
@@ -80,7 +93,7 @@ A Helm chart for deploying DiracX
 | opensearch.config."cluster.routing.allocation.disk.watermark.high" | string | `"300mb"` |  |
 | opensearch.config."cluster.routing.allocation.disk.watermark.low" | string | `"500mb"` |  |
 | opensearch.config."plugins.security.disabled" | string | `"true"` |  |
-| opensearch.enabled | bool | `false` |  |
+| opensearch.enabled | bool | `true` |  |
 | opensearch.opensearchJavaOpts | string | `"-Xms256m -Xmx256m"` |  |
 | opensearch.singleNode | bool | `true` |  |
 | podAnnotations | object | `{}` |  |

@@ -69,12 +69,12 @@ diracx:
     # mysql+aiomysql://
     DIRACX_DB_URL_JOBDB: "sqlite+aiosqlite:///:memory:"
     DIRACX_SERVICE_AUTH_TOKEN_KEY: "file:///signing-key/rs256.key"
-    DIRACX_SERVICE_AUTH_ALLOWED_REDIRECTS: '["http://pclhcb211:8000/docs/oauth2-redirect"]'
+    DIRACX_SERVICE_AUTH_ALLOWED_REDIRECTS: '["http://anything:8000/docs/oauth2-redirect"]'
 
 ##########################
 
 opensearch:
-  enabled: false
+  enabled: true
   opensearchJavaOpts: "-Xms256m -Xmx256m"
   # replicas: 1
   singleNode: true
@@ -84,6 +84,31 @@ opensearch:
     cluster.routing.allocation.disk.watermark.low: 500mb
     cluster.routing.allocation.disk.watermark.high: 300mb
     plugins.security.disabled: "true"
+
+##########################
+
+
+minio:
+  enabled: true
+  service:
+    type: NodePort
+  consoleService:
+    type: NodePort
+  ingress:
+    enabled: false
+  consoleIngress:
+    enabled: false
+  resources:
+    requests:
+      memory: 512Mi
+  replicas: 1
+  persistence:
+    enabled: false
+  mode: standalone
+  rootUser: rootuser
+  rootPassword: rootpass123
+  environment:
+    MINIO_BROWSER_REDIRECT_URL: http://anything:32001/
 
 ##########################
 
