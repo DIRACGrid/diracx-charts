@@ -1,6 +1,4 @@
 ### Helm ###
-# Chart dependencies
-**/charts/*.tgz
 
 ### DiracX ###
 .demo
