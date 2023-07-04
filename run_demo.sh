@@ -105,9 +105,9 @@ printf "%b Installing DiracX...\n" ${UNICORN_EMOJI}
 "${demo_dir}/helm" install diracx-demo "${script_dir}/diracx" --values "${demo_dir}/values.yaml"
 printf "%b Waiting for installation to finish...\n" ${UNICORN_EMOJI}
 if "${demo_dir}/kubectl" wait --for=condition=ready pod --selector=app.kubernetes.io/name=diracx --timeout=300s; then
-  printf "%b Installation did not start sucessfully!\n" ${UNICORN_EMOJI}
-else
   printf "\U1F389 \U1F389 \U1F389 Pods are ready! \U1F389 \U1F389 \U1F389\n"
+else
+  printf "%b Installation did not start sucessfully!\n" ${UNICORN_EMOJI}
 fi
 
 echo ""
