@@ -47,7 +47,7 @@ spec:
         image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
         command: [/dockerMicroMambaEntrypoint.sh]
         args:
-          - "diracx"
+          - "dirac"
           - "internal"
           - "generate-cs"
           - "/cs_store/initialRepo"
@@ -65,7 +65,7 @@ spec:
         image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
         command: [/dockerMicroMambaEntrypoint.sh]
         args:
-          - "diracx"
+          - "dirac"
           - "internal"
           - "add-user"
           - "/cs_store/initialRepo"
