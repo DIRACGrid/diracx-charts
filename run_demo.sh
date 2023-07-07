@@ -3,6 +3,7 @@ set -euo pipefail
 IFS=$'\n\t'
 
 UNICORN_EMOJI="\U1F984"
+SKULL_EMOJI="\U1F480"
 
 if [ -z "${1:-}" ]; then
   echo "Usage: $0 <diracx_src_dir>"
@@ -107,7 +108,7 @@ printf "%b Waiting for installation to finish...\n" ${UNICORN_EMOJI}
 if "${demo_dir}/kubectl" wait --for=condition=ready pod --selector=app.kubernetes.io/name=diracx --timeout=300s; then
   printf "\U1F389 \U1F389 \U1F389 Pods are ready! \U1F389 \U1F389 \U1F389\n"
 else
-  printf "%b Installation did not start sucessfully!\n" ${UNICORN_EMOJI}
+  printf "%b Installation did not start sucessfully!\n" ${SKULL_EMOJI}
 fi
 
 echo ""
