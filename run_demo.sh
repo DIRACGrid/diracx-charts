@@ -76,15 +76,18 @@ printf "%b Starting Kind cluster...\n" ${UNICORN_EMOJI}
   --config "${demo_dir}/demo_cluster_conf.yaml" \
   --name diracx-demo
 
-printf "%b Loading images from docker to Kind...\n" ${UNICORN_EMOJI}
-declare -a image_names
-image_names+=("registry.k8s.io/ingress-nginx/controller:v1.8.0")
-image_names+=("ghcr.io/diracgrid/diracx/server:latest")
-image_names+=("ghcr.io/dexidp/dex:v2.36.0")
-for image_name in "${image_names[@]}"; do
-  docker pull "${image_name}"
-  "${demo_dir}/kind" --name diracx-demo load docker-image "${image_name}"
-done
+# Uncomment that to work fully offline
+# We do not keep it because it increases the start time by 2mn
+#
+# printf "%b Loading images from docker to Kind...\n" ${UNICORN_EMOJI}
+# declare -a image_names
+# image_names+=("registry.k8s.io/ingress-nginx/controller:v1.8.0")
+# image_names+=("ghcr.io/diracgrid/diracx/server:latest")
+# image_names+=("ghcr.io/dexidp/dex:v2.36.0")
+# for image_name in "${image_names[@]}"; do
+#   docker pull "${image_name}"
+#   "${demo_dir}/kind" --name diracx-demo load docker-image "${image_name}"
+# done
 
 printf "%b Creating an ingress...\n" ${UNICORN_EMOJI}
 "${demo_dir}/kubectl" apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/main/deploy/static/provider/kind/deploy.yaml
