@@ -32,6 +32,20 @@ function cleanup(){
   rm -rf "${tmp_dir}"
 }
 
+function check_hostname(){
+  # Check that the hostname resolves to an IP address
+  # dig doesn't consider the effect of /etc/hosts so we use ping instead
+  ip_address=$(ping -c 1 "$1" | grep -Eo '([0-9]{1,3}\.){3}[0-9]{1,3}' | head -n 1)
+  if [[ -z "${ip_address}" ]]; then
+    printf "%b No IP address found hostname %s\n" ${SKULL_EMOJI} "${1}"
+    return 1
+  fi
+  if [[ "${ip_address}" == "127.0.0.1" ]]; then
+    printf "%b Hostname %s resolves to 127.0.0.1 but this is not supported\n" ${SKULL_EMOJI} "${1}"
+    return 1
+  fi
+}
+
 trap "cleanup" EXIT
 
 if [[ ! -f "${demo_dir}/helm" ]]; then
@@ -99,6 +113,11 @@ printf "%b Waiting for ingress controller to be created...\n" ${UNICORN_EMOJI}
 
 printf "%b Generating Helm templates\n" ${UNICORN_EMOJI}
 machine_hostname=$(hostname | tr '[:upper:]' '[:lower:]')
+if ! check_hostname "${machine_hostname}"; then
+  echo "Failed to find an appropriate hostname for the demo."
+  exit 1
+fi
+
 sed "s/{{ hostname }}/${machine_hostname}/g" "${script_dir}/demo/values.tpl.yaml" > "${demo_dir}/values.yaml"
 if grep '{{' "${demo_dir}/values.yaml"; then
   printf "%b Error generating template. Found {{ in the template result\n" ${UNICORN_EMOJI}
@@ -128,5 +147,8 @@ echo ""
 printf "\U2139\UFE0F  Press Ctrl+C to clean up and exit\n"
 
 while true; do
-  sleep 1000;
+  sleep 60;
+  if ! check_hostname "${machine_hostname}"; then
+    echo "The demo will likely need to be restarted."
+  fi
 done
