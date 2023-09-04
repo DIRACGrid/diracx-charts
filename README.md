@@ -30,7 +30,7 @@ A Helm chart for deploying DiracX
 | dex.config.expiry.deviceRequests | string | `"5m"` |  |
 | dex.config.expiry.idTokens | string | `"24h"` |  |
 | dex.config.expiry.signingKeys | string | `"6h"` |  |
-| dex.config.issuer | string | `"http://anything:8000/dex"` |  |
+| dex.config.issuer | string | `"http://anything:32002"` |  |
 | dex.config.logger.format | string | `"text"` |  |
 | dex.config.logger.level | string | `"debug"` |  |
 | dex.config.oauth2.alwaysShowLoginScreen | bool | `false` |  |
@@ -48,12 +48,7 @@ A Helm chart for deploying DiracX
 | dex.config.storage.type | string | `"sqlite3"` |  |
 | dex.config.web.http | int | `8000` |  |
 | dex.enabled | bool | `true` |  |
-| dex.ingress.enabled | bool | `true` |  |
-| dex.ingress.hosts[0].host | string | `"anything"` |  |
-| dex.ingress.hosts[0].paths[0].backend.service.name | string | `"diracx-demo-dex"` |  |
-| dex.ingress.hosts[0].paths[0].backend.service.port.number | int | `8000` |  |
-| dex.ingress.hosts[0].paths[0].path | string | `"/dex/"` |  |
-| dex.ingress.hosts[0].paths[0].pathType | string | `"Prefix"` |  |
+| dex.ingress.enabled | bool | `false` |  |
 | dex.service.ports.http.port | int | `8000` |  |
 | diracx.csVolumeName | string | `"pv-cs-store"` |  |
 | diracx.settings.DIRACX_CONFIG_BACKEND_URL | string | `"git+file:///cs_store/initialRepo"` |  |

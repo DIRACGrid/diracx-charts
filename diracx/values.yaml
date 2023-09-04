@@ -122,32 +122,18 @@ dex:
           port: 8000
 
   ingress:
-    enabled: true
-    hosts:
-      - host: anything
-        paths:
-          - path: /dex/
-            pathType: Prefix
-            backend:
-              service:
-                name: diracx-demo-dex
-                port:
-                  number: 8000
-
-
+    enabled: false
 
   config:
-    issuer: http://anything:8000/dex
+    issuer: http://anything:32002
 
     storage:
       type: sqlite3
       config:
         file: /tmp/dex.db
 
-
     web:
       http: 8000
-
 
     expiry:
       deviceRequests: 5m
@@ -158,7 +144,6 @@ dex:
     logger:
       level: "debug"
       format: text
-
 
     oauth2:
       responseTypes: [code]
