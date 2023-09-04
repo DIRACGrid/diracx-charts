@@ -40,7 +40,7 @@ function check_hostname(){
     printf "%b No IP address found hostname %s\n" ${SKULL_EMOJI} "${1}"
     return 1
   fi
-  if [[ "${ip_address}" == "127.0.0.1" ]]; then
+  if [[ "${ip_address}" == 127.* ]]; then
     printf "%b Hostname %s resolves to 127.0.0.1 but this is not supported\n" ${SKULL_EMOJI} "${1}"
     return 1
   fi
@@ -115,12 +115,8 @@ printf "%b Generating Helm templates\n" ${UNICORN_EMOJI}
 machine_hostname=$(hostname | tr '[:upper:]' '[:lower:]')
 if ! check_hostname "${machine_hostname}"; then
   machine_system=$(uname -s)
-  if [[ ${machine_system} == "Linux" ]]; then
-    ip_cmd="ip address"
-  else
-    ip_cmd="ifconfig"
-  fi
-  machine_hostname=$($ip_cmd | grep 'inet ' | grep -v '127' | awk '{ print $2 }' | head -n 1 | cut -d '/' -f 1)
+  ip_cmd="ifconfig"
+  machine_hostname=$(ifconfig | grep 'inet ' | grep -v '127' | awk '{ print $2 }' | head -n 1 | cut -d '/' -f 1)
   if ! check_hostname "${machine_hostname}"; then
     echo "Failed to find an appropriate hostname for the demo."
     exit 1
