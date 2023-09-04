@@ -1,6 +1,10 @@
 apiVersion: v2
 name: diracx
-description: A Helm chart for deploying DiracX
+description: |
+  This helm chart is intended to be used in two ways:
+
+   * Development: The ./run_demo.sh script allows the infrastructure to be ran locally with docker+kind
+   * Production: TODO
 
 type: application
 

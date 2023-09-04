@@ -1,8 +1,52 @@
-# diracx
+# Helm chart for DiracX
+
+This helm chart is intended to be used in two ways:
+
+ * Development: The ./run_demo.sh script allows the infrastructure to be ran locally with docker+kind
+ * Production: TODO
 
 ![Version: 0.1.0](https://img.shields.io/badge/Version-0.1.0-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 0.0.1a](https://img.shields.io/badge/AppVersion-0.0.1a-informational?style=flat-square)
 
-A Helm chart for deploying DiracX
+## Running locally
+
+TODO
+
+### Interacting with the demo
+
+#### Kubernetes basics
+
+Assuming you have exported the environment variables printed by the demo script you can interact with the demo cluster using:
+
+```bash
+# List the running pods
+kubectl get pods
+# Get some more information about a pod
+kubectl describe pod/<pod name>
+# Show the logs of a running pod
+kubectl logs <pod name>
+# Show the logs of a running pod and keep following them
+kubectl logs -f <pod name>
+# Run a command in one of the non-LbAPI pods
+kubectl exec -it <pod name> -- /bin/bash
+# Run a command in one of the LbAPI pods with the conda environment loaded
+kubectl exec -it <pod name> -- /dockerMicroMambaEntrypoint.sh bash
+```
+
+#### Helm basics
+
+When running the demo some an `values.yaml` file is created as `.demo/values.yaml`.
+This file can be used with helm to interact with the running demo to make changes to what is running in the cluster.
+
+```bash
+# Show what will be changed by running "helm upgrade"
+helm diff upgrade diracx-demo ./diracx --values .demo/values.yaml
+# Actually run "helm upgrade" to apply changes
+helm upgrade diracx-demo ./diracx --values .demo/values.yaml
+```
+
+## Deploying in production
+
+TODO
 
 ## Requirements
 

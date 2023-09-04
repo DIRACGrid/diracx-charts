@@ -1,0 +1,52 @@
+# Helm chart for DiracX
+
+{{ template "chart.description" . }}
+
+{{ template "chart.versionBadge" . }}{{ template "chart.typeBadge" . }}{{ template "chart.appVersionBadge" . }}
+
+## Running locally
+
+TODO
+
+### Interacting with the demo
+
+#### Kubernetes basics
+
+Assuming you have exported the environment variables printed by the demo script you can interact with the demo cluster using:
+
+```bash
+# List the running pods
+kubectl get pods
+# Get some more information about a pod
+kubectl describe pod/<pod name>
+# Show the logs of a running pod
+kubectl logs <pod name>
+# Show the logs of a running pod and keep following them
+kubectl logs -f <pod name>
+# Run a command in one of the non-LbAPI pods
+kubectl exec -it <pod name> -- /bin/bash
+# Run a command in one of the LbAPI pods with the conda environment loaded
+kubectl exec -it <pod name> -- /dockerMicroMambaEntrypoint.sh bash
+```
+
+#### Helm basics
+
+When running the demo some an `values.yaml` file is created as `.demo/values.yaml`.
+This file can be used with helm to interact with the running demo to make changes to what is running in the cluster.
+
+```bash
+# Show what will be changed by running "helm upgrade"
+helm diff upgrade diracx-demo ./diracx --values .demo/values.yaml
+# Actually run "helm upgrade" to apply changes
+helm upgrade diracx-demo ./diracx --values .demo/values.yaml
+```
+
+## Deploying in production
+
+TODO
+
+{{ template "chart.requirementsSection" . }}
+
+{{ template "chart.valuesSection" . }}
+
+{{ template "helm-docs.versionFooter" . }}
