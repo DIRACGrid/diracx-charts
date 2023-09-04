@@ -116,25 +116,17 @@ dex:
   https.enabled: false
 
   service:
-      ports:
-        http:
-          port: 8000
+    type: NodePort
+    ports:
+      http:
+        port: 8000
+        nodePort: 32002
 
   ingress:
-    enabled: true
-    hosts:
-      - host: {{ hostname }}
-        paths:
-          - path: /dex/
-            pathType: Prefix
-            backend:
-              service:
-                name: diracx-demo-dex
-                port:
-                  number: 8000
+    enabled: false
 
   config:
-    issuer: http://{{ hostname }}:8000/dex
+    issuer: http://{{ hostname }}:32002
 
     storage:
       type: sqlite3
@@ -191,8 +183,7 @@ ingress:
     nginx.ingress.kubernetes.io/use-regex: "true"
     # nginx.ingress.kubernetes.io/rewrite-target: "/$2"
   hosts:
-    - host: {{ hostname }}
-      paths:
+    - paths:
         - path: /
           pathType: Prefix
           backend:
