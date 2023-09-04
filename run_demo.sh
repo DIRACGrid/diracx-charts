@@ -114,8 +114,17 @@ printf "%b Waiting for ingress controller to be created...\n" ${UNICORN_EMOJI}
 printf "%b Generating Helm templates\n" ${UNICORN_EMOJI}
 machine_hostname=$(hostname | tr '[:upper:]' '[:lower:]')
 if ! check_hostname "${machine_hostname}"; then
-  echo "Failed to find an appropriate hostname for the demo."
-  exit 1
+  machine_system=$(uname -s)
+  if [[ ${machine_system} == "Linux" ]]; then
+    ip_cmd="ip address"
+  else
+    ip_cmd="ifconfig"
+  fi
+  machine_hostname=$($ip_cmd | grep 'inet ' | grep -v '127' | awk '{ print $2 }' | head -n 1 | cut -d '/' -f 1)
+  if ! check_hostname "${machine_hostname}"; then
+    echo "Failed to find an appropriate hostname for the demo."
+    exit 1
+  fi
 fi
 
 sed "s/{{ hostname }}/${machine_hostname}/g" "${script_dir}/demo/values.tpl.yaml" > "${demo_dir}/values.yaml"
