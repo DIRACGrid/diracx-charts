@@ -117,9 +117,11 @@ dex:
   https.enabled: false
 
   service:
-      ports:
-        http:
-          port: 8000
+    type: NodePort
+    ports:
+      http:
+        port: 8000
+        nodePort: 32002
 
   ingress:
     enabled: false
@@ -152,18 +154,9 @@ dex:
 
     enablePasswordDB: true
 
-    staticClients:
-    - id: d396912e-2f04-439b-8ae7-d8c585a34790
-      public: true
-      name: 'CLI app'
-      redirectURIs:
-        - 'http://anything:8000/auth/device/complete'
-        - http://anything:8000/auth/authorize/complete
+    staticClients: []
+    staticPasswords: []
 
-    staticPasswords:
-      - email: "admin@example.com"
-        hash: "$2a$10$2b2cU8CPhOTaGrs1HRQuAueS7JTT5ZHsHSzYiFPm1leZck7Mc8T4W"
-        username: "admin"
 ##########################
 
 service:
@@ -181,8 +174,7 @@ ingress:
     nginx.ingress.kubernetes.io/use-regex: "true"
     # nginx.ingress.kubernetes.io/rewrite-target: "/$2"
   hosts:
-    - host: anything
-      paths:
+    - paths:
         - path: /
           pathType: Prefix
           backend:

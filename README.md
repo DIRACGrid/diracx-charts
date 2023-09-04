@@ -36,20 +36,16 @@ A Helm chart for deploying DiracX
 | dex.config.oauth2.alwaysShowLoginScreen | bool | `false` |  |
 | dex.config.oauth2.responseTypes[0] | string | `"code"` |  |
 | dex.config.oauth2.skipApprovalScreen | bool | `false` |  |
-| dex.config.staticClients[0].id | string | `"d396912e-2f04-439b-8ae7-d8c585a34790"` |  |
-| dex.config.staticClients[0].name | string | `"CLI app"` |  |
-| dex.config.staticClients[0].public | bool | `true` |  |
-| dex.config.staticClients[0].redirectURIs[0] | string | `"http://anything:8000/auth/device/complete"` |  |
-| dex.config.staticClients[0].redirectURIs[1] | string | `"http://anything:8000/auth/authorize/complete"` |  |
-| dex.config.staticPasswords[0].email | string | `"admin@example.com"` |  |
-| dex.config.staticPasswords[0].hash | string | `"$2a$10$2b2cU8CPhOTaGrs1HRQuAueS7JTT5ZHsHSzYiFPm1leZck7Mc8T4W"` |  |
-| dex.config.staticPasswords[0].username | string | `"admin"` |  |
+| dex.config.staticClients | list | `[]` |  |
+| dex.config.staticPasswords | list | `[]` |  |
 | dex.config.storage.config.file | string | `"/tmp/dex.db"` |  |
 | dex.config.storage.type | string | `"sqlite3"` |  |
 | dex.config.web.http | int | `8000` |  |
 | dex.enabled | bool | `true` |  |
 | dex.ingress.enabled | bool | `false` |  |
+| dex.service.ports.http.nodePort | int | `32002` |  |
 | dex.service.ports.http.port | int | `8000` |  |
+| dex.service.type | string | `"NodePort"` |  |
 | diracx.csVolumeName | string | `"pv-cs-store"` |  |
 | diracx.settings.DIRACX_CONFIG_BACKEND_URL | string | `"git+file:///cs_store/initialRepo"` |  |
 | diracx.settings.DIRACX_DB_URL_AUTHDB | string | `"sqlite+aiosqlite:///:memory:"` |  |
@@ -63,7 +59,6 @@ A Helm chart for deploying DiracX
 | ingress.annotations."nginx.ingress.kubernetes.io/use-regex" | string | `"true"` |  |
 | ingress.className | string | `"nginx"` |  |
 | ingress.enabled | bool | `true` |  |
-| ingress.hosts[0].host | string | `"anything"` |  |
 | ingress.hosts[0].paths[0].backend.service.name | string | `"diracx-demo"` |  |
 | ingress.hosts[0].paths[0].backend.service.port.number | int | `8000` |  |
 | ingress.hosts[0].paths[0].path | string | `"/"` |  |
