@@ -22,6 +22,7 @@ tmp_dir=$(mktemp -d)
 demo_dir="${script_dir}/.demo"
 mkdir -p "${demo_dir}"
 export KUBECONFIG="${demo_dir}/kube.conf"
+export HELM_DATA_HOME="${demo_dir}/helm_data"
 
 function cleanup(){
   trap - SIGTERM;
@@ -74,6 +75,9 @@ if [[ ! -f "${demo_dir}/helm" ]]; then
 
   # Make the binaries executable
   chmod +x "${demo_dir}/kubectl" "${demo_dir}/kind" "${demo_dir}/helm"
+
+  # Install helm plugins to ${HELM_DATA_HOME}
+  "${demo_dir}/helm" plugin install https://github.com/databus23/helm-diff
 fi
 
 printf "%b Generating Kind cluster template...\n" ${UNICORN_EMOJI}
@@ -140,7 +144,8 @@ fi
 echo ""
 printf "\U2139\UFE0F  To interact with the cluster:\n"
 echo "export KUBECONFIG=${KUBECONFIG}"
-echo "export PATH=${PATH}:${demo_dir}"
+echo "export HELM_DATA_HOME=${HELM_DATA_HOME}"
+echo "export PATH=\${PATH}:${demo_dir}"
 echo ""
 printf "\U2139 \UFE0F You can access swagger at http://%s:8000/docs\n" "${machine_hostname}"
 echo "To login, use the OAuth Authroization Code flow, and enter the following credentials"
