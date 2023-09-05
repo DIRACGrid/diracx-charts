@@ -6,7 +6,7 @@ UNICORN_EMOJI="\U1F984"
 SKULL_EMOJI="\U1F480"
 
 if [ -z "${1:-}" ]; then
-  echo "Usage: $0 <diracx_src_dir>"
+  echo "Usage: $0 <diracx_src_dir> [other source directories]"
   exit 1
 fi
 diracx_repo_dir="$(readlink -f "${1}")"
@@ -14,6 +14,32 @@ diracx_src_dir="${diracx_repo_dir}/src/diracx"
 if [[ ! -d "${diracx_src_dir}" ]]; then
   printf "\U26A0\UFE0F Error: %s is not a clone of DiracX!" "${diracx_repo_dir}"
   exit 1
+fi
+
+declare -a pkg_dirs
+declare -a pkg_names
+for src_dir in "$@"; do
+  for pkg_dir in $(find "$src_dir/src" -type f -mindepth 2 -maxdepth 2 -name '__init__.py'); do
+    pkg_dirs+=("$(dirname "${pkg_dir}")")
+    pkg_name="$(basename "$(dirname "${pkg_dir}")")"
+    if [[ ${pkg_names[@]} =~ "$pkg_name" ]]; then
+      printf "\U26A0\UFE0F Error: Source directory for %s was given twice!\n" "${pkg_name}"
+      exit 1
+    fi
+    pkg_names+=("${pkg_name}")
+  done
+done
+printf "%b Found package directories for: " ${UNICORN_EMOJI}
+echo "${pkg_names[@]}"
+
+machine_hostname=$(hostname | tr '[:upper:]' '[:lower:]')
+if ! check_hostname "${machine_hostname}"; then
+  machine_system=$(uname -s)
+  machine_hostname=$(ifconfig | grep 'inet ' | grep -v '127' | awk '{ print $2 }' | head -n 1 | cut -d '/' -f 1)
+  if ! check_hostname "${machine_hostname}"; then
+    echo "Failed to find an appropriate hostname for the demo."
+    exit 1
+  fi
 fi
 
 script_dir=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
@@ -77,7 +103,12 @@ if [[ ! -f "${demo_dir}/helm" ]]; then
 fi
 
 printf "%b Generating Kind cluster template...\n" ${UNICORN_EMOJI}
-sed "s@{{ diracx_src_dir }}@${diracx_src_dir}@g" "${script_dir}/demo/demo_cluster_conf.tpl.yaml" > "${demo_dir}/demo_cluster_conf.yaml"
+cp "${script_dir}/demo/demo_cluster_conf.tpl.yaml" "${demo_dir}/demo_cluster_conf.yaml"
+for pkg_dir in "${pkg_dirs[@]}"; do
+  mv "${demo_dir}/demo_cluster_conf.yaml" "${demo_dir}/demo_cluster_conf.yaml.bak"
+  sed "s@{{ hostPaths }}@  - hostPath: ${pkg_dir}\n    containerPath: /diracx_source/$(basename "${pkg_dir}")\n{{ hostPaths }}@g" "${demo_dir}/demo_cluster_conf.yaml.bak" > "${demo_dir}/demo_cluster_conf.yaml"
+done
+sed "s@{{ hostPaths }}@@g" "${script_dir}/demo/demo_cluster_conf.tpl.yaml" > "${demo_dir}/demo_cluster_conf.yaml"
 if grep '{{' "${demo_dir}/demo_cluster_conf.yaml"; then
   printf "%b Error generating Kind template. Found {{ in the template result\n" ${UNICORN_EMOJI}
   exit 1
@@ -112,16 +143,6 @@ printf "%b Waiting for ingress controller to be created...\n" ${UNICORN_EMOJI}
   --timeout=90s
 
 printf "%b Generating Helm templates\n" ${UNICORN_EMOJI}
-machine_hostname=$(hostname | tr '[:upper:]' '[:lower:]')
-if ! check_hostname "${machine_hostname}"; then
-  machine_system=$(uname -s)
-  machine_hostname=$(ifconfig | grep 'inet ' | grep -v '127' | awk '{ print $2 }' | head -n 1 | cut -d '/' -f 1)
-  if ! check_hostname "${machine_hostname}"; then
-    echo "Failed to find an appropriate hostname for the demo."
-    exit 1
-  fi
-fi
-
 sed "s/{{ hostname }}/${machine_hostname}/g" "${script_dir}/demo/values.tpl.yaml" > "${demo_dir}/values.yaml"
 if grep '{{' "${demo_dir}/values.yaml"; then
   printf "%b Error generating template. Found {{ in the template result\n" ${UNICORN_EMOJI}

@@ -17,8 +17,7 @@ nodes:
   # - hostPath: /home/chaen/dirac/diracx-project/chris-hackaton-cs/
   #   containerPath: /local_cs_store
   # For developer to be able to edit
-  - hostPath: {{ diracx_src_dir }}
-    containerPath: /diracx_source
+{{ hostPaths }}
 
   # Expose the ingress port
   extraPortMappings:
