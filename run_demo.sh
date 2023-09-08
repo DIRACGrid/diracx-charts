@@ -5,6 +5,41 @@ IFS=$'\n\t'
 UNICORN_EMOJI="\U1F984"
 SKULL_EMOJI="\U1F480"
 
+script_dir=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
+
+tmp_dir=$(mktemp -d)
+demo_dir="${script_dir}/.demo"
+mkdir -p "${demo_dir}"
+export KUBECONFIG="${demo_dir}/kube.conf"
+export HELM_DATA_HOME="${demo_dir}/helm_data"
+
+function cleanup(){
+  trap - SIGTERM;
+  echo "Cleaning up";
+  if [[ -f "${demo_dir}/kind" ]] && [[ -f "${KUBECONFIG}" ]]; then
+      "${demo_dir}/kind" delete cluster --name diracx-demo
+  fi
+  rm -rf "${tmp_dir}"
+}
+
+function check_hostname(){
+  # Check that the hostname resolves to an IP address
+  # dig doesn't consider the effect of /etc/hosts so we use ping instead
+  ip_address=$(ping -c 1 "$1" | grep -Eo '([0-9]{1,3}\.){3}[0-9]{1,3}' | head -n 1)
+  if [[ $? != 0 ]]; then
+    printf "%b ping command exited with a non-zero exit code\n" ${SKULL_EMOJI}
+    return 1
+  fi
+  if [[ -z "${ip_address}" ]]; then
+    printf "%b No IP address found hostname %s\n" ${SKULL_EMOJI} "${1}"
+    return 1
+  fi
+  if [[ "${ip_address}" == 127.* ]]; then
+    printf "%b Hostname %s resolves to 127.0.0.1 but this is not supported\n" ${SKULL_EMOJI} "${1}"
+    return 1
+  fi
+}
+
 if [ -z "${1:-}" ]; then
   echo "Usage: $0 <diracx_src_dir> [other source directories]"
   exit 1
@@ -41,37 +76,6 @@ if ! check_hostname "${machine_hostname}"; then
     exit 1
   fi
 fi
-
-script_dir=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
-
-tmp_dir=$(mktemp -d)
-demo_dir="${script_dir}/.demo"
-mkdir -p "${demo_dir}"
-export KUBECONFIG="${demo_dir}/kube.conf"
-export HELM_DATA_HOME="${demo_dir}/helm_data"
-
-function cleanup(){
-  trap - SIGTERM;
-  echo "Cleaning up";
-  if [[ -f "${demo_dir}/kind" ]] && [[ -f "${KUBECONFIG}" ]]; then
-      "${demo_dir}/kind" delete cluster --name diracx-demo
-  fi
-  rm -rf "${tmp_dir}"
-}
-
-function check_hostname(){
-  # Check that the hostname resolves to an IP address
-  # dig doesn't consider the effect of /etc/hosts so we use ping instead
-  ip_address=$(ping -c 1 "$1" | grep -Eo '([0-9]{1,3}\.){3}[0-9]{1,3}' | head -n 1)
-  if [[ -z "${ip_address}" ]]; then
-    printf "%b No IP address found hostname %s\n" ${SKULL_EMOJI} "${1}"
-    return 1
-  fi
-  if [[ "${ip_address}" == 127.* ]]; then
-    printf "%b Hostname %s resolves to 127.0.0.1 but this is not supported\n" ${SKULL_EMOJI} "${1}"
-    return 1
-  fi
-}
 
 trap "cleanup" EXIT
 
