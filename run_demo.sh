@@ -69,7 +69,6 @@ echo "${pkg_names[@]}"
 
 machine_hostname=$(hostname | tr '[:upper:]' '[:lower:]')
 if ! check_hostname "${machine_hostname}"; then
-  machine_system=$(uname -s)
   machine_hostname=$(ifconfig | grep 'inet ' | grep -v '127' | awk '{ print $2 }' | head -n 1 | cut -d '/' -f 1)
   if ! check_hostname "${machine_hostname}"; then
     echo "Failed to find an appropriate hostname for the demo."
