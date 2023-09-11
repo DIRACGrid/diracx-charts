@@ -1,3 +1,6 @@
+developer:
+  modulesToMount: {{ modules_to_mount }}
+
 diracx:
   settings:
     DIRACX_SERVICE_AUTH_ALLOWED_REDIRECTS: '["http://{{ hostname }}:8000/docs/oauth2-redirect"]'

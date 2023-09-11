@@ -52,11 +52,11 @@ securityContext: {}
 developer:
   enabled: true
   # Path from which to mount source of DIRACX
-  diracxSourcePath: /diracx_source/
-  diracxInstallationPath: /opt/conda/lib/python3.11/site-packages/diracx
+  sourcePath: /diracx_source
+  pythonSitePackagesDir: /opt/conda/lib/python3.11/site-packages
+  modulesToMount: []
   # If set, mount the CS stored localy instead of initializing a default one
   # localCSPath: /local_cs_store
-
 
 diracx:
   # Name of the volume on which the CS repo is stored
@@ -68,6 +68,7 @@ diracx:
     DIRACX_DB_URL_AUTHDB: "sqlite+aiosqlite:///:memory:"
     # mysql+aiomysql://
     DIRACX_DB_URL_JOBDB: "sqlite+aiosqlite:///:memory:"
+    DIRACX_DB_URL_JOBLOGGINGDB: "sqlite+aiosqlite:///:memory:"
     DIRACX_SERVICE_AUTH_TOKEN_KEY: "file:///signing-key/rs256.key"
     DIRACX_SERVICE_AUTH_ALLOWED_REDIRECTS: '["http://anything:8000/docs/oauth2-redirect"]'
 

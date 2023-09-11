@@ -111,7 +111,9 @@ spec:
               port: http
           {{- if .Values.developer.enabled }}
           args:
-            - "--reload-dir={{ .Values.developer.diracxInstallationPath }}"
+            {{- range $moduleName := .Values.developer.modulesToMount }}
+            - "--reload-dir={{ $.Values.developer.pythonSitePackagesDir }}/{{ $moduleName }}"
+            {{- end }}
             - "--reload"
             - "--proxy-headers"
           {{- end }}
@@ -123,9 +125,12 @@ spec:
             - mountPath: /signing-key/
               name: signing-key-mount
               readOnly: true
-            - mountPath: {{ .Values.developer.diracxInstallationPath }}
+            {{- range $moduleName := .Values.developer.modulesToMount }}
+            - mountPath: {{ $.Values.developer.pythonSitePackagesDir }}/{{ $moduleName }}
               name: diracx-code-mount
               readOnly: true
+              subPath: {{ $moduleName }}
+            {{- end }}
           envFrom:
           # - configMapRef:
           #     name: diracx-env-config
