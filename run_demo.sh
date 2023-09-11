@@ -1,9 +1,12 @@
-#!/usr/bin/env bash
+#!/bin/bash
 set -euo pipefail
 IFS=$'\n\t'
 
-UNICORN_EMOJI="\U1F984"
-SKULL_EMOJI="\U1F480"
+UNICORN_EMOJI='\xF0\x9F\xA6\x84'
+SKULL_EMOJI='\xF0\x9F\x92\x80'
+PARTY_EMOJI='\xF0\x9F\x8E\x89'
+INFO_EMOJI='\xE2\x84\xB9\xEF\xB8\x8F'
+WARN_EMOJI='\xE2\x9A\xA0\xEF\xB8\x8F'
 
 script_dir=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 
@@ -25,8 +28,7 @@ function cleanup(){
 function check_hostname(){
   # Check that the hostname resolves to an IP address
   # dig doesn't consider the effect of /etc/hosts so we use ping instead
-  ip_address=$(ping -c 1 "$1" | grep -Eo '([0-9]{1,3}\.){3}[0-9]{1,3}' | head -n 1)
-  if [[ $? != 0 ]]; then
+  if ! ip_address=$(ping -c 1 "$1" | grep -Eo '([0-9]{1,3}\.){3}[0-9]{1,3}' | head -n 1); then
     printf "%b ping command exited with a non-zero exit code\n" ${SKULL_EMOJI}
     return 1
   fi
@@ -47,18 +49,31 @@ fi
 diracx_repo_dir="$(readlink -f "${1}")"
 diracx_src_dir="${diracx_repo_dir}/src/diracx"
 if [[ ! -d "${diracx_src_dir}" ]]; then
-  printf "\U26A0\UFE0F Error: %s is not a clone of DiracX!" "${diracx_repo_dir}"
+  printf "%b Error: %s is not a clone of DiracX!" "${WARN_EMOJI}" "${diracx_repo_dir}"
   exit 1
 fi
 
 declare -a pkg_dirs
 declare -a pkg_names
 for src_dir in "$@"; do
+  # shellcheck disable=SC2044
   for pkg_dir in $(find "$src_dir/src" -type f -mindepth 2 -maxdepth 2 -name '__init__.py'); do
     pkg_dirs+=("$(dirname "${pkg_dir}")")
     pkg_name="$(basename "$(dirname "${pkg_dir}")")"
-    if [[ ${pkg_names[@]} =~ "$pkg_name" ]]; then
-      printf "\U26A0\UFE0F Error: Source directory for %s was given twice!\n" "${pkg_name}"
+
+    # Check for the presence of $pkg_name in pkg_names array
+    found=0
+    if [ ${#pkg_names[@]} -gt 0 ]; then
+      for existing_pkg_name in "${pkg_names[@]}"; do
+        if [[ "$existing_pkg_name" == "$pkg_name" ]]; then
+          found=1
+          break
+        fi
+      done
+    fi
+
+    if [[ $found -eq 1 ]]; then
+      printf "%b Error: Source directory for %s was given twice!\n" "${WARN_EMOJI}" "${pkg_name}"
       exit 1
     fi
     pkg_names+=("${pkg_name}")
@@ -168,24 +183,24 @@ printf "%b Installing DiracX...\n" ${UNICORN_EMOJI}
 "${demo_dir}/helm" install diracx-demo "${script_dir}/diracx" --values "${demo_dir}/values.yaml"
 printf "%b Waiting for installation to finish...\n" ${UNICORN_EMOJI}
 if "${demo_dir}/kubectl" wait --for=condition=ready pod --selector=app.kubernetes.io/name=diracx --timeout=300s; then
-  printf "\U1F389 \U1F389 \U1F389 Pods are ready! \U1F389 \U1F389 \U1F389\n"
+  printf "%b %b %b Pods are ready! %b %b %b\n" "${PARTY_EMOJI}" "${PARTY_EMOJI}" "${PARTY_EMOJI}" "${PARTY_EMOJI}" "${PARTY_EMOJI}" "${PARTY_EMOJI}"
 else
   printf "%b Installation did not start sucessfully!\n" ${SKULL_EMOJI}
 fi
 
 echo ""
-printf "\U2139\UFE0F  To interact with the cluster:\n"
+printf "%b  To interact with the cluster:\n" "${INFO_EMOJI}"
 echo "export KUBECONFIG=${KUBECONFIG}"
 echo "export HELM_DATA_HOME=${HELM_DATA_HOME}"
 echo "export PATH=\${PATH}:${demo_dir}"
 echo ""
-printf "\U2139 \UFE0F You can access swagger at http://%s:8000/docs\n" "${machine_hostname}"
+printf "%b  You can access swagger at http://%s:8000/docs\n" "${INFO_EMOJI}" "${machine_hostname}"
 echo "To login, use the OAuth Authroization Code flow, and enter the following credentials"
 echo "in the DEX web interface"
 echo "Username: admin@example.com"
 echo "Password: password"
 echo ""
-printf "\U2139\UFE0F  Press Ctrl+C to clean up and exit\n"
+printf "%b  Press Ctrl+C to clean up and exit\n" "${INFO_EMOJI}"
 
 while true; do
   sleep 60;
