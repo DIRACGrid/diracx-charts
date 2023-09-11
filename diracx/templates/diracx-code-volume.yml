@@ -10,7 +10,7 @@ spec:
   capacity:
     storage: 2Gi
   hostPath:
-    path: {{ .Values.developer.diracxSourcePath }}
+    path: {{ .Values.developer.sourcePath }}
 ---
 apiVersion: v1
 kind: PersistentVolumeClaim

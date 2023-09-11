@@ -153,8 +153,15 @@ printf "%b Waiting for ingress controller to be created...\n" ${UNICORN_EMOJI}
 
 printf "%b Generating Helm templates\n" ${UNICORN_EMOJI}
 sed "s/{{ hostname }}/${machine_hostname}/g" "${script_dir}/demo/values.tpl.yaml" > "${demo_dir}/values.yaml"
+mv "${demo_dir}/values.yaml" "${demo_dir}/values.yaml.bak"
+json="["
+for pkg_name in "${pkg_names[@]}"; do
+    json+="\"$pkg_name\","
+done
+json="${json%,}]"
+sed "s/{{ modules_to_mount }}/${json}/g" "${demo_dir}/values.yaml.bak" > "${demo_dir}/values.yaml"
 if grep '{{' "${demo_dir}/values.yaml"; then
-  printf "%b Error generating template. Found {{ in the template result\n" ${UNICORN_EMOJI}
+  printf "%b Error generating template. Found {{ in the template result\n" ${SKULL_EMOJI}
   exit 1
 fi
 
