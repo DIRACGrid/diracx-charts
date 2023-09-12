@@ -42,19 +42,61 @@ function check_hostname(){
   fi
 }
 
-if [ -z "${1:-}" ]; then
-  echo "Usage: $0 <diracx_src_dir> [other source directories]"
-  exit 1
-fi
-diracx_repo_dir="$(readlink -f "${1}")"
-diracx_src_dir="${diracx_repo_dir}/src/diracx"
-if [[ ! -d "${diracx_src_dir}" ]]; then
-  printf "%b Error: %s is not a clone of DiracX!" "${WARN_EMOJI}" "${diracx_repo_dir}"
-  exit 1
-fi
+usage="${0##*/} [-h|--help] [--exit-when-done] [--] <diracx_src_dir> [other source directories]"
 
-declare -a pkg_dirs
-declare -a pkg_names
+# Parse command-line switches
+exit_when_done=0
+while [ -n "${1:-}" ]; do case $1 in
+	# Print a brief usage summary and exit
+	-h|--help|-\?)
+		printf 'Usage: %s\n' "$usage"
+		exit ;;
+
+	# # Unbundle short options
+	# -[niladic-short-opts]?*)
+	# 	tail="${1#??}"
+	# 	head=${1%"$tail"}
+	# 	shift
+	# 	set -- "$head" "-$tail" "$@"
+	# 	continue ;;
+
+	# # Expand parametric values
+	# -[monadic-short-opts]?*|--[!=]*=*)
+	# 	case $1 in
+	# 		--*) tail=${1#*=}; head=${1%%=*} ;;
+	# 		*)   tail=${1#??}; head=${1%"$tail"} ;;
+	# 	esac
+	# 	shift
+	# 	set -- "$head" "$tail" "$@"
+	# 	continue ;;
+
+	# Add new switch checks here
+	--exit-when-done)
+    exit_when_done=1;
+		shift
+		break ;;
+
+	# Double-dash: Terminate option parsing
+	--)
+		shift
+		break ;;
+
+	# Invalid option: abort
+	--*|-?*)
+		>&2 printf '%b %s: Invalid option: "%s"\n' ${SKULL_EMOJI} "${0##*/}" "$1"
+		>&2 printf 'Usage: %s\n' "$usage"
+		exit 1 ;;
+
+	# Argument not prefixed with a dash
+	*) break ;;
+
+esac; shift
+done
+
+# Remaining arguments are positional parameters that are used to specify which
+# source directories to mount in the demo cluster
+declare -a pkg_dirs=()
+declare -a pkg_names=()
 for src_dir in "$@"; do
   # shellcheck disable=SC2044
   for pkg_dir in $(find "$src_dir/src" -type f -mindepth 2 -maxdepth 2 -name '__init__.py'); do
@@ -73,15 +115,23 @@ for src_dir in "$@"; do
     fi
 
     if [[ $found -eq 1 ]]; then
-      printf "%b Error: Source directory for %s was given twice!\n" "${WARN_EMOJI}" "${pkg_name}"
+      printf "%b Error: Source directory for %s was given twice!\n" "${SKULL_EMOJI}" "${pkg_name}"
       exit 1
     fi
     pkg_names+=("${pkg_name}")
   done
 done
-printf "%b Found package directories for: " ${UNICORN_EMOJI}
-echo "${pkg_names[@]}"
+if [ ${#pkg_names[@]} -gt 0 ]; then
+  printf "%b Found package directories for: %s\n" ${UNICORN_EMOJI} "${pkg_names[@]}"
+else
+  printf "%b No source directories were specified\n" ${UNICORN_EMOJI}
+fi
 
+# Try to find a suitable hostname/IP-address for the demo. This must be not
+# resolve to a loopback address as pods need to be able to communicate with
+# each other via this address. For example, the DiracX service pod needs to be
+# able to communicate with dex via this while users also use the same
+# address/IP-address.
 machine_hostname=$(hostname | tr '[:upper:]' '[:lower:]')
 if ! check_hostname "${machine_hostname}"; then
   machine_hostname=$(ifconfig | grep 'inet ' | grep -v '127' | awk '{ print $2 }' | head -n 1 | cut -d '/' -f 1)
@@ -93,6 +143,8 @@ fi
 
 trap "cleanup" EXIT
 
+# We download kind/kubectl/helm into the .demo directory to avoid having any
+# requirements on the user's machine
 if [[ ! -f "${demo_dir}/helm" ]]; then
   # Inspect the current system
   system_name=$(uname -s | tr '[:upper:]' '[:lower:]')
@@ -124,12 +176,15 @@ if [[ ! -f "${demo_dir}/helm" ]]; then
   "${demo_dir}/helm" plugin install https://github.com/databus23/helm-diff
 fi
 
+# Generate the cluster template for kind which includes the source directories
 printf "%b Generating Kind cluster template...\n" ${UNICORN_EMOJI}
 cp "${script_dir}/demo/demo_cluster_conf.tpl.yaml" "${demo_dir}/demo_cluster_conf.yaml"
-for pkg_dir in "${pkg_dirs[@]}"; do
-  mv "${demo_dir}/demo_cluster_conf.yaml" "${demo_dir}/demo_cluster_conf.yaml.bak"
-  sed "s@{{ hostPaths }}@  - hostPath: ${pkg_dir}\n    containerPath: /diracx_source/$(basename "${pkg_dir}")\n{{ hostPaths }}@g" "${demo_dir}/demo_cluster_conf.yaml.bak" > "${demo_dir}/demo_cluster_conf.yaml"
-done
+if [ ${#pkg_dirs[@]} -gt 0 ]; then
+  for pkg_dir in "${pkg_dirs[@]}"; do
+    mv "${demo_dir}/demo_cluster_conf.yaml" "${demo_dir}/demo_cluster_conf.yaml.bak"
+    sed "s@{{ hostPaths }}@  - hostPath: ${pkg_dir}\n    containerPath: /diracx_source/$(basename "${pkg_dir}")\n{{ hostPaths }}@g" "${demo_dir}/demo_cluster_conf.yaml.bak" > "${demo_dir}/demo_cluster_conf.yaml"
+  done
+fi
 mv "${demo_dir}/demo_cluster_conf.yaml" "${demo_dir}/demo_cluster_conf.yaml.bak"
 sed "s@{{ hostPaths }}@@g" "${demo_dir}/demo_cluster_conf.yaml.bak" > "${demo_dir}/demo_cluster_conf.yaml"
 if grep '{{' "${demo_dir}/demo_cluster_conf.yaml"; then
@@ -137,6 +192,24 @@ if grep '{{' "${demo_dir}/demo_cluster_conf.yaml"; then
   exit 1
 fi
 
+# Generate the Helm values file
+printf "%b Generating Helm templates\n" ${UNICORN_EMOJI}
+sed "s/{{ hostname }}/${machine_hostname}/g" "${script_dir}/demo/values.tpl.yaml" > "${demo_dir}/values.yaml"
+mv "${demo_dir}/values.yaml" "${demo_dir}/values.yaml.bak"
+json="["
+if [ ${#pkg_names[@]} -gt 0 ]; then
+  for pkg_name in "${pkg_names[@]}"; do
+      json+="\"$pkg_name\","
+  done
+fi
+json="${json%,}]"
+sed "s/{{ modules_to_mount }}/${json}/g" "${demo_dir}/values.yaml.bak" > "${demo_dir}/values.yaml"
+if grep '{{' "${demo_dir}/values.yaml"; then
+  printf "%b Error generating template. Found {{ in the template result\n" ${SKULL_EMOJI}
+  exit 1
+fi
+
+# Create the cluster itself
 printf "%b Starting Kind cluster...\n" ${UNICORN_EMOJI}
 "${demo_dir}/kind" create cluster \
   --kubeconfig "${KUBECONFIG}" \
@@ -144,19 +217,7 @@ printf "%b Starting Kind cluster...\n" ${UNICORN_EMOJI}
   --config "${demo_dir}/demo_cluster_conf.yaml" \
   --name diracx-demo
 
-# Uncomment that to work fully offline
-# We do not keep it because it increases the start time by 2mn
-#
-# printf "%b Loading images from docker to Kind...\n" ${UNICORN_EMOJI}
-# declare -a image_names
-# image_names+=("registry.k8s.io/ingress-nginx/controller:v1.8.0")
-# image_names+=("ghcr.io/diracgrid/diracx/server:latest")
-# image_names+=("ghcr.io/dexidp/dex:v2.36.0")
-# for image_name in "${image_names[@]}"; do
-#   docker pull "${image_name}"
-#   "${demo_dir}/kind" --name diracx-demo load docker-image "${image_name}"
-# done
-
+# Add an ingress to the cluster
 printf "%b Creating an ingress...\n" ${UNICORN_EMOJI}
 "${demo_dir}/kubectl" apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/main/deploy/static/provider/kind/deploy.yaml
 printf "%b Waiting for ingress controller to be created...\n" ${UNICORN_EMOJI}
@@ -165,45 +226,48 @@ printf "%b Waiting for ingress controller to be created...\n" ${UNICORN_EMOJI}
   --selector=app.kubernetes.io/component=controller \
   --timeout=90s
 
-printf "%b Generating Helm templates\n" ${UNICORN_EMOJI}
-sed "s/{{ hostname }}/${machine_hostname}/g" "${script_dir}/demo/values.tpl.yaml" > "${demo_dir}/values.yaml"
-mv "${demo_dir}/values.yaml" "${demo_dir}/values.yaml.bak"
-json="["
-for pkg_name in "${pkg_names[@]}"; do
-    json+="\"$pkg_name\","
-done
-json="${json%,}]"
-sed "s/{{ modules_to_mount }}/${json}/g" "${demo_dir}/values.yaml.bak" > "${demo_dir}/values.yaml"
-if grep '{{' "${demo_dir}/values.yaml"; then
-  printf "%b Error generating template. Found {{ in the template result\n" ${SKULL_EMOJI}
-  exit 1
-fi
-
+# Install the DiracX chart
 printf "%b Installing DiracX...\n" ${UNICORN_EMOJI}
-"${demo_dir}/helm" install diracx-demo "${script_dir}/diracx" --values "${demo_dir}/values.yaml"
-printf "%b Waiting for installation to finish...\n" ${UNICORN_EMOJI}
-if "${demo_dir}/kubectl" wait --for=condition=ready pod --selector=app.kubernetes.io/name=diracx --timeout=300s; then
-  printf "%b %b %b Pods are ready! %b %b %b\n" "${PARTY_EMOJI}" "${PARTY_EMOJI}" "${PARTY_EMOJI}" "${PARTY_EMOJI}" "${PARTY_EMOJI}" "${PARTY_EMOJI}"
+if ! "${demo_dir}/helm" install diracx-demo "${script_dir}/diracx" --values "${demo_dir}/values.yaml"; then
+  printf "%b Error using helm DiracX\n" ${WARN_EMOJI}
+  echo "Failed to run \"helm install\"" >> "${demo_dir}/.failed"
 else
-  printf "%b Installation did not start sucessfully!\n" ${SKULL_EMOJI}
+  printf "%b Waiting for installation to finish...\n" ${UNICORN_EMOJI}
+  if "${demo_dir}/kubectl" wait --for=condition=ready pod --selector=app.kubernetes.io/name=diracx --timeout=300s; then
+    printf "%b %b %b Pods are ready! %b %b %b\n" "${PARTY_EMOJI}" "${PARTY_EMOJI}" "${PARTY_EMOJI}" "${PARTY_EMOJI}" "${PARTY_EMOJI}" "${PARTY_EMOJI}"
+    touch "${demo_dir}/.success"
+
+    echo ""
+    printf "%b  To interact with the cluster:\n" "${INFO_EMOJI}"
+    echo "export KUBECONFIG=${KUBECONFIG}"
+    echo "export HELM_DATA_HOME=${HELM_DATA_HOME}"
+    echo "export PATH=\${PATH}:${demo_dir}"
+    echo ""
+    printf "%b  You can access swagger at http://%s:8000/docs\n" "${INFO_EMOJI}" "${machine_hostname}"
+    echo "To login, use the OAuth Authroization Code flow, and enter the following credentials"
+    echo "in the DEX web interface"
+    echo "Username: admin@example.com"
+    echo "Password: password"
+  else
+    printf "%b Installation did not start sucessfully!\n" ${WARN_EMOJI}
+    echo "Installation did not start sucessfully!" >> "${demo_dir}/.failed"
+  fi
 fi
 
-echo ""
-printf "%b  To interact with the cluster:\n" "${INFO_EMOJI}"
-echo "export KUBECONFIG=${KUBECONFIG}"
-echo "export HELM_DATA_HOME=${HELM_DATA_HOME}"
-echo "export PATH=\${PATH}:${demo_dir}"
-echo ""
-printf "%b  You can access swagger at http://%s:8000/docs\n" "${INFO_EMOJI}" "${machine_hostname}"
-echo "To login, use the OAuth Authroization Code flow, and enter the following credentials"
-echo "in the DEX web interface"
-echo "Username: admin@example.com"
-echo "Password: password"
+# Exit if --exit-when-done was passed
+if [ ${exit_when_done} -eq 1 ]; then
+  # Remove the EXIT trap so we don't clean up
+  trap - EXIT
+  exit 0
+fi
+
 echo ""
 printf "%b  Press Ctrl+C to clean up and exit\n" "${INFO_EMOJI}"
 
 while true; do
   sleep 60;
+  # If the machine hostname changes then the demo will need to be restarted.
+  # See the original machine_hostname detection description above.
   if ! check_hostname "${machine_hostname}"; then
     echo "The demo will likely need to be restarted."
   fi
