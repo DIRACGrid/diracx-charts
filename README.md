@@ -52,6 +52,7 @@ TODO
 
 | Repository | Name | Version |
 |------------|------|---------|
+| https://charts.bitnami.com/bitnami/ | mysql | 9.11.0 |
 | https://charts.dexidp.io/ | dex | 0.14.2 |
 | https://charts.min.io/ | minio | 5.0.11 |
 | https://opensearch-project.github.io/helm-charts/ | opensearch | 2.13.1 |
@@ -92,10 +93,11 @@ TODO
 | dex.service.ports.http.port | int | `8000` |  |
 | dex.service.type | string | `"NodePort"` |  |
 | diracx.csVolumeName | string | `"pv-cs-store"` |  |
+| diracx.manageSQLSchema | bool | `true` |  |
+| diracx.mysqlDatabases[0] | string | `"AuthDB"` |  |
+| diracx.mysqlDatabases[1] | string | `"JobDB"` |  |
+| diracx.mysqlDatabases[2] | string | `"JobLoggingDB"` |  |
 | diracx.settings.DIRACX_CONFIG_BACKEND_URL | string | `"git+file:///cs_store/initialRepo"` |  |
-| diracx.settings.DIRACX_DB_URL_AUTHDB | string | `"sqlite+aiosqlite:///:memory:"` |  |
-| diracx.settings.DIRACX_DB_URL_JOBDB | string | `"sqlite+aiosqlite:///:memory:"` |  |
-| diracx.settings.DIRACX_DB_URL_JOBLOGGINGDB | string | `"sqlite+aiosqlite:///:memory:"` |  |
 | diracx.settings.DIRACX_SERVICE_AUTH_ALLOWED_REDIRECTS | string | `"[\"http://anything:8000/docs/oauth2-redirect\"]"` |  |
 | diracx.settings.DIRACX_SERVICE_AUTH_TOKEN_KEY | string | `"file:///signing-key/rs256.key"` |  |
 | fullnameOverride | string | `""` |  |
@@ -122,6 +124,12 @@ TODO
 | minio.rootPassword | string | `"rootpass123"` |  |
 | minio.rootUser | string | `"rootuser"` |  |
 | minio.service.type | string | `"NodePort"` |  |
+| mysql.auth.createDatabase | bool | `false` |  |
+| mysql.auth.password | string | `"mysqlDevInsecure"` |  |
+| mysql.auth.rootPassword | string | `"mysqlRootDevInsecure"` |  |
+| mysql.auth.username | string | `"sqldiracx"` |  |
+| mysql.enabled | bool | `true` |  |
+| mysql.initdbScriptsConfigMap | string | `"mysql-init-diracx-dbs"` |  |
 | nameOverride | string | `""` | type=kubernetes.io/dockerconfigjson imagePullSecrets:   - name: regcred |
 | nodeSelector | object | `{}` |  |
 | opensearch.config."cluster.routing.allocation.disk.threshold_enabled" | string | `"true"` |  |
