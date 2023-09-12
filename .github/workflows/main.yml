@@ -14,7 +14,7 @@ defaults:
     shell: bash -el {0}
 
 jobs:
-  main:
+  pre-commit:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
@@ -24,3 +24,38 @@ jobs:
     - uses: pre-commit/action@v3.0.0
     - uses: pre-commit-ci/lite-action@v1.0.1
       if: always()
+
+  run-demo:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - name: Start demo
+      run: |
+        ./run_demo.sh --exit-when-done
+    - name: Check for success
+      run: |
+        if [ ! -f ".demo/.success" ]; then
+          echo "Demo failed"
+          cat ".demo/.failed"
+          exit 1
+        fi
+
+  # Same as run-demo except mount the sources inside the container
+  run-demo-mount-sources:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - name: Clone source
+      run: |
+        git clone https://github.com/DIRACGrid/diracx.git /tmp/diracx
+        git clone https://github.com/DIRACGrid/DIRAC.git /tmp/DIRAC
+    - name: Start demo
+      run: |
+        ./run_demo.sh --exit-when-done /tmp/diracx /tmp/DIRAC
+    - name: Check for success
+      run: |
+        if [ ! -f ".demo/.success" ]; then
+          echo "Demo failed"
+          cat ".demo/.failed"
+          exit 1
+        fi
