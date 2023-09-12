@@ -53,6 +53,7 @@ TODO
 | Repository | Name | Version |
 |------------|------|---------|
 | https://charts.bitnami.com/bitnami/ | mysql | 9.11.0 |
+| https://charts.bitnami.com/bitnami/ | rabbitmq | 12.0.10 |
 | https://charts.dexidp.io/ | dex | 0.14.2 |
 | https://charts.min.io/ | minio | 5.0.11 |
 | https://opensearch-project.github.io/helm-charts/ | opensearch | 2.13.1 |
@@ -142,6 +143,9 @@ TODO
 | opensearch.singleNode | bool | `true` |  |
 | podAnnotations | object | `{}` |  |
 | podSecurityContext | object | `{}` |  |
+| rabbitmq.containerSecurityContext.enabled | bool | `false` |  |
+| rabbitmq.enabled | bool | `true` |  |
+| rabbitmq.podSecurityContext.enabled | bool | `false` |  |
 | replicaCount | int | `1` |  |
 | resources | object | `{}` |  |
 | securityContext | object | `{}` |  |
