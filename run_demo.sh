@@ -99,7 +99,7 @@ declare -a pkg_dirs=()
 declare -a pkg_names=()
 for src_dir in "$@"; do
   # shellcheck disable=SC2044
-  for pkg_dir in $(find "$src_dir/src" -type f -mindepth 2 -maxdepth 2 -name '__init__.py'); do
+  for pkg_dir in $(find "$src_dir/src" -mindepth 2 -maxdepth 2 -type f -name '__init__.py'); do
     pkg_dirs+=("$(dirname "${pkg_dir}")")
     pkg_name="$(basename "$(dirname "${pkg_dir}")")"
 
