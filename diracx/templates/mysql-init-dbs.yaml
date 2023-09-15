@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: mysql-init-diracx-dbs
+data:
+  # Create the databases for DiracX and grant privileges
+  init-diracx-dbs.sql: |
+{{- range $dbName := .Values.diracx.mysqlDatabases }}
+    CREATE DATABASE IF NOT EXISTS `{{ $dbName }}`;
+    GRANT SELECT, INSERT, UPDATE, DELETE, INDEX, CREATE TEMPORARY TABLES, LOCK TABLES ON {{ $dbName }}.* TO '{{ $.Values.mysql.auth.username }}'@'%';
+{{- end }}

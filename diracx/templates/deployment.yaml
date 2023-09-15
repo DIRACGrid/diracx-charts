@@ -92,6 +92,22 @@ spec:
             - mountPath: /signing-key/
               name: signing-key-mount
               readOnly: false
+      {{- if .Values.diracx.manageSQLSchema }}
+      - name: create-sql-db-schema
+        image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+        command: [/dockerMicroMambaEntrypoint.sh]
+        args: ["python", "-m", "diracx.db", "init-sql"]
+        volumeMounts:
+          {{- range $moduleName := .Values.developer.modulesToMount }}
+          - mountPath: {{ $.Values.developer.pythonSitePackagesDir }}/{{ $moduleName }}
+            name: diracx-code-mount
+            readOnly: true
+            subPath: {{ $moduleName }}
+          {{- end }}
+        envFrom:
+        - secretRef:
+            name: diracx-init-mysql-secrets
+      {{- end }}
       containers:
         - name: {{ .Chart.Name }}
           securityContext:

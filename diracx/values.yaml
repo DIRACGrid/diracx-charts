@@ -65,12 +65,15 @@ diracx:
     # This corresponds to the basic dirac.cfg
     # which must be present on all the servers
     DIRACX_CONFIG_BACKEND_URL: "git+file:///cs_store/initialRepo"
-    DIRACX_DB_URL_AUTHDB: "sqlite+aiosqlite:///:memory:"
-    # mysql+aiomysql://
-    DIRACX_DB_URL_JOBDB: "sqlite+aiosqlite:///:memory:"
-    DIRACX_DB_URL_JOBLOGGINGDB: "sqlite+aiosqlite:///:memory:"
     DIRACX_SERVICE_AUTH_TOKEN_KEY: "file:///signing-key/rs256.key"
     DIRACX_SERVICE_AUTH_ALLOWED_REDIRECTS: '["http://anything:8000/docs/oauth2-redirect"]'
+  # Should DiracX include an init container which manages the SQL DB schema?
+  manageSQLSchema: true
+  # Which DiracX DBs are used?
+  mysqlDatabases:
+    - AuthDB
+    - JobDB
+    - JobLoggingDB
 
 ##########################
 
@@ -157,6 +160,17 @@ dex:
 
     staticClients: []
     staticPasswords: []
+
+##########################
+
+mysql:
+  enabled: true
+  auth:
+    rootPassword: mysqlRootDevInsecure
+    username: sqldiracx
+    password: mysqlDevInsecure
+    createDatabase: false
+  initdbScriptsConfigMap: mysql-init-diracx-dbs
 
 ##########################
 
