@@ -68,8 +68,7 @@ TODO
 | autoscaling.minReplicas | int | `1` |  |
 | autoscaling.targetCPUUtilizationPercentage | int | `80` |  |
 | developer.enabled | bool | `true` |  |
-| developer.modulesToMount | list | `[]` |  |
-| developer.pythonSitePackagesDir | string | `"/opt/conda/lib/python3.11/site-packages"` |  |
+| developer.modulesToInstall | list | `[]` |  |
 | developer.sourcePath | string | `"/diracx_source"` |  |
 | dex."https.enabled" | bool | `false` |  |
 | dex.config.enablePasswordDB | bool | `true` |  |

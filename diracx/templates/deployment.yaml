@@ -18,6 +18,7 @@ spec:
           {{- toYaml . | nindent 8 }}
         {{- end }}
         checksum/settings: {{ include (print $.Template.BasePath "/secrets.yaml") . | sha256sum }}
+        checksum/entrypoint: {{ include (print $.Template.BasePath "/diracx-container-entrypoint.yaml") . | sha256sum }}
       labels:
         {{- include "diracx.selectorLabels" . | nindent 8 }}
     spec:
@@ -37,16 +38,21 @@ spec:
           emptyDir:
           sizeLimit: 5Mi
           {{- end }}
+        {{- if and .Values.developer.enabled .Values.developer.modulesToInstall }}
         - name: diracx-code-mount
           persistentVolumeClaim:
             claimName: pvc-diracx-code
+        {{- end }}
+        - name: container-entrypoint
+          configMap:
+            name: diracx-container-entrypoint
         - name: signing-key-mount
           emptyDir:
           sizeLimit: 5Mi
       initContainers:
       - name: init-cs
         image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
-        command: [/dockerMicroMambaEntrypoint.sh]
+        command: ["bash", "/entrypoint.sh"]
         args:
           - "dirac"
           - "internal"
@@ -59,12 +65,20 @@ spec:
           - "--idp-client-id={{ .id }}"
           {{- end }}
         volumeMounts:
-            - mountPath: /cs_store
-              name: cs-store-mount
-              readOnly: false
+          - mountPath: /cs_store
+            name: cs-store-mount
+            readOnly: false
+          {{- if and .Values.developer.enabled .Values.developer.modulesToInstall }}
+          - mountPath: {{ .Values.developer.sourcePath }}
+            name: diracx-code-mount
+            readOnly: true
+          {{- end }}
+          - name: container-entrypoint
+            mountPath: /entrypoint.sh
+            subPath: entrypoint.sh
       - name: init-cs-user
         image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
-        command: [/dockerMicroMambaEntrypoint.sh]
+        command: ["bash", "/entrypoint.sh"]
         args:
           - "dirac"
           - "internal"
@@ -74,9 +88,17 @@ spec:
           - "--user-group=admin"
           - "--sub=EgVsb2NhbA"
         volumeMounts:
-            - mountPath: /cs_store
-              name: cs-store-mount
-              readOnly: false
+          - mountPath: /cs_store
+            name: cs-store-mount
+            readOnly: false
+          {{- if and .Values.developer.enabled .Values.developer.modulesToInstall }}
+          - mountPath: {{ .Values.developer.sourcePath }}
+            name: diracx-code-mount
+            readOnly: true
+          {{- end }}
+          - name: container-entrypoint
+            mountPath: /entrypoint.sh
+            subPath: entrypoint.sh
       - name: init-signing-key
         image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
         command: [/dockerMicroMambaEntrypoint.sh]
@@ -89,24 +111,26 @@ spec:
           - "-mPEM"
           - "-f/signing-key/rs256.key"
         volumeMounts:
-            - mountPath: /signing-key/
-              name: signing-key-mount
-              readOnly: false
+          - mountPath: /signing-key/
+            name: signing-key-mount
+            readOnly: false
       {{- if .Values.diracx.manageSQLSchema }}
       - name: create-sql-db-schema
         image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
-        command: [/dockerMicroMambaEntrypoint.sh]
+        command: ["bash", "/entrypoint.sh"]
         args: ["python", "-m", "diracx.db", "init-sql"]
         volumeMounts:
-          {{- range $moduleName := .Values.developer.modulesToMount }}
-          - mountPath: {{ $.Values.developer.pythonSitePackagesDir }}/{{ $moduleName }}
+          {{- if and .Values.developer.enabled .Values.developer.modulesToInstall }}
+          - mountPath: {{ .Values.developer.sourcePath }}
             name: diracx-code-mount
             readOnly: true
-            subPath: {{ $moduleName }}
           {{- end }}
+          - name: container-entrypoint
+            mountPath: /entrypoint.sh
+            subPath: entrypoint.sh
         envFrom:
-        - secretRef:
-            name: diracx-init-mysql-secrets
+          - secretRef:
+              name: diracx-init-mysql-secrets
       {{- end }}
       containers:
         - name: {{ .Chart.Name }}
@@ -126,15 +150,20 @@ spec:
             httpGet:
               path: /docs/
               port: http
-          {{- if .Values.developer.enabled }}
+          command: ["bash", "/entrypoint.sh"]
           args:
-            {{- range $moduleName := .Values.developer.modulesToMount }}
-            - "--reload-dir={{ $.Values.developer.pythonSitePackagesDir }}/{{ $moduleName }}"
-            {{- end }}
+            - uvicorn
+            - --factory
+            - diracx.routers:create_app
+            - --host=0.0.0.0
+            - --port=8000
+          {{- if .Values.developer.enabled }}
             - "--reload"
             - "--proxy-headers"
+            {{- if .Values.developer.modulesToInstall }}
+            - "--reload-dir={{ .Values.developer.sourcePath }}"
+            {{- end }}
           {{- end }}
-
           volumeMounts:
             - mountPath: /cs_store
               name: cs-store-mount
@@ -142,17 +171,19 @@ spec:
             - mountPath: /signing-key/
               name: signing-key-mount
               readOnly: true
-            {{- range $moduleName := .Values.developer.modulesToMount }}
-            - mountPath: {{ $.Values.developer.pythonSitePackagesDir }}/{{ $moduleName }}
+            {{- if and .Values.developer.enabled .Values.developer.modulesToInstall }}
+            - mountPath: {{ .Values.developer.sourcePath }}
               name: diracx-code-mount
               readOnly: true
-              subPath: {{ $moduleName }}
             {{- end }}
+            - name: container-entrypoint
+              mountPath: /entrypoint.sh
+              subPath: entrypoint.sh
           envFrom:
-          # - configMapRef:
-          #     name: diracx-env-config
-          - secretRef:
-              name: diracx-secrets
+            # - configMapRef:
+            #     name: diracx-env-config
+            - secretRef:
+                name: diracx-secrets
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
       {{- with .Values.nodeSelector }}

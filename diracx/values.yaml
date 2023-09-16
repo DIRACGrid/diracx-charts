@@ -53,8 +53,7 @@ developer:
   enabled: true
   # Path from which to mount source of DIRACX
   sourcePath: /diracx_source
-  pythonSitePackagesDir: /opt/conda/lib/python3.11/site-packages
-  modulesToMount: []
+  modulesToInstall: []
   # If set, mount the CS stored localy instead of initializing a default one
   # localCSPath: /local_cs_store
 
