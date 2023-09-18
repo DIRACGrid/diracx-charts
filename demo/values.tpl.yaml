@@ -1,5 +1,5 @@
 developer:
-  modulesToMount: {{ modules_to_mount }}
+  modulesToInstall: {{ modules_to_mount }}
 
 diracx:
   settings:

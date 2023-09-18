@@ -98,9 +98,9 @@ done
 declare -a pkg_dirs=()
 declare -a pkg_names=()
 for src_dir in "$@"; do
+  pkg_dirs+=("${src_dir}")
   # shellcheck disable=SC2044
   for pkg_dir in $(find "$src_dir/src" -mindepth 2 -maxdepth 2 -type f -name '__init__.py'); do
-    pkg_dirs+=("$(dirname "${pkg_dir}")")
     pkg_name="$(basename "$(dirname "${pkg_dir}")")"
 
     # Check for the presence of $pkg_name in pkg_names array

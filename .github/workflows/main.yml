@@ -32,6 +32,18 @@ jobs:
     - name: Start demo
       run: |
         ./run_demo.sh --exit-when-done
+    - name: Debugging information
+      run: |
+        export KUBECONFIG=$PWD/.demo/kube.conf
+        .demo/kubectl get pods
+        for pod_name in $(.demo/kubectl get pods -o json | jq -r '.items[] | .metadata.name' | grep -vE '(dex|minio|mysql|rabbitmq|opensearch)'); do
+          echo "${pod_name}"
+          .demo/kubectl describe pod/"${pod_name}" || true
+          for container_name in $(.demo/kubectl get pods $pod_name -o jsonpath='{.spec.initContainers[*].name} {.spec.containers[*].name}'); do
+            echo $pod_name $container_name
+            .demo/kubectl logs "${pod_name}" -c "${container_name}" || true
+          done
+        done
     - name: Check for success
       run: |
         if [ ! -f ".demo/.success" ]; then
@@ -49,9 +61,24 @@ jobs:
       run: |
         git clone https://github.com/DIRACGrid/diracx.git /tmp/diracx
         git clone https://github.com/DIRACGrid/DIRAC.git /tmp/DIRAC
+        # HACK: Make sure the container can write to the sources to put the egg-info
+        # HACK: If someone runs into this locally we can work on a better solution
+        chmod 777 /tmp/diracx/src /tmp/DIRAC/src
     - name: Start demo
       run: |
         ./run_demo.sh --exit-when-done /tmp/diracx /tmp/DIRAC
+    - name: Debugging information
+      run: |
+        export KUBECONFIG=$PWD/.demo/kube.conf
+        .demo/kubectl get pods
+        for pod_name in $(.demo/kubectl get pods -o json | jq -r '.items[] | .metadata.name' | grep -vE '(dex|minio|mysql|rabbitmq|opensearch)'); do
+          echo "${pod_name}"
+          .demo/kubectl describe pod/"${pod_name}" || true
+          for container_name in $(.demo/kubectl get pods $pod_name -o jsonpath='{.spec.initContainers[*].name} {.spec.containers[*].name}'); do
+            echo $pod_name $container_name
+            .demo/kubectl logs "${pod_name}" -c "${container_name}" || true
+          done
+        done
     - name: Check for success
       run: |
         if [ ! -f ".demo/.success" ]; then
