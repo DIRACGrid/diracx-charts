@@ -11,7 +11,7 @@ data:
     ulimit -n 8192
     eval "$(micromamba shell hook --shell=posix)" && micromamba activate base
 
-    {{ if .Values.developer.sourcePath }}
+    {{ if .Values.developer.modulesToInstall }}
     pip install {{- range $moduleName := .Values.developer.modulesToInstall }} -e {{ $.Values.developer.sourcePath }}/{{ $moduleName }} {{- end }}
     {{- end }}
 
