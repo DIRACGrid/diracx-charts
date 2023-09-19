@@ -134,7 +134,7 @@ fi
 # address/IP-address.
 machine_hostname=$(hostname | tr '[:upper:]' '[:lower:]')
 if ! check_hostname "${machine_hostname}"; then
-  machine_hostname=$(ifconfig | grep 'inet ' | grep -v '127.\d.\d.\d' | awk '{ print $2 }' | head -n 1 | cut -d '/' -f 1)
+  machine_hostname=$(ifconfig | grep 'inet ' | awk '{ print $2 }' | grep -v '^127' | head -n 1 | cut -d '/' -f 1)
   if ! check_hostname "${machine_hostname}"; then
     echo "Failed to find an appropriate hostname for the demo."
     exit 1
