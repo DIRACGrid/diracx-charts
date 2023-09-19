@@ -139,6 +139,7 @@ if ! check_hostname "${machine_hostname}"; then
     echo "Failed to find an appropriate hostname for the demo."
     exit 1
   fi
+  printf "%b Using Hostname  %s instead \n" ${INFO_EMOJI} "${machine_hostname}"
 fi
 
 trap "cleanup" EXIT
