@@ -96,6 +96,8 @@ Depending on the installation you perform, some tasks may be necessary or not. T
 | https://charts.dexidp.io/ | dex | 0.14.2 |
 | https://charts.jetstack.io | cert-manager | 1.13.1 |
 | https://charts.min.io/ | minio | 5.0.11 |
+| https://jaegertracing.github.io/helm-charts | jaeger | 0.71.14 |
+| https://open-telemetry.github.io/opentelemetry-helm-charts | opentelemetry-collector | 0.68.0 |
 | https://opensearch-project.github.io/helm-charts/ | opensearch | 2.13.1 |
 
 ## Values
@@ -173,6 +175,18 @@ Depending on the installation you perform, some tasks may be necessary or not. T
 | init-sql.enabled | bool | `true` |  |
 | init-sql.env | object | `{}` |  |
 | initOs.enabled | bool | `true` |  |
+| ingress.hosts[0].paths[0].backend.service.name | string | `"diracx-demo"` |  |
+| ingress.hosts[0].paths[0].backend.service.port.number | int | `8000` |  |
+| ingress.hosts[0].paths[0].path | string | `"/"` |  |
+| ingress.hosts[0].paths[0].pathType | string | `"Prefix"` |  |
+| ingress.tls | list | `[]` |  |
+| jaeger.agent.enabled | bool | `false` |  |
+| jaeger.allInOne.enabled | bool | `true` |  |
+| jaeger.collector.enabled | bool | `false` |  |
+| jaeger.enabled | bool | `true` |  |
+| jaeger.provisionDataStore.cassandra | bool | `false` |  |
+| jaeger.query.enabled | bool | `false` |  |
+| jaeger.storage.type | string | `"none"` |  |
 | minio.consoleIngress.enabled | bool | `false` |  |
 | minio.consoleService.type | string | `"NodePort"` |  |
 | minio.enabled | bool | `true` |  |
@@ -198,6 +212,18 @@ Depending on the installation you perform, some tasks may be necessary or not. T
 | opensearch.resources.requests.cpu | string | `"100m"` |  |
 | opensearch.resources.requests.memory | string | `"100Mi"` |  |
 | opensearch.singleNode | bool | `true` |  |
+| opentelemetry-collector.config.exporters.logging.loglevel | string | `"debug"` |  |
+| opentelemetry-collector.config.exporters.otlp/jaeger.endpoint | string | `"jaeger-collector:4317"` |  |
+| opentelemetry-collector.config.exporters.otlp/jaeger.tls.insecure | bool | `true` |  |
+| opentelemetry-collector.config.service.pipelines.logs.exporters[0] | string | `"logging"` |  |
+| opentelemetry-collector.config.service.pipelines.metrics.exporters[0] | string | `"logging"` |  |
+| opentelemetry-collector.config.service.pipelines.traces.exporters[0] | string | `"otlp/jaeger"` |  |
+| opentelemetry-collector.config.service.pipelines.traces.exporters[1] | string | `"logging"` |  |
+| opentelemetry-collector.enabled | bool | `true` |  |
+| opentelemetry-collector.mode | string | `"daemonset"` |  |
+| opentelemetry-collector.presets.kubeletMetrics.enabled | bool | `false` |  |
+| opentelemetry-collector.presets.kubernetesAttributes.enabled | bool | `false` |  |
+| opentelemetry-collector.presets.logsCollection.enabled | bool | `false` |  |
 | podAnnotations | object | `{}` |  |
 | podSecurityContext | object | `{}` |  |
 | rabbitmq.auth.existingErlangSecret | string | `"rabbitmq-secret"` |  |

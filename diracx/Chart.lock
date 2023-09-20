@@ -20,5 +20,11 @@ dependencies:
 - name: cert-manager-issuer
   repository: ""
   version: '*.*.*'
-digest: sha256:8edaf32185389bd3fd8a87370a82718bc94dfacf6acf1d7cc9f8e8742d58695a
-generated: "2023-10-06T18:09:31.379575+02:00"
+- name: opentelemetry-collector
+  repository: https://open-telemetry.github.io/opentelemetry-helm-charts
+  version: 0.68.0
+- name: jaeger
+  repository: https://jaegertracing.github.io/helm-charts
+  version: 0.71.14
+digest: sha256:5ba23c7da04668a0ecb5ea4822c125cb7b3605b4308d10a1cb813cbe2908fd2a
+generated: "2023-09-20T15:50:26.550254029+02:00"
