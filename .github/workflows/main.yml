@@ -61,9 +61,6 @@ jobs:
       run: |
         git clone https://github.com/DIRACGrid/diracx.git /tmp/diracx
         git clone https://github.com/DIRACGrid/DIRAC.git /tmp/DIRAC
-        # HACK: Make sure the container can write to the sources to put the egg-info
-        # HACK: If someone runs into this locally we can work on a better solution
-        chmod 777 /tmp/diracx/src /tmp/DIRAC/src
     - name: Start demo
       run: |
         ./run_demo.sh --exit-when-done /tmp/diracx /tmp/DIRAC

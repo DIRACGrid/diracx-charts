@@ -42,6 +42,11 @@ spec:
         - name: diracx-code-mount
           persistentVolumeClaim:
             claimName: pvc-diracx-code
+        {{- range $module := .Values.developer.modulesToInstall }}
+        - name: {{ $module }}-editable-install
+          empty-dir:
+          sizeLimit: 5Mi
+        {{- end }}
         {{- end }}
         - name: container-entrypoint
           configMap:
@@ -72,6 +77,11 @@ spec:
           - mountPath: {{ .Values.developer.sourcePath }}
             name: diracx-code-mount
             readOnly: true
+          {{- range $module := .Values.developer.modulesToInstall }}
+          - mountPath: "{{ $.Values.developer.sourcePath }}/{{ $module }}/src/{{ $module }}.egg-info"
+            name: {{ $module }}-editable-install
+            readOnly: false
+          {{- end }}
           {{- end }}
           - name: container-entrypoint
             mountPath: /entrypoint.sh
@@ -95,6 +105,11 @@ spec:
           - mountPath: {{ .Values.developer.sourcePath }}
             name: diracx-code-mount
             readOnly: true
+          {{- range $module := .Values.developer.modulesToInstall }}
+          - mountPath: "{{ $.Values.developer.sourcePath }}/{{ $module }}/src/{{ $module }}.egg-info"
+            name: {{ $module }}-editable-install
+            readOnly: false
+          {{- end }}
           {{- end }}
           - name: container-entrypoint
             mountPath: /entrypoint.sh
@@ -124,6 +139,11 @@ spec:
           - mountPath: {{ .Values.developer.sourcePath }}
             name: diracx-code-mount
             readOnly: true
+          {{- range $module := .Values.developer.modulesToInstall }}
+          - mountPath: "{{ $.Values.developer.sourcePath }}/{{ $module }}/src/{{ $module }}.egg-info"
+            name: {{ $module }}-editable-install
+            readOnly: false
+          {{- end }}
           {{- end }}
           - name: container-entrypoint
             mountPath: /entrypoint.sh
@@ -175,6 +195,11 @@ spec:
             - mountPath: {{ .Values.developer.sourcePath }}
               name: diracx-code-mount
               readOnly: true
+            {{- range $module := .Values.developer.modulesToInstall }}
+            - mountPath: "{{ $.Values.developer.sourcePath }}/{{ $module }}/src/{{ $module }}.egg-info"
+              name: {{ $module }}-editable-install
+              readOnly: false
+            {{- end }}
             {{- end }}
             - name: container-entrypoint
               mountPath: /entrypoint.sh
