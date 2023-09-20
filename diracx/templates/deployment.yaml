@@ -43,7 +43,7 @@ spec:
           persistentVolumeClaim:
             claimName: pvc-diracx-code
         {{- range $module := .Values.developer.modulesToInstall }}
-        - name: {{ $module }}-editable-install
+        - name: {{ lower $module }}-editable-install
           empty-dir:
           sizeLimit: 5Mi
         {{- end }}
@@ -79,7 +79,7 @@ spec:
             readOnly: true
           {{- range $module := .Values.developer.modulesToInstall }}
           - mountPath: "{{ $.Values.developer.sourcePath }}/{{ $module }}/src/{{ $module }}.egg-info"
-            name: {{ $module }}-editable-install
+            name: {{ lower $module }}-editable-install
             readOnly: false
           {{- end }}
           {{- end }}
@@ -107,7 +107,7 @@ spec:
             readOnly: true
           {{- range $module := .Values.developer.modulesToInstall }}
           - mountPath: "{{ $.Values.developer.sourcePath }}/{{ $module }}/src/{{ $module }}.egg-info"
-            name: {{ $module }}-editable-install
+            name: {{ lower $module }}-editable-install
             readOnly: false
           {{- end }}
           {{- end }}
@@ -141,7 +141,7 @@ spec:
             readOnly: true
           {{- range $module := .Values.developer.modulesToInstall }}
           - mountPath: "{{ $.Values.developer.sourcePath }}/{{ $module }}/src/{{ $module }}.egg-info"
-            name: {{ $module }}-editable-install
+            name: {{ lower $module }}-editable-install
             readOnly: false
           {{- end }}
           {{- end }}
@@ -197,7 +197,7 @@ spec:
               readOnly: true
             {{- range $module := .Values.developer.modulesToInstall }}
             - mountPath: "{{ $.Values.developer.sourcePath }}/{{ $module }}/src/{{ $module }}.egg-info"
-              name: {{ $module }}-editable-install
+              name: {{ lower $module }}-editable-install
               readOnly: false
             {{- end }}
             {{- end }}
