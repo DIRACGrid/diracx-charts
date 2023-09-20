@@ -340,7 +340,7 @@ opentelemetry-collector:
   config:
     exporters:
       otlp/jaeger:
-        endpoint: jaeger-collector:4317
+        endpoint: diracx-demo-jaeger-collector:4317
         tls:
           insecure: true
       logging:
@@ -380,7 +380,27 @@ jaeger:
 
 
 ##########################
+grafana:
+  enabled: true
+  # To get the password for admin
+  # kubectl get secrets diracx-demo-grafana -o jsonpath="{.data.admin-password}" | base64 --decode ; echo
 
+  service:
+     type: NodePort
+     port: 32004
+     nodePort: 32004
+
+
+  # data source jaeger with url http://diracx-demo-jaeger-query:16686
+  datasources:
+    datasources.yaml:
+      apiVersion: 1
+      datasources:
+      - name: Jaeger
+        type: jaeger
+        url: http://diracx-demo-jaeger-query:16686
+
+##########################
 service:
   type: ClusterIP
   port: 8000

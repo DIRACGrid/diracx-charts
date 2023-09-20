@@ -58,6 +58,7 @@ TODO
 | https://charts.dexidp.io/ | dex | 0.14.2 |
 | https://charts.jetstack.io | cert-manager | 1.13.1 |
 | https://charts.min.io/ | minio | 5.0.11 |
+| https://grafana.github.io/helm-charts | grafana | 6.59.4 |
 | https://jaegertracing.github.io/helm-charts | jaeger | 0.71.14 |
 | https://open-telemetry.github.io/opentelemetry-helm-charts | opentelemetry-collector | 0.68.0 |
 | https://opensearch-project.github.io/helm-charts/ | opensearch | 2.13.1 |
@@ -128,6 +129,15 @@ TODO
 | global.activeDeadlineSeconds | int | `900` |  |
 | global.batchJobTTL | int | `600` |  |
 | global.imagePullPolicy | string | `"Always"` |  |
+| grafana.datasources."datasources.yaml".apiVersion | int | `1` |  |
+| grafana.datasources."datasources.yaml".datasources[0].name | string | `"Jaeger"` |  |
+| grafana.datasources."datasources.yaml".datasources[0].type | string | `"jaeger"` |  |
+| grafana.datasources."datasources.yaml".datasources[0].url | string | `"http://diracx-demo-jaeger-query:16686"` |  |
+| grafana.enabled | bool | `true` |  |
+| grafana.service.nodePort | int | `32004` |  |
+| grafana.service.port | int | `32004` |  |
+| grafana.service.type | string | `"NodePort"` |  |
+| image.pullPolicy | string | `"IfNotPresent"` |  |
 | image.repository | string | `"ghcr.io/diracgrid/diracx/server"` |  |
 | image.tag | string | `"latest"` |  |
 | ingress.annotations | object | `{}` |  |
@@ -181,7 +191,7 @@ TODO
 | opensearch.resources.requests.memory | string | `"100Mi"` |  |
 | opensearch.singleNode | bool | `true` |  |
 | opentelemetry-collector.config.exporters.logging.loglevel | string | `"debug"` |  |
-| opentelemetry-collector.config.exporters.otlp/jaeger.endpoint | string | `"jaeger-collector:4317"` |  |
+| opentelemetry-collector.config.exporters.otlp/jaeger.endpoint | string | `"diracx-demo-jaeger-collector:4317"` |  |
 | opentelemetry-collector.config.exporters.otlp/jaeger.tls.insecure | bool | `true` |  |
 | opentelemetry-collector.config.service.pipelines.logs.exporters[0] | string | `"logging"` |  |
 | opentelemetry-collector.config.service.pipelines.metrics.exporters[0] | string | `"logging"` |  |

@@ -36,3 +36,7 @@ nodes:
   - containerPort: 32003
     hostPort: 32003
     protocol: TCP
+  # Grafana web interface
+  - containerPort: 32004
+    hostPort: 32004
+    protocol: TCP

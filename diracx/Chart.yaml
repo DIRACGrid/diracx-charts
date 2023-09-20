@@ -67,3 +67,8 @@ dependencies:
   repository: https://jaegertracing.github.io/helm-charts
   condition: jaeger.enabled
 
+- name: grafana
+  version: 6.59.4
+  repository: https://grafana.github.io/helm-charts
+  condition: grafana.enabled
+
