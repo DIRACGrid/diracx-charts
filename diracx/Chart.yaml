@@ -47,6 +47,7 @@ dependencies:
   repository: https://charts.bitnami.com/bitnami/
   condition: mysql.enabled
 
+
 - name: cert-manager
   version: 1.13.1
   repository: https://charts.jetstack.io
@@ -55,3 +56,14 @@ dependencies:
 - name: cert-manager-issuer
   version: '*.*.*'
   condition: cert-manager-issuer.enabled
+
+- name: opentelemetry-collector
+  version: 0.68.0
+  repository: https://open-telemetry.github.io/opentelemetry-helm-charts
+  condition: opentelemetry-collector.enabled
+
+- name: jaeger
+  version: 0.71.14
+  repository: https://jaegertracing.github.io/helm-charts
+  condition: jaeger.enabled
+
