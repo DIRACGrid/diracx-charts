@@ -100,6 +100,7 @@ Depending on the installation you perform, some tasks may be necessary or not. T
 | https://jaegertracing.github.io/helm-charts | jaeger | 0.71.14 |
 | https://open-telemetry.github.io/opentelemetry-helm-charts | opentelemetry-collector | 0.68.0 |
 | https://opensearch-project.github.io/helm-charts/ | opensearch | 2.13.1 |
+| https://prometheus-community.github.io/helm-charts | prometheus | 25.0.0 |
 
 ## Values
 
@@ -167,6 +168,9 @@ Depending on the installation you perform, some tasks may be necessary or not. T
 | grafana.datasources."datasources.yaml".datasources[0].name | string | `"Jaeger"` |  |
 | grafana.datasources."datasources.yaml".datasources[0].type | string | `"jaeger"` |  |
 | grafana.datasources."datasources.yaml".datasources[0].url | string | `"http://diracx-demo-jaeger-query:16686"` |  |
+| grafana.datasources."datasources.yaml".datasources[1].name | string | `"Prometheus"` |  |
+| grafana.datasources."datasources.yaml".datasources[1].type | string | `"prometheus"` |  |
+| grafana.datasources."datasources.yaml".datasources[1].url | string | `"http://diracx-demo-prometheus-server:80"` |  |
 | grafana.enabled | bool | `true` |  |
 | grafana.service.nodePort | int | `32004` |  |
 | grafana.service.port | int | `32004` |  |
@@ -227,12 +231,23 @@ Depending on the installation you perform, some tasks may be necessary or not. T
 | opentelemetry-collector.config.exporters.logging.loglevel | string | `"debug"` |  |
 | opentelemetry-collector.config.exporters.otlp/jaeger.endpoint | string | `"diracx-demo-jaeger-collector:4317"` |  |
 | opentelemetry-collector.config.exporters.otlp/jaeger.tls.insecure | bool | `true` |  |
+| opentelemetry-collector.config.exporters.prometheus.endpoint | string | `":8889"` |  |
+| opentelemetry-collector.config.exporters.prometheus.metric_expiration | string | `"180m"` |  |
+| opentelemetry-collector.config.exporters.prometheus.send_timestamps | bool | `true` |  |
+| opentelemetry-collector.config.receivers.jaeger | string | `nil` |  |
+| opentelemetry-collector.config.receivers.prometheus | string | `nil` |  |
 | opentelemetry-collector.config.service.pipelines.logs.exporters[0] | string | `"logging"` |  |
 | opentelemetry-collector.config.service.pipelines.metrics.exporters[0] | string | `"logging"` |  |
+| opentelemetry-collector.config.service.pipelines.metrics.exporters[1] | string | `"prometheus"` |  |
 | opentelemetry-collector.config.service.pipelines.traces.exporters[0] | string | `"otlp/jaeger"` |  |
 | opentelemetry-collector.config.service.pipelines.traces.exporters[1] | string | `"logging"` |  |
 | opentelemetry-collector.enabled | bool | `true` |  |
-| opentelemetry-collector.mode | string | `"daemonset"` |  |
+| opentelemetry-collector.mode | string | `"deployment"` |  |
+| opentelemetry-collector.ports.promexp.containerPort | int | `8889` |  |
+| opentelemetry-collector.ports.promexp.enabled | bool | `true` |  |
+| opentelemetry-collector.ports.promexp.hostPort | int | `8889` |  |
+| opentelemetry-collector.ports.promexp.protocol | string | `"TCP"` |  |
+| opentelemetry-collector.ports.promexp.servicePort | int | `8889` |  |
 | opentelemetry-collector.presets.kubeletMetrics.enabled | bool | `false` |  |
 | opentelemetry-collector.presets.kubernetesAttributes.enabled | bool | `false` |  |
 | opentelemetry-collector.presets.logsCollection.enabled | bool | `false` |  |
@@ -240,6 +255,14 @@ Depending on the installation you perform, some tasks may be necessary or not. T
 | podSecurityContext | object | `{}` |  |
 | rabbitmq.auth.existingErlangSecret | string | `"rabbitmq-secret"` |  |
 | rabbitmq.auth.existingPasswordSecret | string | `"rabbitmq-secret"` |  |
+| prometheus.alertmanager.enabled | bool | `false` |  |
+| prometheus.enabled | bool | `true` |  |
+| prometheus.kube-state-metrics.enabled | bool | `false` |  |
+| prometheus.prometheus-node-exporter.enabled | bool | `false` |  |
+| prometheus.server.persistentVolume.enabled | bool | `false` |  |
+| prometheus.serverFiles."prometheus.yml".scrape_configs[0].job_name | string | `"otel"` |  |
+| prometheus.serverFiles."prometheus.yml".scrape_configs[0].scrape_interval | string | `"10s"` |  |
+| prometheus.serverFiles."prometheus.yml".scrape_configs[0].static_configs[0].targets[0] | string | `"diracx-demo-opentelemetry-collector:8889"` |  |
 | rabbitmq.containerSecurityContext.enabled | bool | `false` |  |
 | rabbitmq.enabled | bool | `true` |  |
 | rabbitmq.podSecurityContext.enabled | bool | `false` |  |
