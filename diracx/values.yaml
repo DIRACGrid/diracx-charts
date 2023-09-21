@@ -323,7 +323,7 @@ cert-manager-issuer:
 
 opentelemetry-collector:
   enabled: true
-  mode: daemonset
+  mode: deployment
   #internalTrafficPolicy:Local
   presets:
     # enables the k8sattributesprocessor and adds it to the traces, metrics, and logs pipelines
@@ -336,8 +336,22 @@ opentelemetry-collector:
     logsCollection:
       enabled: false
 
+
+  # https://github.com/open-telemetry/opentelemetry-operator/issues/931
+  ports:
+    promexp:
+      enabled: true
+      containerPort: 8889
+      servicePort: 8889
+      hostPort: 8889
+      protocol: TCP
+
   #CHRIS example taken from https://opentelemetry.io/docs/collector/configuration/
+
   config:
+    receivers:
+      jaeger: null
+      prometheus: null
     exporters:
       otlp/jaeger:
         endpoint: diracx-demo-jaeger-collector:4317
@@ -345,12 +359,31 @@ opentelemetry-collector:
           insecure: true
       logging:
         loglevel: debug
+
+
+
+      prometheus:
+        endpoint: ":8889"
+        #namespace: test-space
+        # const_labels:
+        #   cst_label1: value1
+        send_timestamps: true
+        metric_expiration: 180m
+        #resource_to_telemetry_conversion:
+        #  enabled: true
+
+      # prometheusremotewrite:
+      #   endpoint: "http://diracx-demo-prometheus-pushgateway:9091/api/v1/push"
+      #   external_labels:
+      #     label_name1: label_value1
+      #     label_name2: label_value2
+
     service:
       pipelines:
         traces:
           exporters: [ otlp/jaeger, logging ]
         metrics:
-          exporters: [ logging ]
+          exporters: [ logging, prometheus ]
         logs:
           exporters: [ logging ]
 
@@ -360,10 +393,6 @@ opentelemetry-collector:
 
 jaeger:
   enabled: true
-  # service:
-  #   type: NodePort
-  #   port: 16686
-  #   nodePort: 32003
 
   provisionDataStore:
     cassandra: false
@@ -392,6 +421,7 @@ grafana:
 
 
   # data source jaeger with url http://diracx-demo-jaeger-query:16686
+  # https://grafana.com/docs/grafana/latest/datasources/jaeger/#provision-the-data-source
   datasources:
     datasources.yaml:
       apiVersion: 1
@@ -399,6 +429,35 @@ grafana:
       - name: Jaeger
         type: jaeger
         url: http://diracx-demo-jaeger-query:16686
+      - name: Prometheus
+        type: prometheus
+        url: http://diracx-demo-prometheus-server:80
+
+##########################
+
+prometheus:
+  enabled: true
+  # Use emptydir to store the data
+  server:
+    persistentVolume:
+      enabled: false
+
+  alertmanager:
+    enabled: false
+  kube-state-metrics:
+    enabled: false
+  prometheus-node-exporter:
+    enabled: false
+
+  serverFiles:
+    prometheus.yml:
+
+      scrape_configs:
+        - job_name: otel
+          scrape_interval: 10s
+          static_configs:
+            - targets:
+              - diracx-demo-opentelemetry-collector:8889
 
 ##########################
 service:
