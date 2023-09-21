@@ -87,6 +87,10 @@ opensearch:
     cluster.routing.allocation.disk.watermark.low: 500mb
     cluster.routing.allocation.disk.watermark.high: 300mb
     plugins.security.disabled: "true"
+  resources:
+    requests:
+      cpu: "100m"
+      memory: "100Mi"
 
 ##########################
 

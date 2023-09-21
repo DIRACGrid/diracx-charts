@@ -139,6 +139,8 @@ TODO
 | opensearch.config."plugins.security.disabled" | string | `"true"` |  |
 | opensearch.enabled | bool | `true` |  |
 | opensearch.opensearchJavaOpts | string | `"-Xms256m -Xmx256m"` |  |
+| opensearch.resources.requests.cpu | string | `"100m"` |  |
+| opensearch.resources.requests.memory | string | `"100Mi"` |  |
 | opensearch.singleNode | bool | `true` |  |
 | podAnnotations | object | `{}` |  |
 | podSecurityContext | object | `{}` |  |
