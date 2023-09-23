@@ -54,6 +54,19 @@ spec:
         - name: signing-key-mount
           emptyDir:
           sizeLimit: 5Mi
+
+      {{/* Define common volume mounts for reusability */}}
+      {{- $commonVolumeMounts := list }}
+      {{- $commonVolumeMounts = append $commonVolumeMounts (dict "mountPath" "/cs_store" "name" "cs-store-mount" "readOnly" false) }}
+      {{- $commonVolumeMounts = append $commonVolumeMounts (dict "mountPath" "/signing-key" "name" "signing-key-mount" "readOnly" false) }}
+      {{- $commonVolumeMounts = append $commonVolumeMounts (dict "mountPath" "/entrypoint.sh" "name" "container-entrypoint" "subPath" "entrypoint.sh") }}
+      {{- if and .Values.developer.enabled .Values.developer.modulesToInstall }}
+      {{- $commonVolumeMounts = append $commonVolumeMounts (dict "mountPath" .Values.developer.sourcePath "name" "diracx-code-mount" "readOnly" true) }}
+      {{- range $module := .Values.developer.modulesToInstall }}
+      {{- $commonVolumeMounts = append $commonVolumeMounts (dict "mountPath" (printf "%s/%s/src/%s.egg-info" $.Values.developer.sourcePath $module $module) "name" (printf "%s-editable-install" (lower $module)) "readOnly" false) }}
+      {{- end }}
+      {{- end }}
+
       initContainers:
       - name: init-cs
         image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
@@ -69,23 +82,7 @@ spec:
           {{- with (first .Values.dex.config.staticClients) }}
           - "--idp-client-id={{ .id }}"
           {{- end }}
-        volumeMounts:
-          - mountPath: /cs_store
-            name: cs-store-mount
-            readOnly: false
-          {{- if and .Values.developer.enabled .Values.developer.modulesToInstall }}
-          - mountPath: {{ .Values.developer.sourcePath }}
-            name: diracx-code-mount
-            readOnly: true
-          {{- range $module := .Values.developer.modulesToInstall }}
-          - mountPath: "{{ $.Values.developer.sourcePath }}/{{ $module }}/src/{{ $module }}.egg-info"
-            name: {{ lower $module }}-editable-install
-            readOnly: false
-          {{- end }}
-          {{- end }}
-          - name: container-entrypoint
-            mountPath: /entrypoint.sh
-            subPath: entrypoint.sh
+        volumeMounts: {{ toYaml $commonVolumeMounts | nindent 10 }}
       - name: init-cs-user
         image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
         command: ["bash", "/entrypoint.sh"]
@@ -97,23 +94,7 @@ spec:
           - "--vo=diracAdmin"
           - "--user-group=admin"
           - "--sub=EgVsb2NhbA"
-        volumeMounts:
-          - mountPath: /cs_store
-            name: cs-store-mount
-            readOnly: false
-          {{- if and .Values.developer.enabled .Values.developer.modulesToInstall }}
-          - mountPath: {{ .Values.developer.sourcePath }}
-            name: diracx-code-mount
-            readOnly: true
-          {{- range $module := .Values.developer.modulesToInstall }}
-          - mountPath: "{{ $.Values.developer.sourcePath }}/{{ $module }}/src/{{ $module }}.egg-info"
-            name: {{ lower $module }}-editable-install
-            readOnly: false
-          {{- end }}
-          {{- end }}
-          - name: container-entrypoint
-            mountPath: /entrypoint.sh
-            subPath: entrypoint.sh
+        volumeMounts: {{ toYaml $commonVolumeMounts | nindent 10 }}
       - name: init-signing-key
         image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
         command: [/dockerMicroMambaEntrypoint.sh]
@@ -125,29 +106,13 @@ spec:
           - "-b4096"
           - "-mPEM"
           - "-f/signing-key/rs256.key"
-        volumeMounts:
-          - mountPath: /signing-key/
-            name: signing-key-mount
-            readOnly: false
+        volumeMounts: {{ toYaml $commonVolumeMounts | nindent 10 }}
       {{- if .Values.diracx.manageSQLSchema }}
       - name: create-sql-db-schema
         image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
         command: ["bash", "/entrypoint.sh"]
         args: ["python", "-m", "diracx.db", "init-sql"]
-        volumeMounts:
-          {{- if and .Values.developer.enabled .Values.developer.modulesToInstall }}
-          - mountPath: {{ .Values.developer.sourcePath }}
-            name: diracx-code-mount
-            readOnly: true
-          {{- range $module := .Values.developer.modulesToInstall }}
-          - mountPath: "{{ $.Values.developer.sourcePath }}/{{ $module }}/src/{{ $module }}.egg-info"
-            name: {{ lower $module }}-editable-install
-            readOnly: false
-          {{- end }}
-          {{- end }}
-          - name: container-entrypoint
-            mountPath: /entrypoint.sh
-            subPath: entrypoint.sh
+        volumeMounts: {{ toYaml $commonVolumeMounts | nindent 10 }}
         envFrom:
           - secretRef:
               name: diracx-init-mysql-secrets
@@ -184,26 +149,7 @@ spec:
             - "--reload-dir={{ .Values.developer.sourcePath }}"
             {{- end }}
           {{- end }}
-          volumeMounts:
-            - mountPath: /cs_store
-              name: cs-store-mount
-              readOnly: true
-            - mountPath: /signing-key/
-              name: signing-key-mount
-              readOnly: true
-            {{- if and .Values.developer.enabled .Values.developer.modulesToInstall }}
-            - mountPath: {{ .Values.developer.sourcePath }}
-              name: diracx-code-mount
-              readOnly: true
-            {{- range $module := .Values.developer.modulesToInstall }}
-            - mountPath: "{{ $.Values.developer.sourcePath }}/{{ $module }}/src/{{ $module }}.egg-info"
-              name: {{ lower $module }}-editable-install
-              readOnly: false
-            {{- end }}
-            {{- end }}
-            - name: container-entrypoint
-              mountPath: /entrypoint.sh
-              subPath: entrypoint.sh
+          volumeMounts: {{ toYaml $commonVolumeMounts | nindent 12 }}
           envFrom:
             # - configMapRef:
             #     name: diracx-env-config
