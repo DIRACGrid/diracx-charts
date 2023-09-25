@@ -15,4 +15,50 @@ data:
     pip install {{- range $moduleName := .Values.developer.modulesToInstall }} -e {{ $.Values.developer.sourcePath }}/{{ $moduleName }} {{- end }}
     {{- end }}
 
+    {{- if and .Values.developer.enabled .Values.developer.enableCoverage }}
+    SITE_PACKAGES_DIR=$(python -m sysconfig | grep platlib | head -n 1 | cut -d '=' -f 2 | cut -d '"' -f 2)
+    echo "Enabling coverage using pth file in SITE_PACKAGES_DIR=${SITE_PACKAGES_DIR}"
+    echo 'import coverage; coverage.process_startup()' > "${SITE_PACKAGES_DIR}/coverage.pth"
+    export COVERAGE_PROCESS_START=/diracx-coveragerc
+    {{- end }}
+
     exec "$@"
+  {{- if and .Values.developer.enabled .Values.developer.enableCoverage }}
+  coveragerc: |
+    [run]
+    data_file=/coverage-reports/coverage
+    relative_files=True
+    parallel=True
+    sigterm=True
+    omit =
+        */diracx/client/*
+  {{- end }}
+---
+{{/* If we're collecting coverage we also need a volume to store it in */}}
+{{- if and .Values.developer.enabled .Values.developer.enableCoverage }}
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: pv-coverage
+spec:
+  storageClassName: ""
+  accessModes:
+    - ReadWriteMany
+  capacity:
+    storage: 2Gi
+  hostPath:
+    path: /coverage-reports
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: pvc-coverage
+spec:
+  storageClassName: ""
+  volumeName: pv-coverage
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 1Gi
+{{ end }}
