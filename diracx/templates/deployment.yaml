@@ -117,6 +117,16 @@ spec:
           - secretRef:
               name: diracx-init-mysql-secrets
       {{- end }}
+      {{- if .Values.diracx.manageOSIndices }}
+      - name: create-os-db-indices
+        image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+        command: ["bash", "/entrypoint.sh"]
+        args: ["python", "-m", "diracx.db", "init-os"]
+        volumeMounts: {{ toYaml $commonVolumeMounts | nindent 10 }}
+        envFrom:
+          - secretRef:
+              name: diracx-init-os-secrets
+      {{- end }}
       containers:
         - name: {{ .Chart.Name }}
           securityContext:

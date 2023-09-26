@@ -93,10 +93,13 @@ TODO
 | dex.service.ports.http.port | int | `8000` |  |
 | dex.service.type | string | `"NodePort"` |  |
 | diracx.csVolumeName | string | `"pv-cs-store"` |  |
+| diracx.manageOSIndices | bool | `true` |  |
 | diracx.manageSQLSchema | bool | `true` |  |
 | diracx.mysqlDatabases[0] | string | `"AuthDB"` |  |
 | diracx.mysqlDatabases[1] | string | `"JobDB"` |  |
 | diracx.mysqlDatabases[2] | string | `"JobLoggingDB"` |  |
+| diracx.mysqlDatabases[3] | string | `"SandboxMetadataDB"` |  |
+| diracx.osDatabases[0] | string | `"JobParametersDB"` |  |
 | diracx.settings.DIRACX_CONFIG_BACKEND_URL | string | `"git+file:///cs_store/initialRepo"` |  |
 | diracx.settings.DIRACX_SERVICE_AUTH_ALLOWED_REDIRECTS | string | `"[\"http://anything:8000/docs/oauth2-redirect\"]"` |  |
 | diracx.settings.DIRACX_SERVICE_AUTH_TOKEN_KEY | string | `"file:///signing-key/rs256.key"` |  |

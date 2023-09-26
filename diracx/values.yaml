@@ -68,11 +68,17 @@ diracx:
     DIRACX_SERVICE_AUTH_ALLOWED_REDIRECTS: '["http://anything:8000/docs/oauth2-redirect"]'
   # Should DiracX include an init container which manages the SQL DB schema?
   manageSQLSchema: true
-  # Which DiracX DBs are used?
+  # Should DiracX include an init container which manages the OS DB indices?
+  manageOSIndices: true
+  # Which DiracX MySQL DBs are used?
   mysqlDatabases:
     - AuthDB
     - JobDB
     - JobLoggingDB
+    - SandboxMetadataDB
+  # Which DiracX OpenSearch DBs are used?
+  osDatabases:
+    - JobParametersDB
 
 ##########################
 
