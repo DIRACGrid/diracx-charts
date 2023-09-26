@@ -67,6 +67,7 @@ TODO
 | autoscaling.maxReplicas | int | `100` |  |
 | autoscaling.minReplicas | int | `1` |  |
 | autoscaling.targetCPUUtilizationPercentage | int | `80` |  |
+| developer.enableCoverage | bool | `false` |  |
 | developer.enabled | bool | `true` |  |
 | developer.modulesToInstall | list | `[]` |  |
 | developer.sourcePath | string | `"/diracx_source"` |  |

@@ -54,6 +54,7 @@ developer:
   # Path from which to mount source of DIRACX
   sourcePath: /diracx_source
   modulesToInstall: []
+  enableCoverage: false
   # If set, mount the CS stored localy instead of initializing a default one
   # localCSPath: /local_cs_store
 

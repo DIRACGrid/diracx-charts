@@ -42,14 +42,23 @@ function check_hostname(){
   fi
 }
 
-usage="${0##*/} [-h|--help] [--exit-when-done] [--] <diracx_src_dir> [other source directories]"
+usage="${0##*/} [-h|--help] [--exit-when-done] [--enable-coverage] [--set-value key=value] [--] [source directories]"
+usage+="\n\n"
+usage+="  -h|--help: Print this help message and exit\n"
+usage+="  --exit-when-done: Exit after the demo has been started (it will be left running in the background)\n"
+usage+="  --enable-coverage: Enable coverage reporting\n"
+usage+="  --set-value: Set a value in the Helm values file. This can be used to override the default values.\n"
+usage+="               For example, to enable coverage reporting pass: --set-value developer.enableCoverage=true\n"
+usage+="  source directories: A list of directories containing Python packages to mount in the demo cluster.\n"
 
 # Parse command-line switches
 exit_when_done=0
+declare -a helm_arguments=()
+enable_coverage=0
 while [ -n "${1:-}" ]; do case $1 in
 	# Print a brief usage summary and exit
 	-h|--help|-\?)
-		printf 'Usage: %s\n' "$usage"
+		printf 'Usage: %b\n' "$usage"
 		exit ;;
 
 	# # Unbundle short options
@@ -74,7 +83,25 @@ while [ -n "${1:-}" ]; do case $1 in
 	--exit-when-done)
     exit_when_done=1;
 		shift
-		break ;;
+		continue ;;
+
+	--enable-coverage)
+    helm_arguments+=("--set")
+    helm_arguments+=("developer.enableCoverage=true")
+    enable_coverage=1
+		shift
+		continue ;;
+
+	--set-value)
+		shift
+    if [[ -z "${1:-}" ]]; then
+      printf "%b Error: --set-value requires an argument\n" ${SKULL_EMOJI}
+      exit 1
+    fi
+    helm_arguments+=("--set")
+    helm_arguments+=("${1}")
+		shift
+		continue ;;
 
 	# Double-dash: Terminate option parsing
 	--)
@@ -186,6 +213,16 @@ if [ ${#pkg_dirs[@]} -gt 0 ]; then
     sed "s@{{ hostPaths }}@  - hostPath: ${pkg_dir}\n    containerPath: /diracx_source/$(basename "${pkg_dir}")\n{{ hostPaths }}@g" "${demo_dir}/demo_cluster_conf.yaml.bak" > "${demo_dir}/demo_cluster_conf.yaml"
   done
 fi
+# If coverage is enabled mount .demo/coverage-reports into the cluster
+if [[ ${enable_coverage} ]]; then
+  rm -rf "${demo_dir}/coverage-reports"
+  mkdir -p "${demo_dir}/coverage-reports"
+  # Make sure the directory is writable by the container
+  chmod 777 "${demo_dir}/coverage-reports"
+  mv "${demo_dir}/demo_cluster_conf.yaml" "${demo_dir}/demo_cluster_conf.yaml.bak"
+  sed "s@{{ hostPaths }}@  - hostPath: ${demo_dir}/coverage-reports\n    containerPath: /coverage-reports\n{{ hostPaths }}@g" "${demo_dir}/demo_cluster_conf.yaml.bak" > "${demo_dir}/demo_cluster_conf.yaml"
+fi
+# Cleanup the "{{ hostPaths }}" part of the template and make sure things look reasonable
 mv "${demo_dir}/demo_cluster_conf.yaml" "${demo_dir}/demo_cluster_conf.yaml.bak"
 sed "s@{{ hostPaths }}@@g" "${demo_dir}/demo_cluster_conf.yaml.bak" > "${demo_dir}/demo_cluster_conf.yaml"
 if grep '{{' "${demo_dir}/demo_cluster_conf.yaml"; then
@@ -229,7 +266,8 @@ printf "%b Waiting for ingress controller to be created...\n" ${UNICORN_EMOJI}
 
 # Install the DiracX chart
 printf "%b Installing DiracX...\n" ${UNICORN_EMOJI}
-if ! "${demo_dir}/helm" install diracx-demo "${script_dir}/diracx" --values "${demo_dir}/values.yaml"; then
+helm_arguments+=("--values" "${demo_dir}/values.yaml")
+if ! "${demo_dir}/helm" install diracx-demo "${script_dir}/diracx" "${helm_arguments[@]}"; then
   printf "%b Error using helm DiracX\n" ${WARN_EMOJI}
   echo "Failed to run \"helm install\"" >> "${demo_dir}/.failed"
 else
