@@ -27,6 +27,11 @@ dependencies:
   repository:  https://opensearch-project.github.io/helm-charts/
   condition: opensearch.enabled
 
+- name: elasticsearch
+  version: 8.5.1
+  repository:  https://helm.elastic.co
+  # condition: elasticsearch.enabled
+
 - name: dex
   version: 0.14.2
   repository: https://charts.dexidp.io/

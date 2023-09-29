@@ -2,6 +2,9 @@ dependencies:
 - name: opensearch
   repository: https://opensearch-project.github.io/helm-charts/
   version: 2.13.1
+- name: elasticsearch
+  repository: https://helm.elastic.co
+  version: 8.5.1
 - name: dex
   repository: https://charts.dexidp.io/
   version: 0.14.2
@@ -32,5 +35,5 @@ dependencies:
 - name: prometheus
   repository: https://prometheus-community.github.io/helm-charts
   version: 25.0.0
-digest: sha256:7f011a28c32a5fc743347425441ee9b26f7ee7a6e37cddbcdd85552a540670f6
-generated: "2023-09-21T14:41:12.904842056+02:00"
+digest: sha256:6c9080fb31be8a12898e4dba9ccf506085209cd7f4391aba9c4737094af344d8
+generated: "2023-09-29T13:13:39.665263669+02:00"

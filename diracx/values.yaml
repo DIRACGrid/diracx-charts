@@ -246,6 +246,32 @@ opensearch:
       cpu: "100m"
       memory: "100Mi"
 
+
+# Elasticsearch is ONLY for the opentelemetry usage as opensearch isn't ready
+elasticsearch:
+  enabled: true
+  esJavaOpts: "-Xms128m -Xmx128m"
+  replicas: 1
+  # Allocate smaller chunks of memory per pod.
+  resources:
+    requests:
+      cpu: "100m"
+      memory: "512M"
+    limits:
+      cpu: "1000m"
+      memory: "512M"
+
+  # Request smaller persistent volumes.
+  volumeClaimTemplate:
+    accessModes: [ "ReadWriteOnce" ]
+    storageClassName: "standard"
+    resources:
+      requests:
+        storage: 100M
+
+  secret:
+    password: "elastic"
+
 ##########################
 
 minio:
@@ -421,8 +447,8 @@ opentelemetry-collector:
 
       # https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/exporter/elasticsearchexporter
       elasticsearch/log:
-        endpoints: [https://admin:admin@opensearch-cluster-master:9200]
-        logs_index: my_log_index
+        endpoints: [https://elastic:elastic@elasticsearch-master:9200]
+        logs_index: diracx_otel_logs_index
         sending_queue:
           enabled: true
           num_consumers: 20
@@ -491,6 +517,22 @@ grafana:
       - name: Prometheus
         type: prometheus
         url: http://diracx-demo-prometheus-server:80
+      - name: Elasticsearch
+        type: elasticsearch
+        url: https://elasticsearch-master:9200
+        basicAuth: true
+        basicAuthUser: elastic
+        database: diracx_otel_logs_index
+        isDefault: false
+        jsonData:
+          esVersion: 8.5.1
+          logMessageField: full_message
+          timeField: "@timestamp"
+          timeout: 300
+          tlsSkipVerify: true
+          maxConcurrentShardRequests: 10
+        secureJsonData:
+          basicAuthPassword: elastic
 
 ##########################
 
