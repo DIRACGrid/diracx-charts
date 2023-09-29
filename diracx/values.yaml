@@ -356,6 +356,14 @@ opentelemetry-collector:
   enabled: true
   mode: deployment
   #internalTrafficPolicy:Local
+
+  # # For opensearch https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/exporter/opensearchexporter
+  # extensions:
+  #   basicauth/client:
+  #   client_auth:
+  #     username: admin
+  #     password: admin
+
   presets:
     # enables the k8sattributesprocessor and adds it to the traces, metrics, and logs pipelines
     kubernetesAttributes:
@@ -365,10 +373,11 @@ opentelemetry-collector:
       enabled: false
     # Enables the filelogreceiver and adds it to the logs pipelines
     logsCollection:
-      enabled: false
+      enabled: true
 
 
   # https://github.com/open-telemetry/opentelemetry-operator/issues/931
+  # Expose the port such that prometheus can scrape
   ports:
     promexp:
       enabled: true
@@ -383,6 +392,7 @@ opentelemetry-collector:
     receivers:
       jaeger: null
       prometheus: null
+
     exporters:
       otlp/jaeger:
         endpoint: diracx-demo-jaeger-collector:4317
@@ -409,6 +419,24 @@ opentelemetry-collector:
       #     label_name1: label_value1
       #     label_name2: label_value2
 
+      # https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/exporter/elasticsearchexporter
+      elasticsearch/log:
+        endpoints: [https://admin:admin@opensearch-cluster-master:9200]
+        logs_index: my_log_index
+        sending_queue:
+          enabled: true
+          num_consumers: 20
+          queue_size: 1000
+        tls:
+          insecure_skip_verify: true
+        # insecure: true
+
+    # No opensearch for now:
+    # https://opentelemetry.io/docs/collector/custom-collector/
+    # https://github.com/open-telemetry/opentelemetry-collector-contrib/issues/7905
+    # https://opensearch.org/blog/distributed-tracing-pipeline-with-opentelemetry/
+
+
     service:
       pipelines:
         traces:
@@ -416,7 +444,7 @@ opentelemetry-collector:
         metrics:
           exporters: [ logging, prometheus ]
         logs:
-          exporters: [ logging ]
+          exporters: [ elasticsearch/log, logging ]
 
 
 ##########################

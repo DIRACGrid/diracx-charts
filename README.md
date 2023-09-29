@@ -228,6 +228,12 @@ Depending on the installation you perform, some tasks may be necessary or not. T
 | opensearch.resources.requests.cpu | string | `"100m"` |  |
 | opensearch.resources.requests.memory | string | `"100Mi"` |  |
 | opensearch.singleNode | bool | `true` |  |
+| opentelemetry-collector.config.exporters.elasticsearch/log.endpoints[0] | string | `"https://admin:admin@opensearch-cluster-master:9200"` |  |
+| opentelemetry-collector.config.exporters.elasticsearch/log.logs_index | string | `"my_log_index"` |  |
+| opentelemetry-collector.config.exporters.elasticsearch/log.sending_queue.enabled | bool | `true` |  |
+| opentelemetry-collector.config.exporters.elasticsearch/log.sending_queue.num_consumers | int | `20` |  |
+| opentelemetry-collector.config.exporters.elasticsearch/log.sending_queue.queue_size | int | `1000` |  |
+| opentelemetry-collector.config.exporters.elasticsearch/log.tls.insecure_skip_verify | bool | `true` |  |
 | opentelemetry-collector.config.exporters.logging.loglevel | string | `"debug"` |  |
 | opentelemetry-collector.config.exporters.otlp/jaeger.endpoint | string | `"diracx-demo-jaeger-collector:4317"` |  |
 | opentelemetry-collector.config.exporters.otlp/jaeger.tls.insecure | bool | `true` |  |
@@ -236,7 +242,8 @@ Depending on the installation you perform, some tasks may be necessary or not. T
 | opentelemetry-collector.config.exporters.prometheus.send_timestamps | bool | `true` |  |
 | opentelemetry-collector.config.receivers.jaeger | string | `nil` |  |
 | opentelemetry-collector.config.receivers.prometheus | string | `nil` |  |
-| opentelemetry-collector.config.service.pipelines.logs.exporters[0] | string | `"logging"` |  |
+| opentelemetry-collector.config.service.pipelines.logs.exporters[0] | string | `"elasticsearch/log"` |  |
+| opentelemetry-collector.config.service.pipelines.logs.exporters[1] | string | `"logging"` |  |
 | opentelemetry-collector.config.service.pipelines.metrics.exporters[0] | string | `"logging"` |  |
 | opentelemetry-collector.config.service.pipelines.metrics.exporters[1] | string | `"prometheus"` |  |
 | opentelemetry-collector.config.service.pipelines.traces.exporters[0] | string | `"otlp/jaeger"` |  |
@@ -250,7 +257,7 @@ Depending on the installation you perform, some tasks may be necessary or not. T
 | opentelemetry-collector.ports.promexp.servicePort | int | `8889` |  |
 | opentelemetry-collector.presets.kubeletMetrics.enabled | bool | `false` |  |
 | opentelemetry-collector.presets.kubernetesAttributes.enabled | bool | `false` |  |
-| opentelemetry-collector.presets.logsCollection.enabled | bool | `false` |  |
+| opentelemetry-collector.presets.logsCollection.enabled | bool | `true` |  |
 | podAnnotations | object | `{}` |  |
 | podSecurityContext | object | `{}` |  |
 | rabbitmq.auth.existingErlangSecret | string | `"rabbitmq-secret"` |  |
