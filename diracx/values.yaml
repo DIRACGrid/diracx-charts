@@ -51,6 +51,8 @@ securityContext: {}
 
 developer:
   enabled: true
+  # URLs which can be used to access various components of the demo
+  urls: {}
   # Path from which to mount source of DIRACX
   sourcePath: /diracx_source
   modulesToInstall: []

@@ -71,6 +71,7 @@ TODO
 | developer.enabled | bool | `true` |  |
 | developer.modulesToInstall | list | `[]` |  |
 | developer.sourcePath | string | `"/diracx_source"` |  |
+| developer.urls | object | `{}` |  |
 | dex."https.enabled" | bool | `false` |  |
 | dex.config.enablePasswordDB | bool | `true` |  |
 | dex.config.expiry.authRequests | string | `"24h"` |  |
