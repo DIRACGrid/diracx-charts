@@ -9,6 +9,9 @@ developer:
 diracx:
   settings:
     DIRACX_SERVICE_AUTH_ALLOWED_REDIRECTS: '["http://{{ hostname }}:8000/docs/oauth2-redirect"]'
+    DIRACX_SANDBOX_STORE_BUCKET_NAME: demo-sandboxes
+    DIRACX_SANDBOX_STORE_S3_CLIENT_KWARGS: '{"endpoint_url": "http://{{ hostname }}:32000", "aws_access_key_id": "console", "aws_secret_access_key": "console123"}'
+    DIRACX_SANDBOX_STORE_AUTO_CREATE_BUCKET: "true"
 
 minio:
   environment:
