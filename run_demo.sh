@@ -234,6 +234,8 @@ fi
 printf "%b Generating Helm templates\n" ${UNICORN_EMOJI}
 sed "s/{{ hostname }}/${machine_hostname}/g" "${script_dir}/demo/values.tpl.yaml" > "${demo_dir}/values.yaml"
 mv "${demo_dir}/values.yaml" "${demo_dir}/values.yaml.bak"
+sed "s@{{ demo_dir }}@${demo_dir}@g" "${demo_dir}/values.yaml.bak" > "${demo_dir}/values.yaml"
+mv "${demo_dir}/values.yaml" "${demo_dir}/values.yaml.bak"
 json="["
 if [ ${#pkg_names[@]} -gt 0 ]; then
   for pkg_name in "${pkg_names[@]}"; do
@@ -275,18 +277,6 @@ else
   if "${demo_dir}/kubectl" wait --for=condition=ready pod --selector=app.kubernetes.io/name=diracx --timeout=300s; then
     printf "%b %b %b Pods are ready! %b %b %b\n" "${PARTY_EMOJI}" "${PARTY_EMOJI}" "${PARTY_EMOJI}" "${PARTY_EMOJI}" "${PARTY_EMOJI}" "${PARTY_EMOJI}"
     touch "${demo_dir}/.success"
-
-    echo ""
-    printf "%b  To interact with the cluster:\n" "${INFO_EMOJI}"
-    echo "export KUBECONFIG=${KUBECONFIG}"
-    echo "export HELM_DATA_HOME=${HELM_DATA_HOME}"
-    echo "export PATH=\${PATH}:${demo_dir}"
-    echo ""
-    printf "%b  You can access swagger at http://%s:8000/docs\n" "${INFO_EMOJI}" "${machine_hostname}"
-    echo "To login, use the OAuth Authroization Code flow, and enter the following credentials"
-    echo "in the DEX web interface"
-    echo "Username: admin@example.com"
-    echo "Password: password"
   else
     printf "%b Installation did not start sucessfully!\n" ${WARN_EMOJI}
     echo "Installation did not start sucessfully!" >> "${demo_dir}/.failed"

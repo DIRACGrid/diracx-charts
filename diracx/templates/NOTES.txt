@@ -1,22 +1,33 @@
-1. Get the application URL by running these commands:
-{{- if .Values.ingress.enabled }}
-{{- range $host := .Values.ingress.hosts }}
-  {{- range .paths }}
-  http{{ if $.Values.ingress.tls }}s{{ end }}://{{ $host.host }}{{ .path }}
-  {{- end }}
-{{- end }}
-{{- else if contains "NodePort" .Values.service.type }}
-  export NODE_PORT=$(kubectl get --namespace {{ .Release.Namespace }} -o jsonpath="{.spec.ports[0].nodePort}" services {{ include "diracx.fullname" . }})
-  export NODE_IP=$(kubectl get nodes --namespace {{ .Release.Namespace }} -o jsonpath="{.items[0].status.addresses[0].address}")
-  echo http://$NODE_IP:$NODE_PORT
-{{- else if contains "LoadBalancer" .Values.service.type }}
-     NOTE: It may take a few minutes for the LoadBalancer IP to be available.
-           You can watch the status of by running 'kubectl get --namespace {{ .Release.Namespace }} svc -w {{ include "diracx.fullname" . }}'
-  export SERVICE_IP=$(kubectl get svc --namespace {{ .Release.Namespace }} {{ include "diracx.fullname" . }} --template "{{"{{ range (index .status.loadBalancer.ingress 0) }}{{.}}{{ end }}"}}")
-  echo http://$SERVICE_IP:{{ .Values.service.port }}
-{{- else if contains "ClusterIP" .Values.service.type }}
-  export POD_NAME=$(kubectl get pods --namespace {{ .Release.Namespace }} -l "app.kubernetes.io/name={{ include "diracx.name" . }},app.kubernetes.io/instance={{ .Release.Name }}" -o jsonpath="{.items[0].metadata.name}")
-  export CONTAINER_PORT=$(kubectl get pod --namespace {{ .Release.Namespace }} $POD_NAME -o jsonpath="{.spec.containers[0].ports[0].containerPort}")
-  echo "Visit http://127.0.0.1:8080 to use your application"
-  kubectl --namespace {{ .Release.Namespace }} port-forward $POD_NAME 8080:$CONTAINER_PORT
-{{- end }}
+{{- if .Values.developer.enabled }}
+
+🚧 Chart has been installed in developer mode.
+
+ℹ️  To interact with the cluster directly using kubectl/helm you'll need to set the
+first following environment variables:
+
+  export KUBECONFIG={{ .Values.developer.demoDir }}/kube.conf
+  export HELM_DATA_HOME={{ .Values.developer.demoDir }}/helm_data
+  export PATH=\${PATH}:{{ .Values.developer.demoDir }}
+
+Then see the chart README for more information on how to use kubectl/helm.
+
+ℹ️  To use the demo with the DiracX client set:
+
+  export DIRACX_URL={{ .Values.developer.urls.diracx }}
+
+ℹ️  To access the interactive API documentation visit:
+
+  {{ .Values.developer.urls.diracx }}/docs
+
+ℹ️  When prompted to login the credentials are:
+
+  Username: admin@example.com
+  Password: password
+
+{{ else }}
+
+Installed in chart production mode.
+
+TODO: Add notes...
+
+{{ end -}}
