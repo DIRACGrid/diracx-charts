@@ -49,6 +49,10 @@ Selector labels
 app.kubernetes.io/name: {{ include "diracx.name" . }}
 app.kubernetes.io/instance: {{ .Release.Name }}
 {{- end }}
+{{- define "diracxWeb.selectorLabels" -}}
+app.kubernetes.io/name: {{ include "diracx.name" . }}-web
+app.kubernetes.io/instance: {{ .Release.Name }}-web
+{{- end }}
 
 {{/*
 Create the name of the service account to use

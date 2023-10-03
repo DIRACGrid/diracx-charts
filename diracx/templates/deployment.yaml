@@ -146,14 +146,14 @@ spec:
             - name: http
               containerPort: {{ .Values.service.port }}
               protocol: TCP
-          livenessProbe:
-            httpGet:
-              path: /docs/
-              port: http
-          readinessProbe:
-            httpGet:
-              path: /docs/
-              port: http
+          # livenessProbe:
+          #   httpGet:
+          #     path: /api/docs/
+          #     port: http
+          # readinessProbe:
+          #   httpGet:
+          #     path: /api/docs/
+          #     port: http
           command: ["bash", "/entrypoint.sh"]
           args:
             - uvicorn

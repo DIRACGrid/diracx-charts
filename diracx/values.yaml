@@ -83,6 +83,53 @@ diracx:
   # Which DiracX OpenSearch DBs are used?
   osDatabases:
     - JobParametersDB
+  ingress:
+    enabled: true
+    className: "nginx"
+    annotations:
+      # kubernetes.io/ingress.class: nginx
+      # kubernetes.io/tls-acme: "true"
+      # Needed if you want to use a base path different from /
+      # #Use rewrite rules https://kubernetes.github.io/ingress-nginx/examples/rewrite/
+      nginx.ingress.kubernetes.io/use-regex: "true"
+      nginx.ingress.kubernetes.io/rewrite-target: /$2
+    tls: []
+      #  - secretName: chart-example-tls
+      #    hosts:
+      #      - chart-example.local
+    hosts:
+    - paths:
+        - path: /api(/|$)(.*)
+          pathType: ImplementationSpecific
+          backend:
+            service:
+              port:
+                number: 8000
+
+diracxWeb:
+  image:
+    repository: ghcr.io/diracgrid/diracx-web/client
+    pullPolicy: IfNotPresent
+    tag: latest
+  settings:
+    # This corresponds to the basic .env file
+    DIRACX_CLIENT_ID: "myDIRACClientID"
+    DEFAULT_SCOPE: "vo:diracAdmin"
+  service:
+    type: ClusterIP
+    port: 3000
+  ingress:
+    enabled: true
+    className: "nginx"
+    tls: []
+    hosts:
+    - paths:
+        - path: /
+          pathType: Prefix
+          backend:
+            service:
+              port:
+                number: 3000
 
 ##########################
 
@@ -200,31 +247,6 @@ rabbitmq:
 service:
   type: ClusterIP
   port: 8000
-
-ingress:
-  enabled: true
-  className: "nginx"
-  annotations:
-    # kubernetes.io/ingress.class: nginx
-    # kubernetes.io/tls-acme: "true"
-    # Needed if you want to use a base path different from /
-    # #Use rewrite rules https://kubernetes.github.io/ingress-nginx/examples/rewrite/
-    nginx.ingress.kubernetes.io/use-regex: "true"
-    # nginx.ingress.kubernetes.io/rewrite-target: "/$2"
-  hosts:
-    - paths:
-        - path: /
-          pathType: Prefix
-          backend:
-            service:
-              name: diracx-demo
-              port:
-                number: 8000
-
-  tls: []
-  #  - secretName: chart-example-tls
-  #    hosts:
-  #      - chart-example.local
 
 resources: {}
   # We usually recommend not to specify default resources and to leave this as a conscious
