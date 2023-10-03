@@ -7,7 +7,7 @@ first following environment variables:
 
   export KUBECONFIG={{ .Values.developer.demoDir }}/kube.conf
   export HELM_DATA_HOME={{ .Values.developer.demoDir }}/helm_data
-  export PATH=\${PATH}:{{ .Values.developer.demoDir }}
+  export PATH=${PATH}:{{ .Values.developer.demoDir }}
 
 Then see the chart README for more information on how to use kubectl/helm.
 

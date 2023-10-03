@@ -1,0 +1,80 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "diracx.fullname" . }}-web
+  labels:
+    {{- include "diracx.labels" . | nindent 4 }}
+spec:
+  {{- if not .Values.autoscaling.enabled }}
+  replicas: {{ .Values.replicaCount }}
+  {{- end }}
+  selector:
+    matchLabels:
+      {{- include "diracxWeb.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      annotations:
+        {{- with .Values.podAnnotations }}
+          {{- toYaml . | nindent 8 }}
+        {{- end }}
+      labels:
+        {{- include "diracxWeb.selectorLabels" . | nindent 8 }}
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "diracx.serviceAccountName" . }}
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      volumes:
+        {{- if and .Values.developer.enabled }}
+        - name: diracx-web-code-mount
+          persistentVolumeClaim:
+            claimName: pvc-diracx-code
+        {{- end }}
+
+      containers:
+        - name: {{ .Chart.Name }}-web
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
+          image: "{{ .Values.diracxWeb.image.repository }}:{{ .Values.diracxWeb.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.diracxWeb.image.pullPolicy }}
+          ports:
+            - name: http
+              containerPort: {{ .Values.diracxWeb.service.port }}
+              protocol: TCP
+          livenessProbe:
+            httpGet:
+              path: /
+              port: http
+          readinessProbe:
+            httpGet:
+              path: /
+              port: http
+          {{- if .Values.developer.enabled }}
+          command: ["npm", "run", "dev"]
+          volumeMounts:
+            - mountPath: /diracxweb_source
+              name: diracx-web-code-mount
+              readOnly: true
+          {{- else }}
+          command: ["npm", "start"]
+          {{- end }}
+          envFrom:
+            - secretRef:
+                name: diracx-web-secrets
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}

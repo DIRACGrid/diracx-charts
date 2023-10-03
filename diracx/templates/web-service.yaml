@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "diracx.fullname" . }}-web
+  labels:
+    {{- include "diracx.labels" . | nindent 4 }}
+spec:
+  type: {{ .Values.diracxWeb.service.type }}
+  ports:
+    - port: {{ .Values.diracxWeb.service.port }}
+      targetPort: http
+      protocol: TCP
+      name: http
+  selector:
+    {{- include "diracxWeb.selectorLabels" . | nindent 4 }}

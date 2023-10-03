@@ -1,9 +1,8 @@
-{{- if .Values.ingress.enabled -}}
 {{- $fullName := include "diracx.fullname" . -}}
-{{- $svcPort := .Values.service.port -}}
-{{- if and .Values.ingress.className (not (semverCompare ">=1.18-0" .Capabilities.KubeVersion.GitVersion)) }}
-  {{- if not (hasKey .Values.ingress.annotations "kubernetes.io/ingress.class") }}
-  {{- $_ := set .Values.ingress.annotations "kubernetes.io/ingress.class" .Values.ingress.className}}
+{{- if .Values.diracx.ingress.enabled -}}
+{{- if and .Values.diracx.ingress.className (not (semverCompare ">=1.18-0" .Capabilities.KubeVersion.GitVersion)) }}
+  {{- if not (hasKey .Values.diracx.ingress.annotations "kubernetes.io/ingress.class") }}
+  {{- $_ := set .Values.diracx.ingress.annotations "kubernetes.io/ingress.class" .Values.diracx.ingress.className}}
   {{- end }}
 {{- end }}
 {{- if semverCompare ">=1.19-0" .Capabilities.KubeVersion.GitVersion -}}
@@ -18,17 +17,17 @@ metadata:
   name: {{ $fullName }}
   labels:
     {{- include "diracx.labels" . | nindent 4 }}
-  {{- with .Values.ingress.annotations }}
+  {{- with .Values.diracx.ingress.annotations }}
   annotations:
     {{- toYaml . | nindent 4 }}
   {{- end }}
 spec:
-  {{- if and .Values.ingress.className (semverCompare ">=1.18-0" .Capabilities.KubeVersion.GitVersion) }}
-  ingressClassName: {{ .Values.ingress.className }}
+  {{- if and .Values.diracx.ingress.className (semverCompare ">=1.18-0" .Capabilities.KubeVersion.GitVersion) }}
+  ingressClassName: {{ .Values.diracx.ingress.className }}
   {{- end }}
-  {{- if .Values.ingress.tls }}
+  {{- if .Values.diracx.ingress.tls }}
   tls:
-    {{- range .Values.ingress.tls }}
+    {{- range .Values.diracx.ingress.tls }}
     - hosts:
         {{- range .hosts }}
         - {{ . | quote }}
@@ -37,7 +36,7 @@ spec:
     {{- end }}
   {{- end }}
   rules:
-    {{- range .Values.ingress.hosts }}
+    {{- range .Values.diracx.ingress.hosts }}
     - host: {{ .host | quote }}
       http:
         paths:
@@ -51,10 +50,70 @@ spec:
               service:
                 name: {{ $fullName }}
                 port:
-                  number: {{ $svcPort }}
+                  number: {{ .backend.service.port.number }}
               {{- else }}
               serviceName: {{ $fullName }}
-              servicePort: {{ $svcPort }}
+              servicePort: {{ .backend.service.port.number }}
+              {{- end }}
+          {{- end }}
+    {{- end }}
+{{- end }}
+{{ if .Values.diracxWeb.ingress.enabled -}}
+---
+{{ if and .Values.diracxWeb.ingress.className (not (semverCompare ">=1.18-0" .Capabilities.KubeVersion.GitVersion)) }}
+  {{- if not (hasKey .Values.diracxWeb.ingress.annotations "kubernetes.io/ingress.class") }}
+  {{- $_ := set .Values.diracxWeb.ingress.annotations "kubernetes.io/ingress.class" .Values.diracxWeb.ingress.className}}
+  {{- end }}
+{{- end }}
+{{- if semverCompare ">=1.19-0" .Capabilities.KubeVersion.GitVersion -}}
+apiVersion: networking.k8s.io/v1
+{{- else if semverCompare ">=1.14-0" .Capabilities.KubeVersion.GitVersion -}}
+apiVersion: networking.k8s.io/v1beta1
+{{- else -}}
+apiVersion: extensions/v1beta1
+{{- end }}
+kind: Ingress
+metadata:
+  name: {{ $fullName }}-web
+  labels:
+    {{- include "diracx.labels" . | nindent 4 }}
+  {{- with .Values.diracxWeb.ingress.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  {{- if and .Values.diracxWeb.ingress.className (semverCompare ">=1.18-0" .Capabilities.KubeVersion.GitVersion) }}
+  ingressClassName: {{ .Values.diracxWeb.ingress.className }}
+  {{- end }}
+  {{- if .Values.diracxWeb.ingress.tls }}
+  tls:
+    {{- range .Values.diracxWeb.ingress.tls }}
+    - hosts:
+        {{- range .hosts }}
+        - {{ . | quote }}
+        {{- end }}
+      secretName: {{ .secretName }}
+    {{- end }}
+  {{- end }}
+  rules:
+    {{- range .Values.diracxWeb.ingress.hosts }}
+    - host: {{ .host | quote }}
+      http:
+        paths:
+          {{- range .paths }}
+          - path: {{ .path }}
+            {{- if and .pathType (semverCompare ">=1.18-0" $.Capabilities.KubeVersion.GitVersion) }}
+            pathType: {{ .pathType }}
+            {{- end }}
+            backend:
+              {{- if semverCompare ">=1.19-0" $.Capabilities.KubeVersion.GitVersion }}
+              service:
+                name: {{ $fullName }}-web
+                port:
+                  number: {{ .backend.service.port.number }}
+              {{- else }}
+              serviceName: {{ $fullName }}-web
+              servicePort: {{ .backend.service.port.number }}
               {{- end }}
           {{- end }}
     {{- end }}
