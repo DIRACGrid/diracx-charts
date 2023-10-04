@@ -53,6 +53,16 @@ init-cs:
   # Users which should be automatically added to the CS
   defaultUsers: []
 
+init-secrets:
+  enabled: true
+  rbac:
+    create: true
+  serviceAccount:
+    enabled: true
+    create: true
+    name: # Specify a pre-existing ServiceAccount name
+
+
 developer:
   enabled: true
   # URLs which can be used to access various components of the demo
@@ -75,7 +85,7 @@ diracx:
     # This corresponds to the basic dirac.cfg
     # which must be present on all the servers
     DIRACX_CONFIG_BACKEND_URL: "git+file:///cs_store/initialRepo"
-    DIRACX_SERVICE_AUTH_TOKEN_KEY: "file:///signing-key/rs256.key"
+    DIRACX_SERVICE_AUTH_TOKEN_KEY: "file:///signing-key/rsa256.key"
     DIRACX_SERVICE_AUTH_ALLOWED_REDIRECTS: '["http://anything:8000/docs/oauth2-redirect"]'
   # Should DiracX include an init container which manages the SQL DB schema?
   manageSQLSchema: true

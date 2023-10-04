@@ -1,0 +1,36 @@
+{{- $initSecretsValues := index .Values "init-secrets" -}}
+{{- if $initSecretsValues.enabled }}
+
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{ template "init-secrets.jobname" . }}
+  namespace: {{ .Release.Namespace }}
+  annotations:
+    "helm.sh/hook": pre-install,pre-upgrade
+    "helm.sh/hook-delete-policy": hook-succeeded,before-hook-creation
+spec:
+  template:
+    metadata:
+      annotations:
+      {{- range $key, $value := $initSecretsValues.annotations }}
+        {{ $key }}: {{ $value | quote }}
+      {{- end }}
+    spec:
+      restartPolicy: Never
+      serviceAccountName: {{ template "init-secrets.serviceAccountName" . }}
+      containers:
+        - name: {{ .Chart.Name }}
+          image: ghcr.io/diracgrid/diracx/secret-generation:latest
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          args: ["/bin/bash", "/scripts/init-secrets"]
+          volumeMounts:
+            - name: scripts
+              mountPath: /scripts
+          resources:
+            {{- toYaml $initSecretsValues.resources | nindent 12 }}
+      volumes:
+      - name: scripts
+        configMap:
+          name: {{ template "init-secrets.fullname" . }}
+{{- end }}

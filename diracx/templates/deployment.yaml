@@ -47,8 +47,11 @@ spec:
           configMap:
             name: diracx-container-entrypoint
         - name: signing-key-mount
-          emptyDir:
-          sizeLimit: 5Mi
+          secret:
+            secretName: diracx-token-signing-key
+            items:
+            - key: rsa256.key
+              path: rsa256.key
         {{- if and .Values.developer.enabled .Values.developer.enableCoverage }}
         - name: coverage-data
           persistentVolumeClaim:
@@ -72,18 +75,6 @@ spec:
       {{- end }}
 
       initContainers:
-      - name: init-signing-key
-        image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
-        command: [/dockerMicroMambaEntrypoint.sh]
-        args:
-          - "ssh-keygen"
-          - "-P"
-          - ""
-          - "-trsa"
-          - "-b4096"
-          - "-mPEM"
-          - "-f/signing-key/rs256.key"
-        volumeMounts: {{ toYaml $commonVolumeMounts | nindent 10 }}
       {{- if .Values.diracx.manageSQLSchema }}
       - name: create-sql-db-schema
         image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"

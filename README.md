@@ -117,7 +117,7 @@ TODO
 | diracx.pythonModulesToInstall | list | `[]` |  |
 | diracx.settings.DIRACX_CONFIG_BACKEND_URL | string | `"git+file:///cs_store/initialRepo"` |  |
 | diracx.settings.DIRACX_SERVICE_AUTH_ALLOWED_REDIRECTS | string | `"[\"http://anything:8000/docs/oauth2-redirect\"]"` |  |
-| diracx.settings.DIRACX_SERVICE_AUTH_TOKEN_KEY | string | `"file:///signing-key/rs256.key"` |  |
+| diracx.settings.DIRACX_SERVICE_AUTH_TOKEN_KEY | string | `"file:///signing-key/rsa256.key"` |  |
 | diracxWeb.image.pullPolicy | string | `"IfNotPresent"` |  |
 | diracxWeb.image.repository | string | `"ghcr.io/diracgrid/diracx-web/client"` |  |
 | diracxWeb.image.tag | string | `"latest"` |  |
@@ -137,6 +137,11 @@ TODO
 | image.tag | string | `"latest"` |  |
 | init-cs.defaultUsers | list | `[]` |  |
 | init-cs.enabled | bool | `true` |  |
+| init-secrets.enabled | bool | `true` |  |
+| init-secrets.rbac.create | bool | `true` |  |
+| init-secrets.serviceAccount.create | bool | `true` |  |
+| init-secrets.serviceAccount.enabled | bool | `true` |  |
+| init-secrets.serviceAccount.name | string | `nil` |  |
 | minio.consoleIngress.enabled | bool | `false` |  |
 | minio.consoleService.type | string | `"NodePort"` |  |
 | minio.enabled | bool | `true` |  |
