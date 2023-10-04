@@ -67,10 +67,11 @@ TODO
 | autoscaling.maxReplicas | int | `100` |  |
 | autoscaling.minReplicas | int | `1` |  |
 | autoscaling.targetCPUUtilizationPercentage | int | `80` |  |
+| developer.autoReload | bool | `true` |  |
 | developer.enableCoverage | bool | `false` |  |
 | developer.enabled | bool | `true` |  |
 | developer.nodeModuleToInstall | string | `nil` |  |
-| developer.pythonModulesToInstall | list | `[]` |  |
+| developer.pythonModulesToEditableInstall | list | `[]` |  |
 | developer.sourcePath | string | `"/diracx_source"` |  |
 | developer.urls | object | `{}` |  |
 | dex."https.enabled" | bool | `false` |  |
@@ -113,6 +114,7 @@ TODO
 | diracx.mysqlDatabases[3] | string | `"SandboxMetadataDB"` |  |
 | diracx.mysqlDatabases[4] | string | `"TaskQueueDB"` |  |
 | diracx.osDatabases[0] | string | `"JobParametersDB"` |  |
+| diracx.pythonModulesToInstall | list | `[]` |  |
 | diracx.settings.DIRACX_CONFIG_BACKEND_URL | string | `"git+file:///cs_store/initialRepo"` |  |
 | diracx.settings.DIRACX_SERVICE_AUTH_ALLOWED_REDIRECTS | string | `"[\"http://anything:8000/docs/oauth2-redirect\"]"` |  |
 | diracx.settings.DIRACX_SERVICE_AUTH_TOKEN_KEY | string | `"file:///signing-key/rs256.key"` |  |

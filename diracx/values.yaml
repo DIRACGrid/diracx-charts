@@ -55,9 +55,14 @@ developer:
   urls: {}
   # Path from which to mount source of DIRACX
   sourcePath: /diracx_source
-  pythonModulesToInstall: []
+  # List of packages which are mounted into developer.sourcePath and should be installed with pip install -e
+  pythonModulesToEditableInstall: []
+  # List of node modules to install
   nodeModuleToInstall: null
+  # Enable collection of coverage reports (intended for CI usage only)
   enableCoverage: false
+  # Enable automatic reloading inside uvicorn when the sources change
+  autoReload: true
   # If set, mount the CS stored localy instead of initializing a default one
   # localCSPath: /local_cs_store
 
@@ -84,6 +89,8 @@ diracx:
   # Which DiracX OpenSearch DBs are used?
   osDatabases:
     - JobParametersDB
+  # List of install specifications to pass to pip before launching each container
+  pythonModulesToInstall: []
   ingress:
     enabled: true
     className: "nginx"
