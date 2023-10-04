@@ -64,11 +64,9 @@ developer:
   # Enable automatic reloading inside uvicorn when the sources change
   autoReload: true
   # If set, mount the CS stored localy instead of initializing a default one
-  # localCSPath: /local_cs_store
+  localCSPath: /local_cs_store
 
 diracx:
-  # Name of the volume on which the CS repo is stored
-  csVolumeName: pv-cs-store
   settings:
     # This corresponds to the basic dirac.cfg
     # which must be present on all the servers

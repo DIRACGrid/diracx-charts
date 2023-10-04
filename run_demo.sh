@@ -224,6 +224,13 @@ if [ ${#pkg_dirs[@]} -gt 0 ]; then
     sed "s@{{ hostPaths }}@  - hostPath: ${pkg_dir}\n    containerPath: /diracx_source/$(basename "${pkg_dir}")\n{{ hostPaths }}@g" "${demo_dir}/demo_cluster_conf.yaml.bak" > "${demo_dir}/demo_cluster_conf.yaml"
   done
 fi
+# Add the mount for the CS
+rm -rf "${demo_dir}/cs-mount"
+mkdir -p "${demo_dir}/cs-mount"
+# Make sure the directory is writable by the container
+chmod 777 "${demo_dir}/cs-mount"
+mv "${demo_dir}/demo_cluster_conf.yaml" "${demo_dir}/demo_cluster_conf.yaml.bak"
+sed "s@{{ csStorePath }}@${demo_dir}/cs-mount@g" "${demo_dir}/demo_cluster_conf.yaml.bak" > "${demo_dir}/demo_cluster_conf.yaml"
 # If coverage is enabled mount .demo/coverage-reports into the cluster
 if [[ ${enable_coverage} ]]; then
   rm -rf "${demo_dir}/coverage-reports"

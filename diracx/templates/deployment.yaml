@@ -31,13 +31,8 @@ spec:
         {{- toYaml .Values.podSecurityContext | nindent 8 }}
       volumes:
         - name: cs-store-mount
-          {{- if and (.Values.developer.enabled) (.Values.developer.localCSPath) }}
           persistentVolumeClaim:
             claimName: pvc-cs-store
-          {{- else }}
-          emptyDir:
-          sizeLimit: 5Mi
-          {{- end }}
         {{- if and .Values.developer.enabled .Values.developer.pythonModulesToEditableInstall }}
         - name: diracx-code-mount
           persistentVolumeClaim:
@@ -77,6 +72,8 @@ spec:
       {{- end }}
 
       initContainers:
+      {{/* TODO: Move this to a separate deployment */}}
+      {{- if .Values.developer.enabled }}
       - name: init-cs
         image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
         command: ["bash", "/entrypoint.sh"]
@@ -104,6 +101,7 @@ spec:
           - "--user-group=admin"
           - "--sub=EgVsb2NhbA"
         volumeMounts: {{ toYaml $commonVolumeMounts | nindent 10 }}
+      {{- end }}
       - name: init-signing-key
         image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
         command: [/dockerMicroMambaEntrypoint.sh]

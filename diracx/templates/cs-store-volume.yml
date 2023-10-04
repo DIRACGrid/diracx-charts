@@ -1,13 +1,13 @@
-{{ if and (.Values.developer.enabled) (.Values.developer.localCSPath)  }}
+{{ if .Values.developer.enabled  }}
 ---
 apiVersion: v1
 kind: PersistentVolume
 metadata:
-  name: {{ .Values.diracx.csVolumeName }}
+  name: pv-cs-store
 spec:
   storageClassName: standard
   accessModes:
-    - ReadOnlyMany
+    - ReadWriteMany
   capacity:
     storage: 2Gi
   hostPath:
@@ -19,9 +19,11 @@ kind: PersistentVolumeClaim
 metadata:
   name: pvc-cs-store
 spec:
-  volumeName: {{ .Values.diracx.csVolumeName }}
+{{ if .Values.developer.enabled  }}
+  volumeName: pv-cs-store
+{{ end }}
   accessModes:
-    - ReadOnlyMany
+    - ReadWriteMany
   resources:
     requests:
       storage: 1Gi

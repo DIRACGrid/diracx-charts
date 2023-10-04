@@ -70,6 +70,7 @@ TODO
 | developer.autoReload | bool | `true` |  |
 | developer.enableCoverage | bool | `false` |  |
 | developer.enabled | bool | `true` |  |
+| developer.localCSPath | string | `"/local_cs_store"` |  |
 | developer.nodeModuleToInstall | string | `nil` |  |
 | developer.pythonModulesToEditableInstall | list | `[]` |  |
 | developer.sourcePath | string | `"/diracx_source"` |  |
@@ -96,7 +97,6 @@ TODO
 | dex.service.ports.http.nodePort | int | `32002` |  |
 | dex.service.ports.http.port | int | `8000` |  |
 | dex.service.type | string | `"NodePort"` |  |
-| diracx.csVolumeName | string | `"pv-cs-store"` |  |
 | diracx.ingress.className | string | `"nginx"` |  |
 | diracx.ingress.enabled | bool | `true` |  |
 | diracx.ingress.hosts[0].paths[0].backend.service.port.number | int | `8000` |  |
