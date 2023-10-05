@@ -257,6 +257,9 @@ rabbitmq:
     enabled: false
   containerSecurityContext:
     enabled: false
+  auth:
+    existingPasswordSecret: rabbitmq-secret
+    existingErlangSecret: rabbitmq-secret
 
 ##########################
 

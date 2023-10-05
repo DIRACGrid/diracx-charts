@@ -50,3 +50,9 @@ function generate_secret_if_needed(){
 # Generate the token signing key
 ssh-keygen -P '' -trsa -b4096 -mPEM -f"$PWD/rsa256.key"
 generate_secret_if_needed diracx-token-signing-key --from-file "$PWD/rsa256.key"
+
+{{- if .Values.rabbitmq.enabled }}
+# Generate the secrets for rabbitmq
+generate_secret_if_needed {{ .Values.rabbitmq.auth.existingPasswordSecret }} --from-literal=rabbitmq-password=$(gen_random 'a-zA-Z0-9' 32 | base64)
+generate_secret_if_needed {{ .Values.rabbitmq.auth.existingErlangSecret }} --from-literal=rabbitmq-erlang-cookie=$(gen_random 'a-zA-Z0-9' 32 | base64)
+{{- end }}
