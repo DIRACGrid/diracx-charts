@@ -135,6 +135,8 @@ TODO
 | image.pullPolicy | string | `"Always"` |  |
 | image.repository | string | `"ghcr.io/diracgrid/diracx/server"` |  |
 | image.tag | string | `"latest"` |  |
+| init-cs.defaultUsers | list | `[]` |  |
+| init-cs.enabled | bool | `true` |  |
 | minio.consoleIngress.enabled | bool | `false` |  |
 | minio.consoleService.type | string | `"NodePort"` |  |
 | minio.enabled | bool | `true` |  |

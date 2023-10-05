@@ -64,3 +64,23 @@ Create the name of the service account to use
 {{- default "default" .Values.serviceAccount.name }}
 {{- end }}
 {{- end }}
+
+{{/*
+Return the fullname template for the init-cs job.
+*/}}
+{{- define "init-cs.fullname" -}}
+{{- printf "%s-init-cs" .Release.Name -}}
+{{- end -}}
+
+{{/*
+Create a default fully qualified job name for init-cs.
+Due to the job only being allowed to run once, we add the chart revision so helm
+upgrades don't cause errors trying to create the already ran job.
+Due to the helm delete not cleaning up these jobs, we add a random value to
+reduce collisions.
+*/}}
+{{- define "init-cs.jobname" -}}
+{{- $name := include "init-cs.fullname" . | trunc 55 | trimSuffix "-" -}}
+{{- $rand := randAlphaNum 3 | lower }}
+{{- printf "%s-%d-%s" $name .Release.Revision $rand | trunc 63 | trimSuffix "-" -}}
+{{- end -}}

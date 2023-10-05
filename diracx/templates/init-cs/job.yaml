@@ -1,0 +1,79 @@
+{{- $initCSValues := index .Values "init-cs" -}}
+{{- if $initCSValues.enabled }}
+
+{{/* Define common volume mounts for reusability */}}
+{{- $commonVolumeMounts := list }}
+{{- $commonVolumeMounts = append $commonVolumeMounts (dict "mountPath" "/cs_store" "name" "cs-store-mount" "readOnly" false) }}
+{{- $commonVolumeMounts = append $commonVolumeMounts (dict "mountPath" "/entrypoint.sh" "name" "container-entrypoint" "subPath" "entrypoint.sh") }}
+{{- if and .Values.developer.enabled .Values.developer.enableCoverage }}
+{{- $commonVolumeMounts = append $commonVolumeMounts (dict "mountPath" "/diracx-coveragerc" "name" "container-entrypoint" "subPath" "coveragerc") }}
+{{- $commonVolumeMounts = append $commonVolumeMounts (dict "mountPath" "/coverage-reports" "name" "coverage-data" "readOnly" false) }}
+{{- end }}
+{{- if and .Values.developer.enabled .Values.developer.pythonModulesToEditableInstall }}
+{{- $commonVolumeMounts = append $commonVolumeMounts (dict "mountPath" .Values.developer.sourcePath "name" "diracx-code-mount" "readOnly" true) }}
+{{- range $module := .Values.developer.pythonModulesToEditableInstall }}
+{{- $commonVolumeMounts = append $commonVolumeMounts (dict "mountPath" (printf "%s/%s/src/%s.egg-info" $.Values.developer.sourcePath $module $module) "name" (printf "%s-editable-install" (lower $module)) "readOnly" false) }}
+{{- end }}
+{{- end }}
+
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{ template "init-cs.jobname" . }}
+  namespace: {{ .Release.Namespace }}
+  annotations:
+    "helm.sh/hook": pre-install
+    "helm.sh/hook-delete-policy": hook-succeeded,before-hook-creation
+spec:
+  template:
+    metadata:
+      annotations:
+      {{- range $key, $value := $initCSValues.annotations }}
+        {{ $key }}: {{ $value | quote }}
+      {{- end }}
+    spec:
+      restartPolicy: Never
+      containers:
+        - name: {{ .Chart.Name }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          command: ["/bin/bash", "/entrypoint.sh"]
+          args: ["/bin/bash", "/scripts/init-cs"]
+          volumeMounts:
+            {{ toYaml $commonVolumeMounts | nindent 12 }}
+            - name: scripts
+              mountPath: /scripts
+          resources:
+            {{- toYaml $initCSValues.resources | nindent 12 }}
+      volumes:
+      - name: scripts
+        configMap:
+          name: {{ template "init-cs.fullname" . }}
+      - name: cs-store-mount
+        persistentVolumeClaim:
+          claimName: pvc-cs-store
+      {{- if and .Values.developer.enabled .Values.developer.pythonModulesToEditableInstall }}
+      - name: diracx-code-mount
+        persistentVolumeClaim:
+          claimName: pvc-diracx-code
+      {{- range $module := .Values.developer.pythonModulesToEditableInstall }}
+      - name: {{ lower $module }}-editable-install
+        empty-dir:
+        sizeLimit: 5Mi
+      {{- end }}
+      {{- end }}
+      - name: container-entrypoint
+        configMap:
+          name: diracx-container-entrypoint
+      - name: signing-key-mount
+        secret:
+          secretName: diracx-token-signing-key
+          items:
+          - key: rsa256.key
+            path: rsa256.key
+      {{- if and .Values.developer.enabled .Values.developer.enableCoverage }}
+      - name: coverage-data
+        persistentVolumeClaim:
+          claimName: pvc-coverage
+      {{- end }}
+{{- end }}

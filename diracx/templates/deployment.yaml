@@ -72,36 +72,6 @@ spec:
       {{- end }}
 
       initContainers:
-      {{/* TODO: Move this to a separate deployment */}}
-      {{- if .Values.developer.enabled }}
-      - name: init-cs
-        image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
-        command: ["bash", "/entrypoint.sh"]
-        args:
-          - "dirac"
-          - "internal"
-          - "generate-cs"
-          - "/cs_store/initialRepo"
-          - "--vo=diracAdmin"
-          - "--user-group=admin"
-          - "--idp-url={{ .Values.dex.config.issuer }}"
-          {{- with (first .Values.dex.config.staticClients) }}
-          - "--idp-client-id={{ .id }}"
-          {{- end }}
-        volumeMounts: {{ toYaml $commonVolumeMounts | nindent 10 }}
-      - name: init-cs-user
-        image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
-        command: ["bash", "/entrypoint.sh"]
-        args:
-          - "dirac"
-          - "internal"
-          - "add-user"
-          - "/cs_store/initialRepo"
-          - "--vo=diracAdmin"
-          - "--user-group=admin"
-          - "--sub=EgVsb2NhbA"
-        volumeMounts: {{ toYaml $commonVolumeMounts | nindent 10 }}
-      {{- end }}
       - name: init-signing-key
         image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
         command: [/dockerMicroMambaEntrypoint.sh]

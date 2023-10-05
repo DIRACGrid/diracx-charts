@@ -47,7 +47,11 @@ securityContext: {}
 
 #################
 
-
+init-cs:
+  # Automatically initialize the repository in the CS volume
+  enabled: true
+  # Users which should be automatically added to the CS
+  defaultUsers: []
 
 developer:
   enabled: true

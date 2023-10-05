@@ -1,0 +1,15 @@
+{{- $initCSValues := index .Values "init-cs" "enabled" -}}
+{{- if $initCSValues -}}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ template "init-cs.fullname" . }}
+  namespace: {{ .Release.Namespace }}
+  annotations:
+    "helm.sh/hook": pre-install
+    "helm.sh/hook-weight": "-3"
+    "helm.sh/hook-delete-policy": hook-succeeded,before-hook-creation
+data:
+  init-cs: |
+    {{- include (print $.Template.BasePath "/init-cs/_init-cs.sh.tpl") . | nindent 4 }}
+{{- end -}}
