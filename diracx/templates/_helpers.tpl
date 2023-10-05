@@ -124,3 +124,23 @@ Create the name of the service account to use for init-secrets job
     {{ coalesce $initSecretsValues.serviceAccount.name .Values.global.serviceAccount.name "default" }}
 {{- end -}}
 {{- end -}}
+
+{{/*
+Return the fullname template for the init-sql job.
+*/}}
+{{- define "init-sql.fullname" -}}
+{{- printf "%s-init-sql" .Release.Name -}}
+{{- end -}}
+
+{{/*
+Create a default fully qualified job name for init-sql.
+Due to the job only being allowed to run once, we add the chart revision so helm
+upgrades don't cause errors trying to create the already ran job.
+Due to the helm delete not cleaning up these jobs, we add a random value to
+reduce collisions.
+*/}}
+{{- define "init-sql.jobname" -}}
+{{- $name := include "init-sql.fullname" . | trunc 55 | trimSuffix "-" -}}
+{{- $rand := randAlphaNum 3 | lower }}
+{{- printf "%s-%d-%s" $name .Release.Revision $rand | trunc 63 | trimSuffix "-" -}}
+{{- end -}}

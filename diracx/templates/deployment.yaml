@@ -76,26 +76,6 @@ spec:
       {{- end }}
 
       initContainers:
-      {{- if .Values.diracx.manageSQLSchema.enabled }}
-      - name: create-sql-db-schema
-        image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
-        command: ["bash", "/entrypoint.sh"]
-        args: ["python", "-m", "diracx.db", "init-sql"]
-        volumeMounts: {{ toYaml $commonVolumeMounts | nindent 10 }}
-        {{- if .Values.mysql.enabled }}
-        env:
-        {{- range $dbName := .Values.diracx.mysqlDatabases }}
-          - name: DIRACX_DB_URL_{{ $dbName | upper }}
-            valueFrom:
-              secretKeyRef:
-                name: diracx-sql-root-connection-urls
-                key: DIRACX_DB_URL_{{ $dbName | upper }}
-        {{- end }}
-        {{- end }}
-        envFrom:
-          - secretRef:
-              name: diracx-init-mysql-secrets
-      {{- end }}
       {{- if .Values.diracx.manageOSIndices }}
       - name: create-os-db-indices
         image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"

@@ -107,8 +107,6 @@ TODO
 | diracx.ingress.hosts[0].paths[1].pathType | string | `"Prefix"` |  |
 | diracx.ingress.tls | list | `[]` |  |
 | diracx.manageOSIndices | bool | `true` |  |
-| diracx.manageSQLSchema.enabled | bool | `true` |  |
-| diracx.manageSQLSchema.env | object | `{}` |  |
 | diracx.mysqlDatabases[0] | string | `"AuthDB"` |  |
 | diracx.mysqlDatabases[1] | string | `"JobDB"` |  |
 | diracx.mysqlDatabases[2] | string | `"JobLoggingDB"` |  |
@@ -143,6 +141,8 @@ TODO
 | init-secrets.serviceAccount.create | bool | `true` |  |
 | init-secrets.serviceAccount.enabled | bool | `true` |  |
 | init-secrets.serviceAccount.name | string | `nil` |  |
+| init-sql.enabled | bool | `true` |  |
+| init-sql.env | object | `{}` |  |
 | minio.consoleIngress.enabled | bool | `false` |  |
 | minio.consoleService.type | string | `"NodePort"` |  |
 | minio.enabled | bool | `true` |  |
