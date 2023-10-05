@@ -38,11 +38,11 @@ spec:
           emptyDir:
           sizeLimit: 5Mi
           {{- end }}
-        {{- if and .Values.developer.enabled .Values.developer.modulesToInstall }}
+        {{- if and .Values.developer.enabled .Values.developer.pythonModulesToInstall }}
         - name: diracx-code-mount
           persistentVolumeClaim:
             claimName: pvc-diracx-code
-        {{- range $module := .Values.developer.modulesToInstall }}
+        {{- range $module := .Values.developer.pythonModulesToInstall }}
         - name: {{ lower $module }}-editable-install
           empty-dir:
           sizeLimit: 5Mi
@@ -69,9 +69,9 @@ spec:
       {{- $commonVolumeMounts = append $commonVolumeMounts (dict "mountPath" "/diracx-coveragerc" "name" "container-entrypoint" "subPath" "coveragerc") }}
       {{- $commonVolumeMounts = append $commonVolumeMounts (dict "mountPath" "/coverage-reports" "name" "coverage-data" "readOnly" false) }}
       {{- end }}
-      {{- if and .Values.developer.enabled .Values.developer.modulesToInstall }}
+      {{- if and .Values.developer.enabled .Values.developer.pythonModulesToInstall }}
       {{- $commonVolumeMounts = append $commonVolumeMounts (dict "mountPath" .Values.developer.sourcePath "name" "diracx-code-mount" "readOnly" true) }}
-      {{- range $module := .Values.developer.modulesToInstall }}
+      {{- range $module := .Values.developer.pythonModulesToInstall }}
       {{- $commonVolumeMounts = append $commonVolumeMounts (dict "mountPath" (printf "%s/%s/src/%s.egg-info" $.Values.developer.sourcePath $module $module) "name" (printf "%s-editable-install" (lower $module)) "readOnly" false) }}
       {{- end }}
       {{- end }}
@@ -164,7 +164,7 @@ spec:
           {{- if .Values.developer.enabled }}
             - "--reload"
             - "--proxy-headers"
-            {{- if .Values.developer.modulesToInstall }}
+            {{- if .Values.developer.pythonModulesToInstall }}
             - "--reload-dir={{ .Values.developer.sourcePath }}"
             {{- end }}
           {{- end }}

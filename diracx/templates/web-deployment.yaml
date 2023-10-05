@@ -28,7 +28,7 @@ spec:
       securityContext:
         {{- toYaml .Values.podSecurityContext | nindent 8 }}
       volumes:
-        {{- if and .Values.developer.enabled }}
+        {{- if and .Values.developer.enabled .Values.developer.nodeModuleToInstall }}
         - name: diracx-web-code-mount
           persistentVolumeClaim:
             claimName: pvc-diracx-code
@@ -52,12 +52,14 @@ spec:
             httpGet:
               path: /
               port: http
-          {{- if .Values.developer.enabled }}
-          command: ["npm", "run", "dev"]
+          {{- if and .Values.developer.enabled .Values.developer.nodeModuleToInstall }}
+          command: ["npm", "run", "dev", "--prefix", {{ printf "%s/%s" $.Values.developer.sourcePath $.Values.developer.nodeModuleToInstall }}]
           volumeMounts:
-            - mountPath: /diracxweb_source
-              name: diracx-web-code-mount
+            - mountPath: {{ .Values.developer.sourcePath }}
+              name: "diracx-web-code-mount"
               readOnly: true
+          {{- else if .Values.developer.enabled }}
+          command: ["npm", "run", "dev"]
           {{- else }}
           command: ["npm", "start"]
           {{- end }}

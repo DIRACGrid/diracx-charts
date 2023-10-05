@@ -69,7 +69,8 @@ TODO
 | autoscaling.targetCPUUtilizationPercentage | int | `80` |  |
 | developer.enableCoverage | bool | `false` |  |
 | developer.enabled | bool | `true` |  |
-| developer.modulesToInstall | list | `[]` |  |
+| developer.nodeModuleToInstall | string | `nil` |  |
+| developer.pythonModulesToInstall | list | `[]` |  |
 | developer.sourcePath | string | `"/diracx_source"` |  |
 | developer.urls | object | `{}` |  |
 | dex."https.enabled" | bool | `false` |  |
