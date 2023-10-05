@@ -5,7 +5,8 @@ developer:
     minio: http://{{ hostname }}:32000
     dex: http://{{ hostname }}:32002
   demoDir: {{ demo_dir }}
-  modulesToInstall: {{ modules_to_mount }}
+  pythonModulesToInstall: {{ python_modules_to_mount }}
+  nodeModuleToInstall: {{ node_module_to_mount }}
 
 diracx:
   settings:

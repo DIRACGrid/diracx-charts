@@ -123,17 +123,20 @@ done
 # Remaining arguments are positional parameters that are used to specify which
 # source directories to mount in the demo cluster
 declare -a pkg_dirs=()
-declare -a pkg_names=()
+declare -a python_pkg_names=()
+node_pkg_name=""
+
 for src_dir in "$@"; do
   pkg_dirs+=("${src_dir}")
+  # Python packages
   # shellcheck disable=SC2044
   for pkg_dir in $(find "$src_dir/src" -mindepth 2 -maxdepth 2 -type f -name '__init__.py'); do
     pkg_name="$(basename "$(dirname "${pkg_dir}")")"
 
     # Check for the presence of $pkg_name in pkg_names array
     found=0
-    if [ ${#pkg_names[@]} -gt 0 ]; then
-      for existing_pkg_name in "${pkg_names[@]}"; do
+    if [ ${#python_pkg_names[@]} -gt 0 ]; then
+      for existing_pkg_name in "${python_pkg_names[@]}"; do
         if [[ "$existing_pkg_name" == "$pkg_name" ]]; then
           found=1
           break
@@ -145,11 +148,19 @@ for src_dir in "$@"; do
       printf "%b Error: Source directory for %s was given twice!\n" "${SKULL_EMOJI}" "${pkg_name}"
       exit 1
     fi
-    pkg_names+=("${pkg_name}")
+    python_pkg_names+=("${pkg_name}")
+  done
+
+  # Node packages: we keep a single package, the last one found
+  # shellcheck disable=SC2044
+  for pkg_json in $(find "$src_dir" -mindepth 1 -maxdepth 1 -type f -name 'package.json'); do
+    node_pkg_name=$(jq -r '.name' < "${pkg_json}")
   done
 done
-if [ ${#pkg_names[@]} -gt 0 ]; then
-  printf "%b Found package directories for: %s\n" ${UNICORN_EMOJI} "${pkg_names[@]}"
+
+if [ ${#python_pkg_names[@]} -gt 0 ] || [ ${#node_pkg_name} != "" ]; then
+  pkg_names_joined=$(IFS=' '; echo "${python_pkg_names[*]} ${node_pkg_name}")
+  printf "%b Found package directories for: %s\n" ${UNICORN_EMOJI} "${pkg_names_joined}"
 else
   printf "%b No source directories were specified\n" ${UNICORN_EMOJI}
 fi
@@ -236,14 +247,22 @@ sed "s/{{ hostname }}/${machine_hostname}/g" "${script_dir}/demo/values.tpl.yaml
 mv "${demo_dir}/values.yaml" "${demo_dir}/values.yaml.bak"
 sed "s@{{ demo_dir }}@${demo_dir}@g" "${demo_dir}/values.yaml.bak" > "${demo_dir}/values.yaml"
 mv "${demo_dir}/values.yaml" "${demo_dir}/values.yaml.bak"
+
+# Add python packages
 json="["
-if [ ${#pkg_names[@]} -gt 0 ]; then
-  for pkg_name in "${pkg_names[@]}"; do
+if [ ${#python_pkg_names[@]} -gt 0 ]; then
+  for pkg_name in "${python_pkg_names[@]}"; do
       json+="\"$pkg_name\","
   done
 fi
 json="${json%,}]"
-sed "s/{{ modules_to_mount }}/${json}/g" "${demo_dir}/values.yaml.bak" > "${demo_dir}/values.yaml"
+sed "s/{{ python_modules_to_mount }}/${json}/g" "${demo_dir}/values.yaml.bak" > "${demo_dir}/values.yaml"
+mv "${demo_dir}/values.yaml" "${demo_dir}/values.yaml.bak"
+
+# Add the node package
+sed "s/{{ node_module_to_mount }}/${node_pkg_name}/g" "${demo_dir}/values.yaml.bak" > "${demo_dir}/values.yaml"
+
+# Final check
 if grep '{{' "${demo_dir}/values.yaml"; then
   printf "%b Error generating template. Found {{ in the template result\n" ${SKULL_EMOJI}
   exit 1
