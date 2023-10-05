@@ -107,7 +107,8 @@ TODO
 | diracx.ingress.hosts[0].paths[1].pathType | string | `"Prefix"` |  |
 | diracx.ingress.tls | list | `[]` |  |
 | diracx.manageOSIndices | bool | `true` |  |
-| diracx.manageSQLSchema | bool | `true` |  |
+| diracx.manageSQLSchema.enabled | bool | `true` |  |
+| diracx.manageSQLSchema.env | object | `{}` |  |
 | diracx.mysqlDatabases[0] | string | `"AuthDB"` |  |
 | diracx.mysqlDatabases[1] | string | `"JobDB"` |  |
 | diracx.mysqlDatabases[2] | string | `"JobLoggingDB"` |  |
@@ -155,8 +156,7 @@ TODO
 | minio.rootUser | string | `"rootuser"` |  |
 | minio.service.type | string | `"NodePort"` |  |
 | mysql.auth.createDatabase | bool | `false` |  |
-| mysql.auth.password | string | `"mysqlDevInsecure"` |  |
-| mysql.auth.rootPassword | string | `"mysqlRootDevInsecure"` |  |
+| mysql.auth.existingSecret | string | `"mysql-secret"` |  |
 | mysql.auth.username | string | `"sqldiracx"` |  |
 | mysql.enabled | bool | `true` |  |
 | mysql.initdbScriptsConfigMap | string | `"mysql-init-diracx-dbs"` |  |

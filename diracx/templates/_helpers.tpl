@@ -85,7 +85,6 @@ reduce collisions.
 {{- printf "%s-%d-%s" $name .Release.Revision $rand | trunc 63 | trimSuffix "-" -}}
 {{- end -}}
 
-
 {{/*
 Return the fullname template for the init-secrets job.
 */}}

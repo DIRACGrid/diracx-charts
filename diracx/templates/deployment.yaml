@@ -18,6 +18,7 @@ spec:
           {{- toYaml . | nindent 8 }}
         {{- end }}
         checksum/settings: {{ include (print $.Template.BasePath "/secrets.yaml") . | sha256sum }}
+        checksum/init-settings: {{ include (print $.Template.BasePath "/init-secrets/configmap.yaml") . | sha256sum }}
         checksum/entrypoint: {{ include (print $.Template.BasePath "/diracx-container-entrypoint.yaml") . | sha256sum }}
       labels:
         {{- include "diracx.selectorLabels" . | nindent 8 }}
@@ -75,12 +76,22 @@ spec:
       {{- end }}
 
       initContainers:
-      {{- if .Values.diracx.manageSQLSchema }}
+      {{- if .Values.diracx.manageSQLSchema.enabled }}
       - name: create-sql-db-schema
         image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
         command: ["bash", "/entrypoint.sh"]
         args: ["python", "-m", "diracx.db", "init-sql"]
         volumeMounts: {{ toYaml $commonVolumeMounts | nindent 10 }}
+        {{- if .Values.mysql.enabled }}
+        env:
+        {{- range $dbName := .Values.diracx.mysqlDatabases }}
+          - name: DIRACX_DB_URL_{{ $dbName | upper }}
+            valueFrom:
+              secretKeyRef:
+                name: diracx-sql-root-connection-urls
+                key: DIRACX_DB_URL_{{ $dbName | upper }}
+        {{- end }}
+        {{- end }}
         envFrom:
           - secretRef:
               name: diracx-init-mysql-secrets
@@ -134,6 +145,10 @@ spec:
             #     name: diracx-env-config
             - secretRef:
                 name: diracx-secrets
+            {{- if and .Values.mysql.enabled .Values.diracx.mysqlDatabases }}
+            - secretRef:
+                name: diracx-sql-connection-urls
+            {{- end }}
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
       {{- with .Values.nodeSelector }}
