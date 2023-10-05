@@ -132,7 +132,7 @@ TODO
 | diracxWeb.settings.DEFAULT_SCOPE | string | `"vo:diracAdmin"` |  |
 | diracxWeb.settings.DIRACX_CLIENT_ID | string | `"myDIRACClientID"` |  |
 | fullnameOverride | string | `""` |  |
-| image.pullPolicy | string | `"IfNotPresent"` |  |
+| image.pullPolicy | string | `"Always"` |  |
 | image.repository | string | `"ghcr.io/diracgrid/diracx/server"` |  |
 | image.tag | string | `"latest"` |  |
 | minio.consoleIngress.enabled | bool | `false` |  |
