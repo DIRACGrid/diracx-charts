@@ -319,11 +319,17 @@ fi
 echo ""
 printf "%b  Press Ctrl+C to clean up and exit\n" "${INFO_EMOJI}"
 
+machine_hostname_has_changed=0
 while true; do
   sleep 60;
   # If the machine hostname changes then the demo will need to be restarted.
   # See the original machine_hostname detection description above.
   if ! check_hostname "${machine_hostname}"; then
     echo "The demo will likely need to be restarted."
+    machine_hostname_has_changed=1
+  elif [ ${machine_hostname_has_changed} -eq 1 ]; then
+    printf "%b The machine hostnamae seems to have been fixed. %b\n" "${PARTY_EMOJI}" "${PARTY_EMOJI}"
+    printf "%b No need to restart! %b\n" "${PARTY_EMOJI}" "${PARTY_EMOJI}"
+    machine_hostname_has_changed=0
   fi
 done
