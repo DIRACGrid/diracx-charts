@@ -15,6 +15,10 @@ Then see the chart README for more information on how to use kubectl/helm.
 
   export DIRACX_URL={{ .Values.developer.urls.diracx }}
 
+ℹ️  To access the web application visit:
+
+  {{ .Values.developer.urls.diracx }}
+
 ℹ️  To access the interactive API documentation visit:
 
   {{ .Values.developer.urls.diracx }}/docs
