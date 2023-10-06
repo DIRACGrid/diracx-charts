@@ -1,7 +1,6 @@
 developer:
   urls:
-    diracx: http://{{ hostname }}:8000/api
-    diracx-web: http://{{ hostname }}:8000
+    diracx: http://{{ hostname }}:8000
     minio: http://{{ hostname }}:32000
     dex: http://{{ hostname }}:32002
   demoDir: {{ demo_dir }}
