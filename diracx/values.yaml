@@ -87,21 +87,17 @@ diracx:
   ingress:
     enabled: true
     className: "nginx"
-    annotations:
-      # kubernetes.io/ingress.class: nginx
-      # kubernetes.io/tls-acme: "true"
-      # Needed if you want to use a base path different from /
-      # #Use rewrite rules https://kubernetes.github.io/ingress-nginx/examples/rewrite/
-      nginx.ingress.kubernetes.io/use-regex: "true"
-      nginx.ingress.kubernetes.io/rewrite-target: /$2
     tls: []
-      #  - secretName: chart-example-tls
-      #    hosts:
-      #      - chart-example.local
     hosts:
     - paths:
-        - path: /api(/|$)(.*)
-          pathType: ImplementationSpecific
+        - path: /api
+          pathType: Prefix
+          backend:
+            service:
+              port:
+                number: 8000
+        - path: /.well-known
+          pathType: Prefix
           backend:
             service:
               port:
