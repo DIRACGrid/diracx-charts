@@ -17,7 +17,7 @@ diracx:
 diracxWeb:
   settings:
     REDIRECT_URI: http://localhost:8000/dashboard/#authentication-callback
-    NEXT_PUBLIC_DIRACX_URL: http://{{ hostname }}:8000/api
+    NEXT_PUBLIC_DIRACX_URL: http://{{ hostname }}:8000
 
 minio:
   environment:
