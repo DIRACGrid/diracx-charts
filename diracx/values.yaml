@@ -2,6 +2,10 @@
 # This is a YAML-formatted file.
 # Declare variables to be passed into your templates.
 
+global:
+  # How long should batch jobs be retained after completing?
+  batchJobTTL: 600
+
 replicaCount: 1
 
 image:

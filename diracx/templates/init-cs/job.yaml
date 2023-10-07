@@ -23,8 +23,9 @@ metadata:
   namespace: {{ .Release.Namespace }}
   annotations:
     "helm.sh/hook": pre-install
-    "helm.sh/hook-delete-policy": hook-succeeded,before-hook-creation
 spec:
+  ttlSecondsAfterFinished: {{ .Values.global.batchJobTTL }}
+  activeDeadlineSeconds: 300
   template:
     metadata:
       annotations:
