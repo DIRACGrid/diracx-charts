@@ -302,6 +302,10 @@ else
   printf "%b Waiting for installation to finish...\n" ${UNICORN_EMOJI}
   if "${demo_dir}/kubectl" wait --for=condition=ready pod --selector=app.kubernetes.io/name=diracx --timeout=300s; then
     printf "%b %b %b Pods are ready! %b %b %b\n" "${PARTY_EMOJI}" "${PARTY_EMOJI}" "${PARTY_EMOJI}" "${PARTY_EMOJI}" "${PARTY_EMOJI}" "${PARTY_EMOJI}"
+
+    # Dump the CA certificate to a file so that it can be used by the client
+    kubectl get secret/root-secret -o json | jq -r '.data."tls.crt"' | base64 -d > "${demo_dir}/demo-ca.pem"
+
     touch "${demo_dir}/.success"
   else
     printf "%b Installation did not start sucessfully!\n" ${WARN_EMOJI}

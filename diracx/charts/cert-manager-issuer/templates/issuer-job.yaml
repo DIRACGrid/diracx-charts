@@ -1,0 +1,32 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{ template "cert-manager-issuer.jobname" . }}
+  namespace: {{ $.Release.Namespace }}
+spec:
+  ttlSecondsAfterFinished: {{ .Values.global.batchJobTTL }}
+  activeDeadlineSeconds: 300
+  template:
+    metadata:
+      labels:
+        app: {{ template "diracx.name" . }}
+        release: {{ .Release.Name }}
+    spec:
+      {{- if .Values.rbac.create }}
+      serviceAccountName: {{ template "diracx.fullname" . }}
+      {{- end }}
+      restartPolicy: OnFailure
+      containers:
+        - name: create-issuer
+          image: ghcr.io/diracgrid/diracx/secret-generation:latest
+          imagePullPolicy: Always
+          command: ['/bin/bash', '/scripts/create-issuer', '/scripts/issuer.yml']
+          volumeMounts:
+            - name: scripts
+              mountPath: /scripts
+          resources:
+{{ toYaml .Values.resources | indent 12 }}
+      volumes:
+      - name: scripts
+        configMap:
+          name: {{ template "diracx.fullname" . }}-certmanager

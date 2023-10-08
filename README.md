@@ -52,9 +52,11 @@ TODO
 
 | Repository | Name | Version |
 |------------|------|---------|
+|  | cert-manager-issuer | *.*.* |
 | https://charts.bitnami.com/bitnami/ | mysql | 9.11.0 |
 | https://charts.bitnami.com/bitnami/ | rabbitmq | 12.0.10 |
 | https://charts.dexidp.io/ | dex | 0.14.2 |
+| https://charts.jetstack.io | cert-manager | 1.13.1 |
 | https://charts.min.io/ | minio | 5.0.11 |
 | https://opensearch-project.github.io/helm-charts/ | opensearch | 2.13.1 |
 
@@ -67,6 +69,9 @@ TODO
 | autoscaling.maxReplicas | int | `100` |  |
 | autoscaling.minReplicas | int | `1` |  |
 | autoscaling.targetCPUUtilizationPercentage | int | `80` |  |
+| cert-manager-issuer.enabled | bool | `true` |  |
+| cert-manager.enabled | bool | `true` |  |
+| cert-manager.installCRDs | bool | `true` |  |
 | developer.autoReload | bool | `true` |  |
 | developer.enableCoverage | bool | `false` |  |
 | developer.enabled | bool | `true` |  |
@@ -97,15 +102,6 @@ TODO
 | dex.service.ports.http.nodePort | int | `32002` |  |
 | dex.service.ports.http.port | int | `8000` |  |
 | dex.service.type | string | `"NodePort"` |  |
-| diracx.ingress.className | string | `"nginx"` |  |
-| diracx.ingress.enabled | bool | `true` |  |
-| diracx.ingress.hosts[0].paths[0].backend.service.port.number | int | `8000` |  |
-| diracx.ingress.hosts[0].paths[0].path | string | `"/api"` |  |
-| diracx.ingress.hosts[0].paths[0].pathType | string | `"Prefix"` |  |
-| diracx.ingress.hosts[0].paths[1].backend.service.port.number | int | `8000` |  |
-| diracx.ingress.hosts[0].paths[1].path | string | `"/.well-known"` |  |
-| diracx.ingress.hosts[0].paths[1].pathType | string | `"Prefix"` |  |
-| diracx.ingress.tls | list | `[]` |  |
 | diracx.manageOSIndices | bool | `true` |  |
 | diracx.mysqlDatabases[0] | string | `"AuthDB"` |  |
 | diracx.mysqlDatabases[1] | string | `"JobDB"` |  |
@@ -114,18 +110,14 @@ TODO
 | diracx.mysqlDatabases[4] | string | `"TaskQueueDB"` |  |
 | diracx.osDatabases[0] | string | `"JobParametersDB"` |  |
 | diracx.pythonModulesToInstall | list | `[]` |  |
+| diracx.service.port | int | `8000` |  |
+| diracx.service.type | string | `"ClusterIP"` |  |
 | diracx.settings.DIRACX_CONFIG_BACKEND_URL | string | `"git+file:///cs_store/initialRepo"` |  |
 | diracx.settings.DIRACX_SERVICE_AUTH_ALLOWED_REDIRECTS | string | `"[\"http://anything:8000/docs/oauth2-redirect\"]"` |  |
 | diracx.settings.DIRACX_SERVICE_AUTH_TOKEN_KEY | string | `"file:///signing-key/rsa256.key"` |  |
 | diracxWeb.image.pullPolicy | string | `"IfNotPresent"` |  |
 | diracxWeb.image.repository | string | `"ghcr.io/diracgrid/diracx-web/client"` |  |
 | diracxWeb.image.tag | string | `"latest"` |  |
-| diracxWeb.ingress.className | string | `"nginx"` |  |
-| diracxWeb.ingress.enabled | bool | `true` |  |
-| diracxWeb.ingress.hosts[0].paths[0].backend.service.port.number | int | `3000` |  |
-| diracxWeb.ingress.hosts[0].paths[0].path | string | `"/"` |  |
-| diracxWeb.ingress.hosts[0].paths[0].pathType | string | `"Prefix"` |  |
-| diracxWeb.ingress.tls | list | `[]` |  |
 | diracxWeb.service.port | int | `3000` |  |
 | diracxWeb.service.type | string | `"ClusterIP"` |  |
 | diracxWeb.settings.DEFAULT_SCOPE | string | `"vo:diracAdmin"` |  |
@@ -135,6 +127,10 @@ TODO
 | image.pullPolicy | string | `"Always"` |  |
 | image.repository | string | `"ghcr.io/diracgrid/diracx/server"` |  |
 | image.tag | string | `"latest"` |  |
+| ingress.annotations | object | `{}` |  |
+| ingress.className | string | `"nginx"` |  |
+| ingress.enabled | bool | `true` |  |
+| ingress.tlsSecretName | string | `"myingress-cert"` |  |
 | init-cs.defaultUsers | list | `[]` |  |
 | init-cs.enabled | bool | `true` |  |
 | init-secrets.enabled | bool | `true` |  |
@@ -183,8 +179,6 @@ TODO
 | replicaCount | int | `1` |  |
 | resources | object | `{}` |  |
 | securityContext | object | `{}` |  |
-| service.port | int | `8000` |  |
-| service.type | string | `"ClusterIP"` |  |
 | serviceAccount.annotations | object | `{}` |  |
 | serviceAccount.create | bool | `true` |  |
 | serviceAccount.name | string | `""` |  |

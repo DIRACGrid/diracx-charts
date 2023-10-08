@@ -89,6 +89,9 @@ developer:
   localCSPath: /local_cs_store
 
 diracx:
+  # Required: The hostname where the webapp/API is running
+  # hostname:
+  # Settings to inject into the API container via environment variables
   settings:
     # This corresponds to the basic dirac.cfg
     # which must be present on all the servers
@@ -109,24 +112,16 @@ diracx:
     - JobParametersDB
   # List of install specifications to pass to pip before launching each container
   pythonModulesToInstall: []
-  ingress:
-    enabled: true
-    className: "nginx"
-    tls: []
-    hosts:
-    - paths:
-        - path: /api
-          pathType: Prefix
-          backend:
-            service:
-              port:
-                number: 8000
-        - path: /.well-known
-          pathType: Prefix
-          backend:
-            service:
-              port:
-                number: 8000
+  # Service
+  service:
+    type: ClusterIP
+    port: 8000
+
+ingress:
+  enabled: true
+  className: "nginx"
+  tlsSecretName: myingress-cert
+  annotations: {}
 
 diracxWeb:
   image:
@@ -140,18 +135,6 @@ diracxWeb:
   service:
     type: ClusterIP
     port: 3000
-  ingress:
-    enabled: true
-    className: "nginx"
-    tls: []
-    hosts:
-    - paths:
-        - path: /
-          pathType: Prefix
-          backend:
-            service:
-              port:
-                number: 3000
 
 ##########################
 
@@ -266,11 +249,14 @@ rabbitmq:
     existingPasswordSecret: rabbitmq-secret
     existingErlangSecret: rabbitmq-secret
 
-##########################
+cert-manager:
+  enabled: true
+  installCRDs: true
 
-service:
-  type: ClusterIP
-  port: 8000
+cert-manager-issuer:
+  enabled: true
+
+##########################
 
 resources: {}
   # We usually recommend not to specify default resources and to leave this as a conscious

@@ -21,7 +21,7 @@ nodes:
 
   # Expose the ingress port
   extraPortMappings:
-  - containerPort: 80
+  - containerPort: 443
     hostPort: 8000
     protocol: TCP
   - containerPort: 3000

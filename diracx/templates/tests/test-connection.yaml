@@ -11,5 +11,5 @@ spec:
     - name: wget
       image: busybox
       command: ['wget']
-      args: ['{{ include "diracx.fullname" . }}:{{ .Values.service.port }}']
+      args: ['{{ include "diracx.fullname" . }}:{{ .Values.diracx.service.port }}']
   restartPolicy: Never
