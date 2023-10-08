@@ -154,7 +154,7 @@ for src_dir in "$@"; do
   # Node packages: we keep a single package, the last one found
   # shellcheck disable=SC2044
   for pkg_json in $(find "$src_dir" -mindepth 1 -maxdepth 1 -type f -name 'package.json'); do
-    node_pkg_name=$(jq -r '.name' < "${pkg_json}")
+    node_pkg_name="$(basename "$(dirname "${pkg_json}")")"
   done
 done
 
