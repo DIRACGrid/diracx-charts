@@ -76,6 +76,7 @@ TODO
 | developer.enableCoverage | bool | `false` |  |
 | developer.enabled | bool | `true` |  |
 | developer.localCSPath | string | `"/local_cs_store"` |  |
+| developer.nodeImage | string | `"node:16-alpine"` |  |
 | developer.nodeModuleToInstall | string | `nil` |  |
 | developer.pythonModulesToEditableInstall | list | `[]` |  |
 | developer.sourcePath | string | `"/diracx_source"` |  |
@@ -115,13 +116,11 @@ TODO
 | diracx.settings.DIRACX_CONFIG_BACKEND_URL | string | `"git+file:///cs_store/initialRepo"` |  |
 | diracx.settings.DIRACX_SERVICE_AUTH_ALLOWED_REDIRECTS | string | `"[\"http://anything:8000/docs/oauth2-redirect\"]"` |  |
 | diracx.settings.DIRACX_SERVICE_AUTH_TOKEN_KEY | string | `"file:///signing-key/rsa256.key"` |  |
-| diracxWeb.image.pullPolicy | string | `"IfNotPresent"` |  |
-| diracxWeb.image.repository | string | `"ghcr.io/diracgrid/diracx-web/client"` |  |
+| diracxWeb.image.pullPolicy | string | `"Always"` |  |
+| diracxWeb.image.repository | string | `"ghcr.io/diracgrid/diracx-web/static"` |  |
 | diracxWeb.image.tag | string | `"latest"` |  |
-| diracxWeb.service.port | int | `3000` |  |
+| diracxWeb.service.port | int | `8080` |  |
 | diracxWeb.service.type | string | `"ClusterIP"` |  |
-| diracxWeb.settings.DEFAULT_SCOPE | string | `"vo:diracAdmin"` |  |
-| diracxWeb.settings.DIRACX_CLIENT_ID | string | `"myDIRACClientID"` |  |
 | fullnameOverride | string | `""` |  |
 | global.batchJobTTL | int | `600` |  |
 | image.pullPolicy | string | `"Always"` |  |

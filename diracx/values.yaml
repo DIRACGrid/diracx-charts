@@ -81,6 +81,8 @@ developer:
   pythonModulesToEditableInstall: []
   # List of node modules to install
   nodeModuleToInstall: null
+  # Image to use for the webapp if nodeModuleToInstall is set
+  nodeImage: node:16-alpine
   # Enable collection of coverage reports (intended for CI usage only)
   enableCoverage: false
   # Enable automatic reloading inside uvicorn when the sources change
@@ -125,16 +127,12 @@ ingress:
 
 diracxWeb:
   image:
-    repository: ghcr.io/diracgrid/diracx-web/client
-    pullPolicy: IfNotPresent
+    repository: ghcr.io/diracgrid/diracx-web/static
+    pullPolicy: Always
     tag: latest
-  settings:
-    # This corresponds to the basic .env file
-    DIRACX_CLIENT_ID: "myDIRACClientID"
-    DEFAULT_SCOPE: "vo:diracAdmin"
   service:
     type: ClusterIP
-    port: 3000
+    port: 8080
 
 ##########################
 
