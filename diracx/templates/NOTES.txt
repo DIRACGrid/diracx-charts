@@ -22,7 +22,7 @@ Then see the chart README for more information on how to use kubectl/helm.
 
 ℹ️  To access the interactive API documentation visit:
 
-  {{ .Values.developer.urls.diracx }}/docs
+  {{ .Values.developer.urls.diracx }}/api/docs
 
 ℹ️  When prompted to login the credentials are:
 
