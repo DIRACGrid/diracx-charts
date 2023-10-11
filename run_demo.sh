@@ -173,6 +173,9 @@ fi
 machine_hostname=$(hostname | tr '[:upper:]' '[:lower:]')
 if ! check_hostname "${machine_hostname}"; then
   machine_hostname=$(ifconfig | grep 'inet ' | awk '{ print $2 }' | grep -v '^127' | head -n 1 | cut -d '/' -f 1)
+  # We use nip.io to have an actual DNS name and be allowed to specify this in
+  # the ingress host
+  machine_hostname="${machine_hostname}.nip.io"
   if ! check_hostname "${machine_hostname}"; then
     echo "Failed to find an appropriate hostname for the demo."
     exit 1
@@ -304,7 +307,7 @@ else
     printf "%b %b %b Pods are ready! %b %b %b\n" "${PARTY_EMOJI}" "${PARTY_EMOJI}" "${PARTY_EMOJI}" "${PARTY_EMOJI}" "${PARTY_EMOJI}" "${PARTY_EMOJI}"
 
     # Dump the CA certificate to a file so that it can be used by the client
-    kubectl get secret/root-secret -o json | jq -r '.data."tls.crt"' | base64 -d > "${demo_dir}/demo-ca.pem"
+    "${demo_dir}/kubectl" get secret/root-secret -o json | jq -r '.data."tls.crt"' | base64 -d > "${demo_dir}/demo-ca.pem"
 
     touch "${demo_dir}/.success"
   else
