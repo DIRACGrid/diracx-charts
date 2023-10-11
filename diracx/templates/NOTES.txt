@@ -14,6 +14,7 @@ Then see the chart README for more information on how to use kubectl/helm.
 ℹ️  To use the demo with the DiracX client set:
 
   export DIRACX_URL={{ .Values.developer.urls.diracx }}
+  export DIRACX_CA_PATH={{ .Values.developer.demoDir }}/demo-ca.pem
 
 ℹ️  To access the web application visit:
 
@@ -21,7 +22,7 @@ Then see the chart README for more information on how to use kubectl/helm.
 
 ℹ️  To access the interactive API documentation visit:
 
-  {{ .Values.developer.urls.diracx }}/docs
+  {{ .Values.developer.urls.diracx }}/api/docs
 
 ℹ️  When prompted to login the credentials are:
 

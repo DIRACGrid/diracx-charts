@@ -1,3 +1,5 @@
+{{- $nodeDevInstall := and .Values.developer.enabled (empty .Values.developer.nodeModuleToInstall | not) -}}
+{{- $nodeModulePath := $nodeDevInstall | ternary (printf "%s/%s" .Values.developer.sourcePath .Values.developer.nodeModuleToInstall) "" -}}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -28,17 +30,48 @@ spec:
       securityContext:
         {{- toYaml .Values.podSecurityContext | nindent 8 }}
       volumes:
-        {{- if and .Values.developer.enabled .Values.developer.nodeModuleToInstall }}
+        {{- if $nodeDevInstall }}
         - name: diracx-web-code-mount
           persistentVolumeClaim:
             claimName: pvc-diracx-code
+        - name: diracx-web-scratch-node-modules
+          empty-dir:
+          sizeLimit: 1Gi
+        - name: diracx-web-scratch-next
+          empty-dir:
+          sizeLimit: 1Gi
         {{- end }}
+
+      initContainers:
+      {{- if $nodeDevInstall }}
+        - name: install-deps
+          image: {{ .Values.developer.nodeImage }}
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          # We use "npm ci" instead of "npm install" so it will use the package-lock.json file
+          # rather than using the package.json file. Using package.json would fail as the mount
+          # is read-only so package-lock.json can't be edited.
+          command: ["npm", "ci"]
+          workingDir: {{ $nodeModulePath }}
+          volumeMounts:
+            - mountPath: "{{ .Values.developer.sourcePath }}/{{ .Values.developer.nodeModuleToInstall }}"
+              name: "diracx-web-code-mount"
+              subPath: "{{ .Values.developer.nodeModuleToInstall }}"
+              readOnly: true
+            - mountPath: "{{ $nodeModulePath }}/node_modules"
+              name: "diracx-web-scratch-node-modules"
+            - mountPath: "{{ $nodeModulePath }}/.next"
+              name: "diracx-web-scratch-next"
+      {{- end }}
 
       containers:
         - name: {{ .Chart.Name }}-web
           securityContext:
             {{- toYaml .Values.securityContext | nindent 12 }}
-          image: "{{ .Values.diracxWeb.image.repository }}:{{ .Values.diracxWeb.image.tag | default .Chart.AppVersion }}"
+          {{- if $nodeDevInstall }}
+          image: {{ .Values.developer.nodeImage }}
+          {{- else }}
+          image: {{ .Values.diracxWeb.image.repository }}:{{ .Values.diracxWeb.image.tag }}
+          {{- end }}
           imagePullPolicy: {{ .Values.diracxWeb.image.pullPolicy }}
           ports:
             - name: http
@@ -52,20 +85,20 @@ spec:
             httpGet:
               path: /
               port: http
-          {{- if and .Values.developer.enabled .Values.developer.nodeModuleToInstall }}
-          command: ["npm", "run", "dev", "--prefix", {{ printf "%s/%s" $.Values.developer.sourcePath $.Values.developer.nodeModuleToInstall }}]
-          volumeMounts:
-            - mountPath: {{ .Values.developer.sourcePath }}
-              name: "diracx-web-code-mount"
-              readOnly: true
-          {{- else if .Values.developer.enabled }}
-          command: ["npm", "run", "dev"]
-          {{- else }}
-          command: ["npm", "start"]
+          {{- if $nodeDevInstall }}
+          command: ["npm", "run", "dev", "--prefix", "{{ $nodeModulePath }}", "--", "-p", "{{ .Values.diracxWeb.service.port }}"]
           {{- end }}
-          envFrom:
-            - secretRef:
-                name: diracx-web-secrets
+          volumeMounts:
+          {{- if $nodeDevInstall }}
+            - mountPath: "{{ .Values.developer.sourcePath }}/{{ .Values.developer.nodeModuleToInstall }}"
+              name: "diracx-web-code-mount"
+              subPath: "{{ .Values.developer.nodeModuleToInstall }}"
+              readOnly: true
+            - mountPath: "{{ $nodeModulePath }}/node_modules"
+              name: "diracx-web-scratch-node-modules"
+            - mountPath: "{{ $nodeModulePath }}/.next"
+              name: "diracx-web-scratch-next"
+          {{- end }}
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
       {{- with .Values.nodeSelector }}

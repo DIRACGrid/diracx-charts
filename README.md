@@ -52,9 +52,11 @@ TODO
 
 | Repository | Name | Version |
 |------------|------|---------|
+|  | cert-manager-issuer | *.*.* |
 | https://charts.bitnami.com/bitnami/ | mysql | 9.11.0 |
 | https://charts.bitnami.com/bitnami/ | rabbitmq | 12.0.10 |
 | https://charts.dexidp.io/ | dex | 0.14.2 |
+| https://charts.jetstack.io | cert-manager | 1.13.1 |
 | https://charts.min.io/ | minio | 5.0.11 |
 | https://opensearch-project.github.io/helm-charts/ | opensearch | 2.13.1 |
 
@@ -67,10 +69,16 @@ TODO
 | autoscaling.maxReplicas | int | `100` |  |
 | autoscaling.minReplicas | int | `1` |  |
 | autoscaling.targetCPUUtilizationPercentage | int | `80` |  |
+| cert-manager-issuer.enabled | bool | `true` |  |
+| cert-manager.enabled | bool | `true` |  |
+| cert-manager.installCRDs | bool | `true` |  |
+| developer.autoReload | bool | `true` |  |
 | developer.enableCoverage | bool | `false` |  |
 | developer.enabled | bool | `true` |  |
+| developer.localCSPath | string | `"/local_cs_store"` |  |
+| developer.nodeImage | string | `"node:16-alpine"` |  |
 | developer.nodeModuleToInstall | string | `nil` |  |
-| developer.pythonModulesToInstall | list | `[]` |  |
+| developer.pythonModulesToEditableInstall | list | `[]` |  |
 | developer.sourcePath | string | `"/diracx_source"` |  |
 | developer.urls | object | `{}` |  |
 | dex."https.enabled" | bool | `false` |  |
@@ -95,44 +103,42 @@ TODO
 | dex.service.ports.http.nodePort | int | `32002` |  |
 | dex.service.ports.http.port | int | `8000` |  |
 | dex.service.type | string | `"NodePort"` |  |
-| diracx.csVolumeName | string | `"pv-cs-store"` |  |
-| diracx.ingress.className | string | `"nginx"` |  |
-| diracx.ingress.enabled | bool | `true` |  |
-| diracx.ingress.hosts[0].paths[0].backend.service.port.number | int | `8000` |  |
-| diracx.ingress.hosts[0].paths[0].path | string | `"/api"` |  |
-| diracx.ingress.hosts[0].paths[0].pathType | string | `"Prefix"` |  |
-| diracx.ingress.hosts[0].paths[1].backend.service.port.number | int | `8000` |  |
-| diracx.ingress.hosts[0].paths[1].path | string | `"/.well-known"` |  |
-| diracx.ingress.hosts[0].paths[1].pathType | string | `"Prefix"` |  |
-| diracx.ingress.tls | list | `[]` |  |
 | diracx.manageOSIndices | bool | `true` |  |
-| diracx.manageSQLSchema | bool | `true` |  |
 | diracx.mysqlDatabases[0] | string | `"AuthDB"` |  |
 | diracx.mysqlDatabases[1] | string | `"JobDB"` |  |
 | diracx.mysqlDatabases[2] | string | `"JobLoggingDB"` |  |
 | diracx.mysqlDatabases[3] | string | `"SandboxMetadataDB"` |  |
 | diracx.mysqlDatabases[4] | string | `"TaskQueueDB"` |  |
 | diracx.osDatabases[0] | string | `"JobParametersDB"` |  |
+| diracx.pythonModulesToInstall | list | `[]` |  |
+| diracx.service.port | int | `8000` |  |
+| diracx.service.type | string | `"ClusterIP"` |  |
 | diracx.settings.DIRACX_CONFIG_BACKEND_URL | string | `"git+file:///cs_store/initialRepo"` |  |
 | diracx.settings.DIRACX_SERVICE_AUTH_ALLOWED_REDIRECTS | string | `"[\"http://anything:8000/docs/oauth2-redirect\"]"` |  |
-| diracx.settings.DIRACX_SERVICE_AUTH_TOKEN_KEY | string | `"file:///signing-key/rs256.key"` |  |
-| diracxWeb.image.pullPolicy | string | `"IfNotPresent"` |  |
-| diracxWeb.image.repository | string | `"ghcr.io/diracgrid/diracx-web/client"` |  |
+| diracx.settings.DIRACX_SERVICE_AUTH_TOKEN_KEY | string | `"file:///signing-key/rsa256.key"` |  |
+| diracxWeb.image.pullPolicy | string | `"Always"` |  |
+| diracxWeb.image.repository | string | `"ghcr.io/diracgrid/diracx-web/static"` |  |
 | diracxWeb.image.tag | string | `"latest"` |  |
-| diracxWeb.ingress.className | string | `"nginx"` |  |
-| diracxWeb.ingress.enabled | bool | `true` |  |
-| diracxWeb.ingress.hosts[0].paths[0].backend.service.port.number | int | `3000` |  |
-| diracxWeb.ingress.hosts[0].paths[0].path | string | `"/"` |  |
-| diracxWeb.ingress.hosts[0].paths[0].pathType | string | `"Prefix"` |  |
-| diracxWeb.ingress.tls | list | `[]` |  |
-| diracxWeb.service.port | int | `3000` |  |
+| diracxWeb.service.port | int | `8080` |  |
 | diracxWeb.service.type | string | `"ClusterIP"` |  |
-| diracxWeb.settings.DEFAULT_SCOPE | string | `"vo:diracAdmin"` |  |
-| diracxWeb.settings.DIRACX_CLIENT_ID | string | `"myDIRACClientID"` |  |
 | fullnameOverride | string | `""` |  |
-| image.pullPolicy | string | `"IfNotPresent"` |  |
+| global.batchJobTTL | int | `600` |  |
+| image.pullPolicy | string | `"Always"` |  |
 | image.repository | string | `"ghcr.io/diracgrid/diracx/server"` |  |
 | image.tag | string | `"latest"` |  |
+| ingress.annotations | object | `{}` |  |
+| ingress.className | string | `"nginx"` |  |
+| ingress.enabled | bool | `true` |  |
+| ingress.tlsSecretName | string | `"myingress-cert"` |  |
+| init-cs.defaultUsers | list | `[]` |  |
+| init-cs.enabled | bool | `true` |  |
+| init-secrets.enabled | bool | `true` |  |
+| init-secrets.rbac.create | bool | `true` |  |
+| init-secrets.serviceAccount.create | bool | `true` |  |
+| init-secrets.serviceAccount.enabled | bool | `true` |  |
+| init-secrets.serviceAccount.name | string | `nil` |  |
+| init-sql.enabled | bool | `true` |  |
+| init-sql.env | object | `{}` |  |
 | minio.consoleIngress.enabled | bool | `false` |  |
 | minio.consoleService.type | string | `"NodePort"` |  |
 | minio.enabled | bool | `true` |  |
@@ -146,18 +152,13 @@ TODO
 | minio.rootUser | string | `"rootuser"` |  |
 | minio.service.type | string | `"NodePort"` |  |
 | mysql.auth.createDatabase | bool | `false` |  |
-| mysql.auth.password | string | `"mysqlDevInsecure"` |  |
-| mysql.auth.rootPassword | string | `"mysqlRootDevInsecure"` |  |
+| mysql.auth.existingSecret | string | `"mysql-secret"` |  |
 | mysql.auth.username | string | `"sqldiracx"` |  |
 | mysql.enabled | bool | `true` |  |
 | mysql.initdbScriptsConfigMap | string | `"mysql-init-diracx-dbs"` |  |
 | nameOverride | string | `""` | type=kubernetes.io/dockerconfigjson imagePullSecrets:   - name: regcred |
 | nodeSelector | object | `{}` |  |
-| opensearch.config."cluster.routing.allocation.disk.threshold_enabled" | string | `"true"` |  |
-| opensearch.config."cluster.routing.allocation.disk.watermark.flood_stage" | string | `"200mb"` |  |
-| opensearch.config."cluster.routing.allocation.disk.watermark.high" | string | `"300mb"` |  |
-| opensearch.config."cluster.routing.allocation.disk.watermark.low" | string | `"500mb"` |  |
-| opensearch.config."plugins.security.disabled" | string | `"true"` |  |
+| opensearch.config."opensearch.yml" | string | `"cluster.name: opensearch-cluster\n\n# Bind to all interfaces because we don't know what IP address Docker will assign to us.\nnetwork.host: 0.0.0.0\n\n# Setting network.host to a non-loopback address enables the annoying bootstrap checks. \"Single-node\" mode disables them again.\n# Implicitly done if \".singleNode\" is set to \"true\".\n# discovery.type: single-node\n\n# Start OpenSearch Security Demo Configuration\n# WARNING: revise all the lines below before you go into production\nplugins:\n  security:\n    ssl:\n      transport:\n        pemcert_filepath: esnode.pem\n        pemkey_filepath: esnode-key.pem\n        pemtrustedcas_filepath: root-ca.pem\n        enforce_hostname_verification: false\n      http:\n        enabled: true\n        pemcert_filepath: esnode.pem\n        pemkey_filepath: esnode-key.pem\n        pemtrustedcas_filepath: root-ca.pem\n    allow_unsafe_democertificates: true\n    allow_default_init_securityindex: true\n    authcz:\n      admin_dn:\n        - CN=kirk,OU=client,O=client,L=test,C=de\n    audit.type: internal_opensearch\n    enable_snapshot_restore_privilege: true\n    check_snapshot_restore_write_privileges: true\n    restapi:\n      roles_enabled: [\"all_access\", \"security_rest_api_access\"]\n    system_indices:\n      enabled: true\n      indices:\n        [\n          \".opendistro-alerting-config\",\n          \".opendistro-alerting-alert*\",\n          \".opendistro-anomaly-results*\",\n          \".opendistro-anomaly-detector*\",\n          \".opendistro-anomaly-checkpoints\",\n          \".opendistro-anomaly-detection-state\",\n          \".opendistro-reports-*\",\n          \".opendistro-notifications-*\",\n          \".opendistro-notebooks\",\n          \".opendistro-asynchronous-search-response*\",\n        ]\n######## End OpenSearch Security Demo Configuration ########\ncluster:\n  routing:\n    allocation:\n      disk:\n        threshold_enabled: \"true\"\n        watermark:\n          flood_stage: 200mb\n          low: 500mb\n          high: 300mb\n"` |  |
 | opensearch.enabled | bool | `true` |  |
 | opensearch.opensearchJavaOpts | string | `"-Xms256m -Xmx256m"` |  |
 | opensearch.resources.requests.cpu | string | `"100m"` |  |
@@ -165,14 +166,14 @@ TODO
 | opensearch.singleNode | bool | `true` |  |
 | podAnnotations | object | `{}` |  |
 | podSecurityContext | object | `{}` |  |
+| rabbitmq.auth.existingErlangSecret | string | `"rabbitmq-secret"` |  |
+| rabbitmq.auth.existingPasswordSecret | string | `"rabbitmq-secret"` |  |
 | rabbitmq.containerSecurityContext.enabled | bool | `false` |  |
 | rabbitmq.enabled | bool | `true` |  |
 | rabbitmq.podSecurityContext.enabled | bool | `false` |  |
 | replicaCount | int | `1` |  |
 | resources | object | `{}` |  |
 | securityContext | object | `{}` |  |
-| service.port | int | `8000` |  |
-| service.type | string | `"ClusterIP"` |  |
 | serviceAccount.annotations | object | `{}` |  |
 | serviceAccount.create | bool | `true` |  |
 | serviceAccount.name | string | `""` |  |

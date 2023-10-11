@@ -1,0 +1,57 @@
+{{- if .Values.acme.enabled }}
+{{- $ingressCfg := dict "global" $.Values.global.ingress "local" .ingress "context" $ -}}
+{{- $ingressClassName := include "ingress.class.name" $ingressCfg -}}
+apiVersion: cert-manager.io/v1
+kind: Issuer
+metadata:
+  name: {{ .Release.Name }}-issuer
+  namespace: {{ $.Release.Namespace }}
+spec:
+  acme:
+    # The ACME server URL
+    server: {{ .Values.acme.server | quote }}
+    # Email address used for ACME registration
+    email: {{ required "You must provide an email to associate with your TLS certificates. Please set certmanager-issuer.email" .Values.acme.email | quote }}
+    # Name of a secret used to store the ACME account private key
+    privateKeySecretRef:
+      name: {{ .Release.Name }}-acme-key
+    # Enable the HTTP-01 challenge provider
+    solvers:
+    - selector: {}
+      http01:
+        ingress:
+          {{ include "cert-manager-issuer.http01.ingress.class.field" $ingressClassName -}}
+{{- end }}
+---
+{{- if index .Values "self-signed" "enabled" }}
+apiVersion: cert-manager.io/v1
+kind: Issuer
+metadata:
+  name: selfsigned-issuer
+spec:
+  selfSigned: {}
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: diracx-selfsigned-ca
+spec:
+  isCA: true
+  commonName: diracx-selfsigned-ca
+  secretName: root-secret
+  privateKey:
+    algorithm: ECDSA
+    size: 256
+  issuerRef:
+    name: selfsigned-issuer
+    kind: Issuer
+    group: cert-manager.io
+---
+apiVersion: cert-manager.io/v1
+kind: Issuer
+metadata:
+  name: diracx-ca-issuer
+spec:
+  ca:
+    secretName: root-secret
+{{- end }}

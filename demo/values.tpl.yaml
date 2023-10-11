@@ -1,23 +1,27 @@
 developer:
   urls:
-    diracx: http://{{ hostname }}:8000
+    diracx: https://{{ hostname }}:8000
     minio: http://{{ hostname }}:32000
     dex: http://{{ hostname }}:32002
   demoDir: {{ demo_dir }}
-  pythonModulesToInstall: {{ python_modules_to_mount }}
+  pythonModulesToEditableInstall: {{ python_modules_to_mount }}
   nodeModuleToInstall: {{ node_module_to_mount }}
 
+init-cs:
+  defaultUsers:
+    - vo: diracAdmin
+      userGroup: admin
+      sub: EgVsb2NhbA
+      preferredUsername: admin
+      # TODO: Integrate with dex
+
 diracx:
+  hostname: {{ hostname }}
   settings:
-    DIRACX_SERVICE_AUTH_ALLOWED_REDIRECTS: '["http://localhost:8000/api/docs/oauth2-redirect", "http://localhost:8000/dashboard/#authentication-callback"]'
+    DIRACX_SERVICE_AUTH_ALLOWED_REDIRECTS: '["https://{{ hostname }}:8000/api/docs/oauth2-redirect", "https://{{ hostname }}:8000/#authentication-callback"]'
     DIRACX_SANDBOX_STORE_BUCKET_NAME: demo-sandboxes
     DIRACX_SANDBOX_STORE_S3_CLIENT_KWARGS: '{"endpoint_url": "http://{{ hostname }}:32000", "aws_access_key_id": "console", "aws_secret_access_key": "console123"}'
     DIRACX_SANDBOX_STORE_AUTO_CREATE_BUCKET: "true"
-
-diracxWeb:
-  settings:
-    REDIRECT_URI: http://localhost:8000/dashboard/#authentication-callback
-    NEXT_PUBLIC_DIRACX_URL: http://{{ hostname }}:8000
 
 minio:
   environment:
@@ -32,8 +36,8 @@ dex:
       public: true
       name: 'CLI app'
       redirectURIs:
-        - 'http://{{ hostname }}:8000/api/auth/device/complete'
-        - http://{{ hostname }}:8000/api/auth/authorize/complete
+        - 'https://{{ hostname }}:8000/api/auth/device/complete'
+        - https://{{ hostname }}:8000/api/auth/authorize/complete
 
     staticPasswords:
       - email: "admin@example.com"

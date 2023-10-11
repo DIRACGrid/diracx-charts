@@ -2,6 +2,10 @@ apiVersion: v1
 kind: ConfigMap
 metadata:
   name: diracx-container-entrypoint
+  annotations:
+    "helm.sh/hook": pre-install,pre-upgrade
+    "helm.sh/hook-weight": "-3"
+    "helm.sh/resource-policy": keep
 data:
   entrypoint.sh: |
     #!/bin/bash
@@ -11,8 +15,11 @@ data:
     ulimit -n 8192
     eval "$(micromamba shell hook --shell=posix)" && micromamba activate base
 
-    {{ if .Values.developer.pythonModulesToInstall }}
-    pip install {{- range $moduleName := .Values.developer.pythonModulesToInstall }} -e {{ $.Values.developer.sourcePath }}/{{ $moduleName }} {{- end }}
+    {{ if .Values.diracx.pythonModulesToInstall }}
+    pip install {{- range $moduleSpec := .Values.diracx.pythonModulesToInstall }} {{ $moduleSpec }} {{- end }}
+    {{- end }}
+    {{ if and .Values.developer.enabled .Values.developer.pythonModulesToEditableInstall }}
+    pip install {{- range $moduleName := .Values.developer.pythonModulesToEditableInstall }} -e {{ $.Values.developer.sourcePath }}/{{ $moduleName }} {{- end }}
     {{- end }}
 
     {{- if and .Values.developer.enabled .Values.developer.enableCoverage }}
@@ -40,6 +47,10 @@ apiVersion: v1
 kind: PersistentVolume
 metadata:
   name: pv-coverage
+  annotations:
+    "helm.sh/hook": pre-install,pre-upgrade
+    "helm.sh/hook-weight": "-3"
+    "helm.sh/resource-policy": keep
 spec:
   storageClassName: ""
   accessModes:
@@ -53,6 +64,10 @@ apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
   name: pvc-coverage
+  annotations:
+    "helm.sh/hook": pre-install,pre-upgrade
+    "helm.sh/hook-weight": "-3"
+    "helm.sh/resource-policy": keep
 spec:
   storageClassName: ""
   volumeName: pv-coverage

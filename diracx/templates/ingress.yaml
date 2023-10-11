@@ -1,120 +1,49 @@
-{{- $fullName := include "diracx.fullname" . -}}
-{{- if .Values.diracx.ingress.enabled -}}
-{{- if and .Values.diracx.ingress.className (not (semverCompare ">=1.18-0" .Capabilities.KubeVersion.GitVersion)) }}
-  {{- if not (hasKey .Values.diracx.ingress.annotations "kubernetes.io/ingress.class") }}
-  {{- $_ := set .Values.diracx.ingress.annotations "kubernetes.io/ingress.class" .Values.diracx.ingress.className}}
-  {{- end }}
-{{- end }}
-{{- if semverCompare ">=1.19-0" .Capabilities.KubeVersion.GitVersion -}}
+{{- $fullName := include "diracx.fullname" . }}
+{{- if .Values.ingress.enabled }}
 apiVersion: networking.k8s.io/v1
-{{- else if semverCompare ">=1.14-0" .Capabilities.KubeVersion.GitVersion -}}
-apiVersion: networking.k8s.io/v1beta1
-{{- else -}}
-apiVersion: extensions/v1beta1
-{{- end }}
 kind: Ingress
 metadata:
   name: {{ $fullName }}
   labels:
     {{- include "diracx.labels" . | nindent 4 }}
-  {{- with .Values.diracx.ingress.annotations }}
   annotations:
+  {{- if index .Values "cert-manager-issuer" "enabled" }}
+    cert-manager.io/issuer: diracx-ca-issuer
+  {{- end }}
+  {{ with .Values.ingress.annotations }}
     {{- toYaml . | nindent 4 }}
   {{- end }}
 spec:
-  {{- if and .Values.diracx.ingress.className (semverCompare ">=1.18-0" .Capabilities.KubeVersion.GitVersion) }}
-  ingressClassName: {{ .Values.diracx.ingress.className }}
-  {{- end }}
-  {{- if .Values.diracx.ingress.tls }}
+  ingressClassName: {{ .Values.ingress.className }}
+  {{- if .Values.ingress.tlsSecretName }}
   tls:
-    {{- range .Values.diracx.ingress.tls }}
-    - hosts:
-        {{- range .hosts }}
-        - {{ . | quote }}
-        {{- end }}
-      secretName: {{ .secretName }}
-    {{- end }}
+  - hosts:
+    - {{ required "diracx.hostname must be set!" .Values.diracx.hostname }}
+    secretName: {{ .Values.ingress.tlsSecretName }}
   {{- end }}
   rules:
-    {{- range .Values.diracx.ingress.hosts }}
-    - host: {{ .host | quote }}
+    - host: {{ required "diracx.hostname must be set!" .Values.diracx.hostname }}
       http:
         paths:
-          {{- range .paths }}
-          - path: {{ .path }}
-            {{- if and .pathType (semverCompare ">=1.18-0" $.Capabilities.KubeVersion.GitVersion) }}
-            pathType: {{ .pathType }}
-            {{- end }}
+          - path: /api
+            pathType: Prefix
             backend:
-              {{- if semverCompare ">=1.19-0" $.Capabilities.KubeVersion.GitVersion }}
               service:
                 name: {{ $fullName }}
                 port:
-                  number: {{ .backend.service.port.number }}
-              {{- else }}
-              serviceName: {{ $fullName }}
-              servicePort: {{ .backend.service.port.number }}
-              {{- end }}
-          {{- end }}
-    {{- end }}
-{{- end }}
-{{ if .Values.diracxWeb.ingress.enabled -}}
----
-{{ if and .Values.diracxWeb.ingress.className (not (semverCompare ">=1.18-0" .Capabilities.KubeVersion.GitVersion)) }}
-  {{- if not (hasKey .Values.diracxWeb.ingress.annotations "kubernetes.io/ingress.class") }}
-  {{- $_ := set .Values.diracxWeb.ingress.annotations "kubernetes.io/ingress.class" .Values.diracxWeb.ingress.className}}
-  {{- end }}
-{{- end }}
-{{- if semverCompare ">=1.19-0" .Capabilities.KubeVersion.GitVersion -}}
-apiVersion: networking.k8s.io/v1
-{{- else if semverCompare ">=1.14-0" .Capabilities.KubeVersion.GitVersion -}}
-apiVersion: networking.k8s.io/v1beta1
-{{- else -}}
-apiVersion: extensions/v1beta1
-{{- end }}
-kind: Ingress
-metadata:
-  name: {{ $fullName }}-web
-  labels:
-    {{- include "diracx.labels" . | nindent 4 }}
-  {{- with .Values.diracxWeb.ingress.annotations }}
-  annotations:
-    {{- toYaml . | nindent 4 }}
-  {{- end }}
-spec:
-  {{- if and .Values.diracxWeb.ingress.className (semverCompare ">=1.18-0" .Capabilities.KubeVersion.GitVersion) }}
-  ingressClassName: {{ .Values.diracxWeb.ingress.className }}
-  {{- end }}
-  {{- if .Values.diracxWeb.ingress.tls }}
-  tls:
-    {{- range .Values.diracxWeb.ingress.tls }}
-    - hosts:
-        {{- range .hosts }}
-        - {{ . | quote }}
-        {{- end }}
-      secretName: {{ .secretName }}
-    {{- end }}
-  {{- end }}
-  rules:
-    {{- range .Values.diracxWeb.ingress.hosts }}
-    - host: {{ .host | quote }}
-      http:
-        paths:
-          {{- range .paths }}
-          - path: {{ .path }}
-            {{- if and .pathType (semverCompare ">=1.18-0" $.Capabilities.KubeVersion.GitVersion) }}
-            pathType: {{ .pathType }}
-            {{- end }}
+                  number: {{ .Values.diracx.service.port }}
+          - path: /.well-known
+            pathType: Prefix
             backend:
-              {{- if semverCompare ">=1.19-0" $.Capabilities.KubeVersion.GitVersion }}
+              service:
+                name: {{ $fullName }}
+                port:
+                  number: {{ .Values.diracx.service.port }}
+          - path: /
+            pathType: Prefix
+            backend:
               service:
                 name: {{ $fullName }}-web
                 port:
-                  number: {{ .backend.service.port.number }}
-              {{- else }}
-              serviceName: {{ $fullName }}-web
-              servicePort: {{ .backend.service.port.number }}
-              {{- end }}
-          {{- end }}
-    {{- end }}
+                  number: {{ .Values.diracxWeb.service.port }}
 {{- end }}

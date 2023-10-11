@@ -1,0 +1,22 @@
+# Configure an ACME Issuer in cert-manager. Only used if global.ingress.configureCertmanager is true.
+acme:
+  enabled: false
+  server: https://acme-v02.api.letsencrypt.org/directory
+  # Provide an email to associate with your TLS certificates
+  # email:
+
+self-signed:
+  enabled: true
+
+rbac:
+  create: true
+
+resources:
+  requests:
+    cpu: 50m
+
+# Priority class assigned to pods
+priorityClassName: ""
+
+common:
+  labels: {}

@@ -2,11 +2,15 @@
 # This is a YAML-formatted file.
 # Declare variables to be passed into your templates.
 
+global:
+  # How long should batch jobs be retained after completing?
+  batchJobTTL: 600
+
 replicaCount: 1
 
 image:
   repository: ghcr.io/diracgrid/diracx/server
-  pullPolicy: IfNotPresent
+  pullPolicy: Always
   # Overrides the image tag whose default is the chart appVersion.
   tag: "latest"
 
@@ -47,7 +51,25 @@ securityContext: {}
 
 #################
 
+init-cs:
+  # Automatically initialize the repository in the CS volume
+  enabled: true
+  # Users which should be automatically added to the CS
+  defaultUsers: []
 
+init-secrets:
+  enabled: true
+  rbac:
+    create: true
+  serviceAccount:
+    enabled: true
+    create: true
+    name: # Specify a pre-existing ServiceAccount name
+
+init-sql:
+  # Should DiracX include an init container which manages the SQL DB schema?
+  enabled: true
+  env: {}
 
 developer:
   enabled: true
@@ -55,23 +77,29 @@ developer:
   urls: {}
   # Path from which to mount source of DIRACX
   sourcePath: /diracx_source
-  pythonModulesToInstall: []
+  # List of packages which are mounted into developer.sourcePath and should be installed with pip install -e
+  pythonModulesToEditableInstall: []
+  # List of node modules to install
   nodeModuleToInstall: null
+  # Image to use for the webapp if nodeModuleToInstall is set
+  nodeImage: node:16-alpine
+  # Enable collection of coverage reports (intended for CI usage only)
   enableCoverage: false
+  # Enable automatic reloading inside uvicorn when the sources change
+  autoReload: true
   # If set, mount the CS stored localy instead of initializing a default one
-  # localCSPath: /local_cs_store
+  localCSPath: /local_cs_store
 
 diracx:
-  # Name of the volume on which the CS repo is stored
-  csVolumeName: pv-cs-store
+  # Required: The hostname where the webapp/API is running
+  # hostname:
+  # Settings to inject into the API container via environment variables
   settings:
     # This corresponds to the basic dirac.cfg
     # which must be present on all the servers
     DIRACX_CONFIG_BACKEND_URL: "git+file:///cs_store/initialRepo"
-    DIRACX_SERVICE_AUTH_TOKEN_KEY: "file:///signing-key/rs256.key"
+    DIRACX_SERVICE_AUTH_TOKEN_KEY: "file:///signing-key/rsa256.key"
     DIRACX_SERVICE_AUTH_ALLOWED_REDIRECTS: '["http://anything:8000/docs/oauth2-redirect"]'
-  # Should DiracX include an init container which manages the SQL DB schema?
-  manageSQLSchema: true
   # Should DiracX include an init container which manages the OS DB indices?
   manageOSIndices: true
   # Which DiracX MySQL DBs are used?
@@ -84,49 +112,27 @@ diracx:
   # Which DiracX OpenSearch DBs are used?
   osDatabases:
     - JobParametersDB
-  ingress:
-    enabled: true
-    className: "nginx"
-    tls: []
-    hosts:
-    - paths:
-        - path: /api
-          pathType: Prefix
-          backend:
-            service:
-              port:
-                number: 8000
-        - path: /.well-known
-          pathType: Prefix
-          backend:
-            service:
-              port:
-                number: 8000
+  # List of install specifications to pass to pip before launching each container
+  pythonModulesToInstall: []
+  # Service
+  service:
+    type: ClusterIP
+    port: 8000
+
+ingress:
+  enabled: true
+  className: "nginx"
+  tlsSecretName: myingress-cert
+  annotations: {}
 
 diracxWeb:
   image:
-    repository: ghcr.io/diracgrid/diracx-web/client
-    pullPolicy: IfNotPresent
+    repository: ghcr.io/diracgrid/diracx-web/static
+    pullPolicy: Always
     tag: latest
-  settings:
-    # This corresponds to the basic .env file
-    DIRACX_CLIENT_ID: "myDIRACClientID"
-    DEFAULT_SCOPE: "vo:diracAdmin"
   service:
     type: ClusterIP
-    port: 3000
-  ingress:
-    enabled: true
-    className: "nginx"
-    tls: []
-    hosts:
-    - paths:
-        - path: /
-          pathType: Prefix
-          backend:
-            service:
-              port:
-                number: 3000
+    port: 8080
 
 ##########################
 
@@ -136,11 +142,67 @@ opensearch:
   # replicas: 1
   singleNode: true
   config:
-    cluster.routing.allocation.disk.threshold_enabled: "true"
-    cluster.routing.allocation.disk.watermark.flood_stage: 200mb
-    cluster.routing.allocation.disk.watermark.low: 500mb
-    cluster.routing.allocation.disk.watermark.high: 300mb
-    plugins.security.disabled: "true"
+    opensearch.yml: |
+      cluster.name: opensearch-cluster
+
+      # Bind to all interfaces because we don't know what IP address Docker will assign to us.
+      network.host: 0.0.0.0
+
+      # Setting network.host to a non-loopback address enables the annoying bootstrap checks. "Single-node" mode disables them again.
+      # Implicitly done if ".singleNode" is set to "true".
+      # discovery.type: single-node
+
+      # Start OpenSearch Security Demo Configuration
+      # WARNING: revise all the lines below before you go into production
+      plugins:
+        security:
+          ssl:
+            transport:
+              pemcert_filepath: esnode.pem
+              pemkey_filepath: esnode-key.pem
+              pemtrustedcas_filepath: root-ca.pem
+              enforce_hostname_verification: false
+            http:
+              enabled: true
+              pemcert_filepath: esnode.pem
+              pemkey_filepath: esnode-key.pem
+              pemtrustedcas_filepath: root-ca.pem
+          allow_unsafe_democertificates: true
+          allow_default_init_securityindex: true
+          authcz:
+            admin_dn:
+              - CN=kirk,OU=client,O=client,L=test,C=de
+          audit.type: internal_opensearch
+          enable_snapshot_restore_privilege: true
+          check_snapshot_restore_write_privileges: true
+          restapi:
+            roles_enabled: ["all_access", "security_rest_api_access"]
+          system_indices:
+            enabled: true
+            indices:
+              [
+                ".opendistro-alerting-config",
+                ".opendistro-alerting-alert*",
+                ".opendistro-anomaly-results*",
+                ".opendistro-anomaly-detector*",
+                ".opendistro-anomaly-checkpoints",
+                ".opendistro-anomaly-detection-state",
+                ".opendistro-reports-*",
+                ".opendistro-notifications-*",
+                ".opendistro-notebooks",
+                ".opendistro-asynchronous-search-response*",
+              ]
+      ######## End OpenSearch Security Demo Configuration ########
+      cluster:
+        routing:
+          allocation:
+            disk:
+              threshold_enabled: "true"
+              watermark:
+                flood_stage: 200mb
+                low: 500mb
+                high: 300mb
+
   resources:
     requests:
       cpu: "100m"
@@ -223,9 +285,8 @@ dex:
 mysql:
   enabled: true
   auth:
-    rootPassword: mysqlRootDevInsecure
+    existingSecret: mysql-secret
     username: sqldiracx
-    password: mysqlDevInsecure
     createDatabase: false
   initdbScriptsConfigMap: mysql-init-diracx-dbs
 
@@ -238,12 +299,18 @@ rabbitmq:
     enabled: false
   containerSecurityContext:
     enabled: false
+  auth:
+    existingPasswordSecret: rabbitmq-secret
+    existingErlangSecret: rabbitmq-secret
+
+cert-manager:
+  enabled: true
+  installCRDs: true
+
+cert-manager-issuer:
+  enabled: true
 
 ##########################
-
-service:
-  type: ClusterIP
-  port: 8000
 
 resources: {}
   # We usually recommend not to specify default resources and to leave this as a conscious

@@ -154,7 +154,7 @@ for src_dir in "$@"; do
   # Node packages: we keep a single package, the last one found
   # shellcheck disable=SC2044
   for pkg_json in $(find "$src_dir" -mindepth 1 -maxdepth 1 -type f -name 'package.json'); do
-    node_pkg_name=$(jq -r '.name' < "${pkg_json}")
+    node_pkg_name="$(basename "$(dirname "${pkg_json}")")"
   done
 done
 
@@ -224,6 +224,13 @@ if [ ${#pkg_dirs[@]} -gt 0 ]; then
     sed "s@{{ hostPaths }}@  - hostPath: ${pkg_dir}\n    containerPath: /diracx_source/$(basename "${pkg_dir}")\n{{ hostPaths }}@g" "${demo_dir}/demo_cluster_conf.yaml.bak" > "${demo_dir}/demo_cluster_conf.yaml"
   done
 fi
+# Add the mount for the CS
+rm -rf "${demo_dir}/cs-mount"
+mkdir -p "${demo_dir}/cs-mount"
+# Make sure the directory is writable by the container
+chmod 777 "${demo_dir}/cs-mount"
+mv "${demo_dir}/demo_cluster_conf.yaml" "${demo_dir}/demo_cluster_conf.yaml.bak"
+sed "s@{{ csStorePath }}@${demo_dir}/cs-mount@g" "${demo_dir}/demo_cluster_conf.yaml.bak" > "${demo_dir}/demo_cluster_conf.yaml"
 # If coverage is enabled mount .demo/coverage-reports into the cluster
 if [[ ${enable_coverage} ]]; then
   rm -rf "${demo_dir}/coverage-reports"
@@ -295,6 +302,10 @@ else
   printf "%b Waiting for installation to finish...\n" ${UNICORN_EMOJI}
   if "${demo_dir}/kubectl" wait --for=condition=ready pod --selector=app.kubernetes.io/name=diracx --timeout=300s; then
     printf "%b %b %b Pods are ready! %b %b %b\n" "${PARTY_EMOJI}" "${PARTY_EMOJI}" "${PARTY_EMOJI}" "${PARTY_EMOJI}" "${PARTY_EMOJI}" "${PARTY_EMOJI}"
+
+    # Dump the CA certificate to a file so that it can be used by the client
+    kubectl get secret/root-secret -o json | jq -r '.data."tls.crt"' | base64 -d > "${demo_dir}/demo-ca.pem"
+
     touch "${demo_dir}/.success"
   else
     printf "%b Installation did not start sucessfully!\n" ${WARN_EMOJI}
@@ -312,11 +323,17 @@ fi
 echo ""
 printf "%b  Press Ctrl+C to clean up and exit\n" "${INFO_EMOJI}"
 
+machine_hostname_has_changed=0
 while true; do
   sleep 60;
   # If the machine hostname changes then the demo will need to be restarted.
   # See the original machine_hostname detection description above.
   if ! check_hostname "${machine_hostname}"; then
     echo "The demo will likely need to be restarted."
+    machine_hostname_has_changed=1
+  elif [ ${machine_hostname_has_changed} -eq 1 ]; then
+    printf "%b The machine hostnamae seems to have been fixed. %b\n" "${PARTY_EMOJI}" "${PARTY_EMOJI}"
+    printf "%b No need to restart! %b\n" "${PARTY_EMOJI}" "${PARTY_EMOJI}"
+    machine_hostname_has_changed=0
   fi
 done

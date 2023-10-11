@@ -1,0 +1,83 @@
+{{- $initSQLValues := index .Values "init-sql" -}}
+{{- if $initSQLValues.enabled }}
+
+{{/* Define common volume mounts for reusability */}}
+{{- $commonVolumeMounts := list }}
+{{- $commonVolumeMounts = append $commonVolumeMounts (dict "mountPath" "/entrypoint.sh" "name" "container-entrypoint" "subPath" "entrypoint.sh") }}
+{{- if and .Values.developer.enabled .Values.developer.enableCoverage }}
+{{- $commonVolumeMounts = append $commonVolumeMounts (dict "mountPath" "/diracx-coveragerc" "name" "container-entrypoint" "subPath" "coveragerc") }}
+{{- $commonVolumeMounts = append $commonVolumeMounts (dict "mountPath" "/coverage-reports" "name" "coverage-data" "readOnly" false) }}
+{{- end }}
+{{- if and .Values.developer.enabled .Values.developer.pythonModulesToEditableInstall }}
+{{- $commonVolumeMounts = append $commonVolumeMounts (dict "mountPath" .Values.developer.sourcePath "name" "diracx-code-mount" "readOnly" true) }}
+{{- range $module := .Values.developer.pythonModulesToEditableInstall }}
+{{- $commonVolumeMounts = append $commonVolumeMounts (dict "mountPath" (printf "%s/%s/src/%s.egg-info" $.Values.developer.sourcePath $module $module) "name" (printf "%s-editable-install" (lower $module)) "readOnly" false) }}
+{{- end }}
+{{- end }}
+
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{ template "init-sql.jobname" . }}
+  namespace: {{ .Release.Namespace }}
+  annotations:
+    "helm.sh/hook": post-install,pre-upgrade
+spec:
+  ttlSecondsAfterFinished: {{ .Values.global.batchJobTTL }}
+  activeDeadlineSeconds: 300
+  template:
+    metadata:
+      annotations:
+      {{- range $key, $value := $initSQLValues.annotations }}
+        {{ $key }}: {{ $value | quote }}
+      {{- end }}
+    spec:
+      restartPolicy: Never
+      containers:
+        - name: {{ .Chart.Name }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          command: ["/bin/bash", "/entrypoint.sh"]
+          args: ["/bin/bash", "/scripts/init-sql"]
+          volumeMounts:
+            {{ toYaml $commonVolumeMounts | nindent 12 }}
+            - name: scripts
+              mountPath: /scripts
+          {{- if .Values.mysql.enabled }}
+          env:
+          {{- range $dbName := .Values.diracx.mysqlDatabases }}
+            - name: DIRACX_DB_URL_{{ $dbName | upper }}
+              valueFrom:
+                secretKeyRef:
+                  name: diracx-sql-root-connection-urls
+                  key: DIRACX_DB_URL_{{ $dbName | upper }}
+          {{- end }}
+          {{- end }}
+          envFrom:
+            - secretRef:
+                name: diracx-init-mysql-secrets
+          resources:
+            {{- toYaml $initSQLValues.resources | nindent 12 }}
+      volumes:
+      - name: scripts
+        configMap:
+          name: {{ template "init-sql.fullname" . }}
+      {{- if and .Values.developer.enabled .Values.developer.pythonModulesToEditableInstall }}
+      - name: diracx-code-mount
+        persistentVolumeClaim:
+          claimName: pvc-diracx-code
+      {{- range $module := .Values.developer.pythonModulesToEditableInstall }}
+      - name: {{ lower $module }}-editable-install
+        empty-dir:
+        sizeLimit: 5Mi
+      {{- end }}
+      {{- end }}
+      - name: container-entrypoint
+        configMap:
+          name: diracx-container-entrypoint
+      {{- if and .Values.developer.enabled .Values.developer.enableCoverage }}
+      - name: coverage-data
+        persistentVolumeClaim:
+          claimName: pvc-coverage
+      {{- end }}
+{{- end }}

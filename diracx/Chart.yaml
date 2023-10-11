@@ -46,3 +46,12 @@ dependencies:
   version: 9.11.0
   repository: https://charts.bitnami.com/bitnami/
   condition: mysql.enabled
+
+- name: cert-manager
+  version: 1.13.1
+  repository: https://charts.jetstack.io
+  condition: cert-manager.enabled
+
+- name: cert-manager-issuer
+  version: '*.*.*'
+  condition: cert-manager-issuer.enabled

@@ -12,20 +12,17 @@ nodes:
       kubeletExtraArgs:
         node-labels: "ingress-ready=true"
   extraMounts:
-  # Mount the local CS repo in the controle plane
-  # Then the PV will mount it from this controle plane "local" directory
-  # - hostPath: /home/chaen/dirac/diracx-project/chris-hackaton-cs/
-  #   containerPath: /local_cs_store
+  # Mount the directories in the control plane
+  # Then the PV will mount it from this control plane "local" directory
+  - hostPath: {{ csStorePath }}
+    containerPath: /local_cs_store
   # For developer to be able to edit
 {{ hostPaths }}
 
   # Expose the ingress port
   extraPortMappings:
-  - containerPort: 80
+  - containerPort: 443
     hostPort: 8000
-    protocol: TCP
-  - containerPort: 3000
-    hostPort: 3000
     protocol: TCP
   - containerPort: 32000
     hostPort: 32000
