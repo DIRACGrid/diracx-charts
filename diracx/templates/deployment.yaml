@@ -27,6 +27,12 @@ spec:
       imagePullSecrets:
         {{- toYaml . | nindent 8 }}
       {{- end }}
+      {{- if .Values.dnsHack.enabled }}
+      hostAliases:
+        - ip: {{ .Values.diracx.hostname | trimSuffix ".nip.io" }}
+          hostnames:
+          - {{ .Values.diracx.hostname }}
+      {{- end }}
       serviceAccountName: {{ include "diracx.serviceAccountName" . }}
       securityContext:
         {{- toYaml .Values.podSecurityContext | nindent 8 }}
@@ -96,14 +102,14 @@ spec:
             - name: http
               containerPort: {{ .Values.diracx.service.port }}
               protocol: TCP
-          # livenessProbe:
-          #   httpGet:
-          #     path: /api/docs/
-          #     port: http
-          # readinessProbe:
-          #   httpGet:
-          #     path: /api/docs/
-          #     port: http
+          livenessProbe:
+            httpGet:
+              path: /api/docs/
+              port: http
+          readinessProbe:
+            httpGet:
+              path: /api/docs/
+              port: http
           command: ["bash", "/entrypoint.sh"]
           args:
             - uvicorn

@@ -90,6 +90,9 @@ developer:
   # If set, mount the CS stored localy instead of initializing a default one
   localCSPath: /local_cs_store
 
+dnsHack:
+  enabled: false
+
 diracx:
   # Required: The hostname where the webapp/API is running
   # hostname:

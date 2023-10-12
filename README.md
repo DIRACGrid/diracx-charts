@@ -48,6 +48,33 @@ helm upgrade diracx-demo ./diracx --values .demo/values.yaml
 
 TODO
 
+## Troubleshooting
+
+### DNS Issues
+
+Depending on your network configuration or internet service provider restrictions, you might encounter DNS resolution issues, as evidenced by errors like:
+
+```
+$ diracx-charts/run_demo.sh diracx DIRAC diracx-web
+🦄 Found package directories for: diracx DIRAC diracx-web
+💀 ping command exited with a non-zero exit code
+ping: <ip>.nip.io: Name or service not known
+💀 ping command exited with a non-zero exit code
+Failed to find an appropriate hostname for the demo.
+```
+
+This error indicates that the system cannot resolve the domain `<ip>.nip.io`. This might be due to restrictions placed by your internet provider or network configuration. To resolve this, you have two options:
+
+1. **Switch Networks:** Try running the demo from a different network that does not have such restrictions.
+
+2. **Modify Hosts File and Enable DNS Hack:**
+   - Add an entry to your `/etc/hosts` file with the unresolved IP address and hostname, like this:
+     ```
+     <ip>      <ip>.nip.io
+     ```
+   - Then, in your configuration, set `dnsHack.enabled` to `true`. This action ensures that the IP address is recognized within the cluster.
+
+
 ## Requirements
 
 | Repository | Name | Version |
@@ -121,6 +148,7 @@ TODO
 | diracxWeb.image.tag | string | `"latest"` |  |
 | diracxWeb.service.port | int | `8080` |  |
 | diracxWeb.service.type | string | `"ClusterIP"` |  |
+| dnsHack.enabled | bool | `false` |  |
 | fullnameOverride | string | `""` |  |
 | global.batchJobTTL | int | `600` |  |
 | image.pullPolicy | string | `"Always"` |  |
