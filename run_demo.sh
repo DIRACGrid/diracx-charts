@@ -132,7 +132,7 @@ while [ -n "${1:-}" ]; do case $1 in
 	# Invalid option: abort
 	--*|-?*)
 		>&2 printf '%b %s: Invalid option: "%s"\n' ${SKULL_EMOJI} "${0##*/}" "$1"
-		>&2 printf 'Usage: %s\n' "$usage"
+		>&2 printf 'Usage: %b\n' "$usage"
 		exit 1 ;;
 
 	# Argument not prefixed with a dash
