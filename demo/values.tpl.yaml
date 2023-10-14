@@ -1,3 +1,8 @@
+global:
+  # Override the imagePullPolicy to always so we can using latest image tags
+  # without risking them being outdated.
+  imagePullPolicy: Always
+
 developer:
   urls:
     diracx: https://{{ hostname }}:8000

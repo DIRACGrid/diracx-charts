@@ -116,14 +116,13 @@ TODO
 | diracx.settings.DIRACX_CONFIG_BACKEND_URL | string | `"git+file:///cs_store/initialRepo"` |  |
 | diracx.settings.DIRACX_SERVICE_AUTH_ALLOWED_REDIRECTS | string | `"[\"http://anything:8000/docs/oauth2-redirect\"]"` |  |
 | diracx.settings.DIRACX_SERVICE_AUTH_TOKEN_KEY | string | `"file:///signing-key/rsa256.key"` |  |
-| diracxWeb.image.pullPolicy | string | `"Always"` |  |
 | diracxWeb.image.repository | string | `"ghcr.io/diracgrid/diracx-web/static"` |  |
 | diracxWeb.image.tag | string | `"latest"` |  |
 | diracxWeb.service.port | int | `8080` |  |
 | diracxWeb.service.type | string | `"ClusterIP"` |  |
 | fullnameOverride | string | `""` |  |
 | global.batchJobTTL | int | `600` |  |
-| image.pullPolicy | string | `"Always"` |  |
+| global.imagePullPolicy | string | `"Always"` |  |
 | image.repository | string | `"ghcr.io/diracgrid/diracx/server"` |  |
 | image.tag | string | `"latest"` |  |
 | ingress.annotations | object | `{}` |  |
