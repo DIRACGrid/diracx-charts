@@ -42,11 +42,14 @@ function check_hostname(){
   fi
 }
 
-usage="${0##*/} [-h|--help] [--exit-when-done] [--enable-coverage] [--mount-containerd] [--set-value key=value] [--] [source directories]"
+usage="${0##*/} [-h|--help] [--exit-when-done] [--offline] [--enable-coverage] [--mount-containerd] [--set-value key=value] [--] [source directories]"
 usage+="\n\n"
 usage+="  -h|--help: Print this help message and exit\n"
 usage+="  --exit-when-done: Exit after the demo has been started (it will be left running in the background)\n"
 usage+="  --enable-coverage: Enable coverage reporting\n"
+usage+="  --offline: Run in a mode which is suitable for fully offline use.\n"
+usage+="             WARNING: This may result in some weird behaviour, see the demo documentation for details.\n"
+usage+="             Implies: --mount-containerd\n"
 usage+="  --mount-containerd: Mount a directory on the host for the kind containerd storage.\n"
 usage+="                      This option avoids needing to pull container images every time the demo is started.\n"
 usage+="                      WARNING: There is no garbage collection so the directory will grow without bound.\n"
@@ -57,6 +60,7 @@ usage+="  source directories: A list of directories containing Python packages t
 # Parse command-line switches
 exit_when_done=0
 mount_containerd=0
+offline_mode=0
 declare -a helm_arguments=()
 enable_coverage=0
 while [ -n "${1:-}" ]; do case $1 in
@@ -98,6 +102,14 @@ while [ -n "${1:-}" ]; do case $1 in
 
 	--mount-containerd)
     mount_containerd=1
+		shift
+		continue ;;
+
+	--offline)
+    mount_containerd=1
+    offline_mode=1
+    helm_arguments+=("--set" "global.imagePullPolicy=IfNotPresent")
+    helm_arguments+=("--set" "developer.offline=true")
 		shift
 		continue ;;
 
@@ -312,7 +324,12 @@ printf "%b Starting Kind cluster...\n" ${UNICORN_EMOJI}
 
 # Add an ingress to the cluster
 printf "%b Creating an ingress...\n" ${UNICORN_EMOJI}
-"${demo_dir}/kubectl" apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/main/deploy/static/provider/kind/deploy.yaml
+# TODO: This should move to the chart itself
+if [ ${offline_mode} -eq 0 ]; then
+  curl -L https://raw.githubusercontent.com/kubernetes/ingress-nginx/main/deploy/static/provider/kind/deploy.yaml > "${tmp_dir}/kind-ingress-deploy.yaml"
+  mv "${tmp_dir}/kind-ingress-deploy.yaml" "${demo_dir}/kind-ingress-deploy.yaml"
+fi
+"${demo_dir}/kubectl" apply -f "${demo_dir}/kind-ingress-deploy.yaml"
 printf "%b Waiting for ingress controller to be created...\n" ${UNICORN_EMOJI}
 "${demo_dir}/kubectl" wait --namespace ingress-nginx \
   --for=condition=ready pod \

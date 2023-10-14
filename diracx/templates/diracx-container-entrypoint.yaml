@@ -16,10 +16,10 @@ data:
     eval "$(micromamba shell hook --shell=posix)" && micromamba activate base
 
     {{ if .Values.diracx.pythonModulesToInstall }}
-    pip install {{- range $moduleSpec := .Values.diracx.pythonModulesToInstall }} {{ $moduleSpec }} {{- end }}
+    pip install{{ if .Values.developer.offline }} --no-build-isolation{{ end}} {{- range $moduleSpec := .Values.diracx.pythonModulesToInstall }} {{ $moduleSpec }} {{- end }}
     {{- end }}
     {{ if and .Values.developer.enabled .Values.developer.pythonModulesToEditableInstall }}
-    pip install {{- range $moduleName := .Values.developer.pythonModulesToEditableInstall }} -e {{ $.Values.developer.sourcePath }}/{{ $moduleName }} {{- end }}
+    pip install{{ if .Values.developer.offline }} --no-build-isolation{{ end}} {{- range $moduleName := .Values.developer.pythonModulesToEditableInstall }} -e {{ $.Values.developer.sourcePath }}/{{ $moduleName }} {{- end }}
     {{- end }}
 
     {{- if and .Values.developer.enabled .Values.developer.enableCoverage }}

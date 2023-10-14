@@ -78,6 +78,7 @@ TODO
 | developer.localCSPath | string | `"/local_cs_store"` |  |
 | developer.nodeImage | string | `"node:16-alpine"` |  |
 | developer.nodeModuleToInstall | string | `nil` |  |
+| developer.offline | bool | `false` |  |
 | developer.pythonModulesToEditableInstall | list | `[]` |  |
 | developer.sourcePath | string | `"/diracx_source"` |  |
 | developer.urls | object | `{}` |  |

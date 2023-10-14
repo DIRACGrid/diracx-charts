@@ -77,6 +77,8 @@ init-sql:
 
 developer:
   enabled: true
+  # Make it possible to launch the demo without having an internet connection
+  offline: false
   # URLs which can be used to access various components of the demo
   urls: {}
   # Path from which to mount source of DIRACX
