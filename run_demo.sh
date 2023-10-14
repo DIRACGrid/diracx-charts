@@ -42,17 +42,21 @@ function check_hostname(){
   fi
 }
 
-usage="${0##*/} [-h|--help] [--exit-when-done] [--enable-coverage] [--set-value key=value] [--] [source directories]"
+usage="${0##*/} [-h|--help] [--exit-when-done] [--enable-coverage] [--mount-containerd] [--set-value key=value] [--] [source directories]"
 usage+="\n\n"
 usage+="  -h|--help: Print this help message and exit\n"
 usage+="  --exit-when-done: Exit after the demo has been started (it will be left running in the background)\n"
 usage+="  --enable-coverage: Enable coverage reporting\n"
+usage+="  --mount-containerd: Mount a directory on the host for the kind containerd storage.\n"
+usage+="                      This option avoids needing to pull container images every time the demo is started.\n"
+usage+="                      WARNING: There is no garbage collection so the directory will grow without bound.\n"
 usage+="  --set-value: Set a value in the Helm values file. This can be used to override the default values.\n"
 usage+="               For example, to enable coverage reporting pass: --set-value developer.enableCoverage=true\n"
 usage+="  source directories: A list of directories containing Python packages to mount in the demo cluster.\n"
 
 # Parse command-line switches
 exit_when_done=0
+mount_containerd=0
 declare -a helm_arguments=()
 enable_coverage=0
 while [ -n "${1:-}" ]; do case $1 in
@@ -89,6 +93,11 @@ while [ -n "${1:-}" ]; do case $1 in
     helm_arguments+=("--set")
     helm_arguments+=("developer.enableCoverage=true")
     enable_coverage=1
+		shift
+		continue ;;
+
+	--mount-containerd)
+    mount_containerd=1
 		shift
 		continue ;;
 
@@ -226,6 +235,21 @@ if [ ${#pkg_dirs[@]} -gt 0 ]; then
     mv "${demo_dir}/demo_cluster_conf.yaml" "${demo_dir}/demo_cluster_conf.yaml.bak"
     sed "s@{{ extraMounts }}@  - hostPath: ${pkg_dir}\n    containerPath: /diracx_source/$(basename "${pkg_dir}")\n{{ extraMounts }}@g" "${demo_dir}/demo_cluster_conf.yaml.bak" > "${demo_dir}/demo_cluster_conf.yaml"
   done
+fi
+# If requested, mount the containerd storage from the host
+if [ ${mount_containerd} -eq 1 ]; then
+  # We use a docker volume for the containerd mount rather than a directory on
+  # the host as it needs to support overlayfs. This isn't the case for some
+  # host file systems or when Docker Desktop is used (e.g. macOS)
+  if docker volume inspect diracx-demo-containerd -f '{{ .Mountpoint }}' > /dev/null 2>&1; then
+    printf "%b Using existing containerd storage\n" ${UNICORN_EMOJI}
+  else
+    printf "%b Creating containerd storage\n" ${UNICORN_EMOJI}
+    docker volume create diracx-demo-containerd
+  fi
+  containerd_mount=$(docker volume inspect diracx-demo-containerd -f '{{ .Mountpoint }}')
+  mv "${demo_dir}/demo_cluster_conf.yaml" "${demo_dir}/demo_cluster_conf.yaml.bak"
+  sed "s@{{ extraMounts }}@  - hostPath: ${containerd_mount}\n    containerPath: /var/lib/containerd\n{{ extraMounts }}@g" "${demo_dir}/demo_cluster_conf.yaml.bak" > "${demo_dir}/demo_cluster_conf.yaml"
 fi
 # Add the mount for the CS
 rm -rf "${demo_dir}/cs-mount"
