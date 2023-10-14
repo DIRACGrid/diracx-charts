@@ -224,7 +224,7 @@ cp "${script_dir}/demo/demo_cluster_conf.tpl.yaml" "${demo_dir}/demo_cluster_con
 if [ ${#pkg_dirs[@]} -gt 0 ]; then
   for pkg_dir in "${pkg_dirs[@]}"; do
     mv "${demo_dir}/demo_cluster_conf.yaml" "${demo_dir}/demo_cluster_conf.yaml.bak"
-    sed "s@{{ hostPaths }}@  - hostPath: ${pkg_dir}\n    containerPath: /diracx_source/$(basename "${pkg_dir}")\n{{ hostPaths }}@g" "${demo_dir}/demo_cluster_conf.yaml.bak" > "${demo_dir}/demo_cluster_conf.yaml"
+    sed "s@{{ extraMounts }}@  - hostPath: ${pkg_dir}\n    containerPath: /diracx_source/$(basename "${pkg_dir}")\n{{ extraMounts }}@g" "${demo_dir}/demo_cluster_conf.yaml.bak" > "${demo_dir}/demo_cluster_conf.yaml"
   done
 fi
 # Add the mount for the CS
@@ -241,11 +241,11 @@ if [[ ${enable_coverage} ]]; then
   # Make sure the directory is writable by the container
   chmod 777 "${demo_dir}/coverage-reports"
   mv "${demo_dir}/demo_cluster_conf.yaml" "${demo_dir}/demo_cluster_conf.yaml.bak"
-  sed "s@{{ hostPaths }}@  - hostPath: ${demo_dir}/coverage-reports\n    containerPath: /coverage-reports\n{{ hostPaths }}@g" "${demo_dir}/demo_cluster_conf.yaml.bak" > "${demo_dir}/demo_cluster_conf.yaml"
+  sed "s@{{ extraMounts }}@  - hostPath: ${demo_dir}/coverage-reports\n    containerPath: /coverage-reports\n{{ extraMounts }}@g" "${demo_dir}/demo_cluster_conf.yaml.bak" > "${demo_dir}/demo_cluster_conf.yaml"
 fi
-# Cleanup the "{{ hostPaths }}" part of the template and make sure things look reasonable
+# Cleanup the "{{ extraMounts }}" part of the template and make sure things look reasonable
 mv "${demo_dir}/demo_cluster_conf.yaml" "${demo_dir}/demo_cluster_conf.yaml.bak"
-sed "s@{{ hostPaths }}@@g" "${demo_dir}/demo_cluster_conf.yaml.bak" > "${demo_dir}/demo_cluster_conf.yaml"
+sed "s@{{ extraMounts }}@@g" "${demo_dir}/demo_cluster_conf.yaml.bak" > "${demo_dir}/demo_cluster_conf.yaml"
 if grep '{{' "${demo_dir}/demo_cluster_conf.yaml"; then
   printf "%b Error generating Kind template. Found {{ in the template result\n" ${UNICORN_EMOJI}
   exit 1
