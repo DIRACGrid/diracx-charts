@@ -293,7 +293,7 @@ printf "%b Waiting for ingress controller to be created...\n" ${UNICORN_EMOJI}
 "${demo_dir}/kubectl" wait --namespace ingress-nginx \
   --for=condition=ready pod \
   --selector=app.kubernetes.io/component=controller \
-  --timeout=90s
+  --timeout=300s
 
 # Install the DiracX chart
 printf "%b Installing DiracX...\n" ${UNICORN_EMOJI}
@@ -303,7 +303,7 @@ if ! "${demo_dir}/helm" install diracx-demo "${script_dir}/diracx" "${helm_argum
   echo "Failed to run \"helm install\"" >> "${demo_dir}/.failed"
 else
   printf "%b Waiting for installation to finish...\n" ${UNICORN_EMOJI}
-  if "${demo_dir}/kubectl" wait --for=condition=ready pod --selector=app.kubernetes.io/name=diracx --timeout=300s; then
+  if "${demo_dir}/kubectl" wait --for=condition=ready pod --selector=app.kubernetes.io/name=diracx --timeout=900s; then
     printf "%b %b %b Pods are ready! %b %b %b\n" "${PARTY_EMOJI}" "${PARTY_EMOJI}" "${PARTY_EMOJI}" "${PARTY_EMOJI}" "${PARTY_EMOJI}" "${PARTY_EMOJI}"
 
     # Dump the CA certificate to a file so that it can be used by the client
