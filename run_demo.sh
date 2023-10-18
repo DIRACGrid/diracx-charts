@@ -228,6 +228,9 @@ if [ ${#pkg_dirs[@]} -gt 0 ]; then
   done
 fi
 # Add the mount for the CS
+# hack to cleanup the cs-mount content owned by somebody else
+# (long term solution is proper security policy in the cluster)
+docker run -v "${demo_dir}/cs-mount":/cs-mount busybox:latest rm -rf /cs-mount/initialRepo
 rm -rf "${demo_dir}/cs-mount"
 mkdir -p "${demo_dir}/cs-mount"
 # Make sure the directory is writable by the container
