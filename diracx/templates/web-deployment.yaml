@@ -35,11 +35,11 @@ spec:
           persistentVolumeClaim:
             claimName: pvc-diracx-code
         - name: diracx-web-scratch-node-modules
-          empty-dir:
-          sizeLimit: 1Gi
+          emptyDir:
+            sizeLimit: 1Gi
         - name: diracx-web-scratch-next
-          empty-dir:
-          sizeLimit: 1Gi
+          emptyDir:
+            sizeLimit: 1Gi
         {{- end }}
 
       initContainers:

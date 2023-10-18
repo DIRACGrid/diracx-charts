@@ -68,8 +68,8 @@ spec:
           claimName: pvc-diracx-code
       {{- range $module := .Values.developer.pythonModulesToEditableInstall }}
       - name: {{ lower $module }}-editable-install
-        empty-dir:
-        sizeLimit: 5Mi
+        emptyDir:
+          sizeLimit: 5Mi
       {{- end }}
       {{- end }}
       - name: container-entrypoint
