@@ -96,14 +96,14 @@ spec:
             - name: http
               containerPort: {{ .Values.diracx.service.port }}
               protocol: TCP
-          # livenessProbe:
-          #   httpGet:
-          #     path: /api/docs/
-          #     port: http
-          # readinessProbe:
-          #   httpGet:
-          #     path: /api/docs/
-          #     port: http
+          livenessProbe:
+            httpGet:
+              path: /api/docs/
+              port: http
+          readinessProbe:
+            httpGet:
+              path: /api/docs/
+              port: http
           command: ["bash", "/entrypoint.sh"]
           args:
             - uvicorn
