@@ -27,14 +27,23 @@ function cleanup(){
 
 function space_monitor(){
   # Continiously monitor if the cluster is low on space
-  sleep 15
+  # Wait for the container to be available
   while true; do
-    percent_free=$(docker exec diracx-demo-control-plane df / | awk 'NR == 2 { print substr($5, 1, length($5)-1) }')
-    cluster_free_gb=$(docker exec diracx-demo-control-plane df -BG / | awk 'NR == 2 { print substr($4, 1, length($4)-1) }')
-    if [ "${cluster_free_gb}" -lt 5 ]; then
+    if docker ps | grep diracx-demo-control-plane &> /dev/null; then
+      break
+    fi
+    sleep 2
+  done
+  # Run the monitoring every 60 seconds
+  while true; do
+    # Check for the amount of free space on the cluster
+    df_output=$(docker exec diracx-demo-control-plane df -BG 2>/dev/null)
+    percent_free=$(echo "${df_output}" | awk 'NR == 2 { print substr($5, 1, length($5)-1) }')
+    cluster_free_gb=$(echo "${df_output}" | awk 'NR == 2 { print substr($4, 1, length($4)-1) }')
+    if [ "${cluster_free_gb}" -lt 50 ]; then
       printf "%b Cluster is low on space (%sGB free, %s%%)\n" "${WARN_EMOJI}" "${cluster_free_gb}" "${percent_free}"
     fi
-
+    # Check the total size of the containerd volume
     if [ ${mount_containerd} -eq 1 ]; then
       containerd_volume_size="$(docker exec diracx-demo-control-plane du -s -BG /var/lib/containerd | cut -d 'G' -f 1)"
       if [[ "${containerd_volume_size}" -gt 10 ]]; then
@@ -42,7 +51,6 @@ function space_monitor(){
         printf "shutdown the demo and run \"docker volume rm diracx-demo-containerd\"\n"
       fi
     fi
-
     sleep 60
   done
 }
