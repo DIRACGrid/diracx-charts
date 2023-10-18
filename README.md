@@ -122,6 +122,7 @@ TODO
 | diracxWeb.service.port | int | `8080` |  |
 | diracxWeb.service.type | string | `"ClusterIP"` |  |
 | fullnameOverride | string | `""` |  |
+| global.activeDeadlineSeconds | int | `900` |  |
 | global.batchJobTTL | int | `600` |  |
 | global.imagePullPolicy | string | `"Always"` |  |
 | image.repository | string | `"ghcr.io/diracgrid/diracx/server"` |  |

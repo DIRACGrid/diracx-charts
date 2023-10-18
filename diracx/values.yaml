@@ -10,6 +10,8 @@ global:
   # For now we override it to Always to avoid confusion around having an
   # outdated reference to the "latest" tag.
   imagePullPolicy: Always
+  # timeout for job deadlines
+  activeDeadlineSeconds: 900
 
 replicaCount: 1
 
