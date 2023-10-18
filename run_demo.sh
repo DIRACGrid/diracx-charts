@@ -25,6 +25,28 @@ function cleanup(){
   rm -rf "${tmp_dir}"
 }
 
+function space_monitor(){
+  # Continiously monitor if the cluster is low on space
+  sleep 15
+  while true; do
+    percent_free=$(docker exec diracx-demo-control-plane df / | awk 'NR == 2 { print substr($5, 1, length($5)-1) }')
+    cluster_free_gb=$(docker exec diracx-demo-control-plane df -BG / | awk 'NR == 2 { print substr($4, 1, length($4)-1) }')
+    if [ "${cluster_free_gb}" -lt 5 ]; then
+      printf "%b Cluster is low on space (%sGB free, %s%%)\n" "${WARN_EMOJI}" "${cluster_free_gb}" "${percent_free}"
+    fi
+
+    if [ ${mount_containerd} -eq 1 ]; then
+      containerd_volume_size="$(docker exec diracx-demo-control-plane du -s -BG /var/lib/containerd | cut -d 'G' -f 1)"
+      if [[ "${containerd_volume_size}" -gt 10 ]]; then
+        printf "%b Volume for containerd is %s GB, if you want to save space " "${WARN_EMOJI}" "${containerd_volume_size}"
+        printf "shutdown the demo and run \"docker volume rm diracx-demo-containerd\"\n"
+      fi
+    fi
+
+    sleep 60
+  done
+}
+
 function check_hostname(){
   # Check that the hostname resolves to an IP address
   # dig doesn't consider the effect of /etc/hosts so we use ping instead
@@ -317,6 +339,9 @@ if grep '{{' "${demo_dir}/values.yaml"; then
   exit 1
 fi
 
+# Start background task to monitor the cluster space
+space_monitor &
+
 # Create the cluster itself
 printf "%b Starting Kind cluster...\n" ${UNICORN_EMOJI}
 "${demo_dir}/kind" create cluster \
@@ -382,13 +407,5 @@ while true; do
     printf "%b The machine hostnamae seems to have been fixed. %b\n" "${PARTY_EMOJI}" "${PARTY_EMOJI}"
     printf "%b No need to restart! %b\n" "${PARTY_EMOJI}" "${PARTY_EMOJI}"
     machine_hostname_has_changed=0
-  fi
-  # Check the size of the containerd storage
-  if [ ${mount_containerd} -eq 1 ]; then
-    containerd_volume_size="$(docker exec diracx-demo-control-plane du -s -BG /var/lib/containerd | cut -d 'G' -f 1)"
-    if [[ "${containerd_volume_size}" -gt 10 ]]; then
-      printf "%b Volume for containerd is %s GB, if you want to save space " "${WARN_EMOJI}" "${containerd_volume_size}"
-      printf "shutdown the demo and run \"docker volume rm diracx-demo-containerd\"\n"
-    fi
   fi
 done
