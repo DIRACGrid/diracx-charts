@@ -97,6 +97,8 @@ developer:
   autoReload: true
   # If set, mount the CS stored localy instead of initializing a default one
   localCSPath: /local_cs_store
+  # The IP that the demo is running at
+  ipAlias: null
 
 diracx:
   # Required: The hostname where the webapp/API is running

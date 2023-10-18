@@ -75,6 +75,7 @@ TODO
 | developer.autoReload | bool | `true` |  |
 | developer.enableCoverage | bool | `false` |  |
 | developer.enabled | bool | `true` |  |
+| developer.ipAlias | string | `nil` |  |
 | developer.localCSPath | string | `"/local_cs_store"` |  |
 | developer.nodeImage | string | `"node:16-alpine"` |  |
 | developer.nodeModuleToInstall | string | `nil` |  |

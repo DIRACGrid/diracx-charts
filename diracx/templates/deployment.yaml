@@ -27,6 +27,12 @@ spec:
       imagePullSecrets:
         {{- toYaml . | nindent 8 }}
       {{- end }}
+      {{- if .Values.developer.ipAlias }}
+      hostAliases:
+        - ip: {{ .Values.developer.ipAlias }}
+          hostnames:
+          - {{ .Values.diracx.hostname }}
+      {{- end }}
       serviceAccountName: {{ include "diracx.serviceAccountName" . }}
       securityContext:
         {{- toYaml .Values.podSecurityContext | nindent 8 }}

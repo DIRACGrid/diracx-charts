@@ -216,24 +216,6 @@ else
   printf "%b No source directories were specified\n" ${UNICORN_EMOJI}
 fi
 
-# Try to find a suitable hostname/IP-address for the demo. This must be not
-# resolve to a loopback address as pods need to be able to communicate with
-# each other via this address. For example, the DiracX service pod needs to be
-# able to communicate with dex via this while users also use the same
-# address/IP-address.
-machine_hostname=$(hostname | tr '[:upper:]' '[:lower:]')
-if ! check_hostname "${machine_hostname}"; then
-  machine_hostname=$(ifconfig | grep 'inet ' | awk '{ print $2 }' | grep -v '^127' | head -n 1 | cut -d '/' -f 1)
-  # We use nip.io to have an actual DNS name and be allowed to specify this in
-  # the ingress host
-  machine_hostname="${machine_hostname}.nip.io"
-  if ! check_hostname "${machine_hostname}"; then
-    echo "Failed to find an appropriate hostname for the demo."
-    exit 1
-  fi
-  printf "%b Using IP address %s instead \n" ${INFO_EMOJI} "${machine_hostname}"
-fi
-
 trap "cleanup" EXIT
 
 # We download kind/kubectl/helm into the .demo directory to avoid having any
@@ -320,6 +302,49 @@ if grep '{{' "${demo_dir}/demo_cluster_conf.yaml"; then
   exit 1
 fi
 
+# Start background task to monitor the cluster space
+space_monitor &
+
+# Create the cluster itself
+printf "%b Starting Kind cluster...\n" ${UNICORN_EMOJI}
+"${demo_dir}/kind" create cluster \
+  --kubeconfig "${KUBECONFIG}" \
+  --wait "1m" \
+  --config "${demo_dir}/demo_cluster_conf.yaml" \
+  --name diracx-demo
+
+# Try to find a suitable hostname/IP-address for the demo. This must be not
+# resolve to a loopback address as pods need to be able to communicate with
+# each other via this address. For example, the DiracX service pod needs to be
+# able to communicate with dex via this while users also use the same
+# address/IP-address.
+machine_ip=""
+machine_hostname=$(hostname | tr '[:upper:]' '[:lower:]')
+if ! check_hostname "${machine_hostname}"; then
+  if [[ "$(uname -s)" = "Linux" ]]; then
+    machine_ip=$(docker inspect --format '{{ .NetworkSettings.Networks.kind.IPAddress }}' diracx-demo-control-plane)
+    if [[ -z "${machine_ip}" ]]; then
+      printf "%b Error: Failed to find IP address from docker\n" ${SKULL_EMOJI}
+      exit 1
+    fi
+    machine_hostname="${machine_ip}.nip.io"
+  fi
+  if ! check_hostname "${machine_hostname}"; then
+    machine_ip=$(ifconfig | grep 'inet ' | awk '{ print $2 }' | grep -v '^127' | head -n 1 | cut -d '/' -f 1)
+    # We use nip.io to have an actual DNS name and be allowed to specify this in
+    # the ingress host
+    machine_hostname="${machine_hostname}.nip.io"
+    if ! check_hostname "${machine_hostname}"; then
+      echo "Failed to find an appropriate hostname for the demo."
+      exit 1
+    fi
+  fi
+  printf "%b Using IP address %s instead \n" ${INFO_EMOJI} "${machine_hostname}"
+fi
+if [ "${machine_ip}" ]; then
+  helm_arguments+=("--set" "developer.ipAlias=${machine_ip}")
+fi
+
 # Generate the Helm values file
 printf "%b Generating Helm templates\n" ${UNICORN_EMOJI}
 sed "s/{{ hostname }}/${machine_hostname}/g" "${script_dir}/demo/values.tpl.yaml" > "${demo_dir}/values.yaml"
@@ -346,17 +371,6 @@ if grep '{{' "${demo_dir}/values.yaml"; then
   printf "%b Error generating template. Found {{ in the template result\n" ${SKULL_EMOJI}
   exit 1
 fi
-
-# Start background task to monitor the cluster space
-space_monitor &
-
-# Create the cluster itself
-printf "%b Starting Kind cluster...\n" ${UNICORN_EMOJI}
-"${demo_dir}/kind" create cluster \
-  --kubeconfig "${KUBECONFIG}" \
-  --wait "1m" \
-  --config "${demo_dir}/demo_cluster_conf.yaml" \
-  --name diracx-demo
 
 # Add an ingress to the cluster
 printf "%b Creating an ingress...\n" ${UNICORN_EMOJI}
