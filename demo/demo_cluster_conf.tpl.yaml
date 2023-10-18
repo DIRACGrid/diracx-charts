@@ -16,8 +16,7 @@ nodes:
   # Then the PV will mount it from this control plane "local" directory
   - hostPath: {{ csStorePath }}
     containerPath: /local_cs_store
-  # For developer to be able to edit
-{{ hostPaths }}
+{{ extraMounts }}
 
   # Expose the ingress port
   extraPortMappings:

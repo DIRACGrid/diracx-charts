@@ -46,7 +46,7 @@ spec:
       {{- if $nodeDevInstall }}
         - name: install-deps
           image: {{ .Values.developer.nodeImage }}
-          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          imagePullPolicy: {{ .Values.global.imagePullPolicy }}
           # We use "npm ci" instead of "npm install" so it will use the package-lock.json file
           # rather than using the package.json file. Using package.json would fail as the mount
           # is read-only so package-lock.json can't be edited.
@@ -72,7 +72,7 @@ spec:
           {{- else }}
           image: {{ .Values.diracxWeb.image.repository }}:{{ .Values.diracxWeb.image.tag }}
           {{- end }}
-          imagePullPolicy: {{ .Values.diracxWeb.image.pullPolicy }}
+          imagePullPolicy: {{ .Values.global.imagePullPolicy }}
           ports:
             - name: http
               containerPort: {{ .Values.diracxWeb.service.port }}

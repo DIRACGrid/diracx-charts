@@ -79,6 +79,7 @@ spec:
       {{- if .Values.diracx.manageOSIndices }}
       - name: create-os-db-indices
         image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+        imagePullPolicy: {{ .Values.global.imagePullPolicy }}
         command: ["bash", "/entrypoint.sh"]
         args: ["python", "-m", "diracx.db", "init-os"]
         volumeMounts: {{ toYaml $commonVolumeMounts | nindent 10 }}
@@ -91,7 +92,7 @@ spec:
           securityContext:
             {{- toYaml .Values.securityContext | nindent 12 }}
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
-          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          imagePullPolicy: {{ .Values.global.imagePullPolicy }}
           ports:
             - name: http
               containerPort: {{ .Values.diracx.service.port }}

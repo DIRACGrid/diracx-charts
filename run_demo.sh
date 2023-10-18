@@ -42,17 +42,25 @@ function check_hostname(){
   fi
 }
 
-usage="${0##*/} [-h|--help] [--exit-when-done] [--enable-coverage] [--set-value key=value] [--] [source directories]"
+usage="${0##*/} [-h|--help] [--exit-when-done] [--offline] [--enable-coverage] [--no-mount-containerd] [--set-value key=value] [--] [source directories]"
 usage+="\n\n"
 usage+="  -h|--help: Print this help message and exit\n"
 usage+="  --exit-when-done: Exit after the demo has been started (it will be left running in the background)\n"
 usage+="  --enable-coverage: Enable coverage reporting\n"
+usage+="  --offline: Run in a mode which is suitable for fully offline use.\n"
+usage+="             WARNING: This may result in some weird behaviour, see the demo documentation for details.\n"
+usage+="             Implies: --mount-containerd\n"
+usage+="  --no-mount-containerd: Mount a directory on the host for the kind containerd storage.\n"
+usage+="                         This option avoids needing to pull container images every time the demo is started.\n"
+usage+="                         WARNING: There is no garbage collection so the directory will grow without bound.\n"
 usage+="  --set-value: Set a value in the Helm values file. This can be used to override the default values.\n"
 usage+="               For example, to enable coverage reporting pass: --set-value developer.enableCoverage=true\n"
 usage+="  source directories: A list of directories containing Python packages to mount in the demo cluster.\n"
 
 # Parse command-line switches
 exit_when_done=0
+mount_containerd=1
+offline_mode=0
 declare -a helm_arguments=()
 enable_coverage=0
 while [ -n "${1:-}" ]; do case $1 in
@@ -92,6 +100,19 @@ while [ -n "${1:-}" ]; do case $1 in
 		shift
 		continue ;;
 
+	--no-mount-containerd)
+    mount_containerd=0
+		shift
+		continue ;;
+
+	--offline)
+    mount_containerd=1
+    offline_mode=1
+    helm_arguments+=("--set" "global.imagePullPolicy=IfNotPresent")
+    helm_arguments+=("--set" "developer.offline=true")
+		shift
+		continue ;;
+
 	--set-value)
 		shift
     if [[ -z "${1:-}" ]]; then
@@ -111,7 +132,7 @@ while [ -n "${1:-}" ]; do case $1 in
 	# Invalid option: abort
 	--*|-?*)
 		>&2 printf '%b %s: Invalid option: "%s"\n' ${SKULL_EMOJI} "${0##*/}" "$1"
-		>&2 printf 'Usage: %s\n' "$usage"
+		>&2 printf 'Usage: %b\n' "$usage"
 		exit 1 ;;
 
 	# Argument not prefixed with a dash
@@ -224,8 +245,23 @@ cp "${script_dir}/demo/demo_cluster_conf.tpl.yaml" "${demo_dir}/demo_cluster_con
 if [ ${#pkg_dirs[@]} -gt 0 ]; then
   for pkg_dir in "${pkg_dirs[@]}"; do
     mv "${demo_dir}/demo_cluster_conf.yaml" "${demo_dir}/demo_cluster_conf.yaml.bak"
-    sed "s@{{ hostPaths }}@  - hostPath: ${pkg_dir}\n    containerPath: /diracx_source/$(basename "${pkg_dir}")\n{{ hostPaths }}@g" "${demo_dir}/demo_cluster_conf.yaml.bak" > "${demo_dir}/demo_cluster_conf.yaml"
+    sed "s@{{ extraMounts }}@  - hostPath: ${pkg_dir}\n    containerPath: /diracx_source/$(basename "${pkg_dir}")\n{{ extraMounts }}@g" "${demo_dir}/demo_cluster_conf.yaml.bak" > "${demo_dir}/demo_cluster_conf.yaml"
   done
+fi
+# If requested, mount the containerd storage from the host
+if [ ${mount_containerd} -eq 1 ]; then
+  # We use a docker volume for the containerd mount rather than a directory on
+  # the host as it needs to support overlayfs. This isn't the case for some
+  # host file systems or when Docker Desktop is used (e.g. macOS)
+  if docker volume inspect diracx-demo-containerd -f '{{ .Mountpoint }}' > /dev/null 2>&1; then
+    printf "%b Using existing containerd storage\n" ${UNICORN_EMOJI}
+  else
+    printf "%b Creating containerd storage\n" ${UNICORN_EMOJI}
+    docker volume create diracx-demo-containerd
+  fi
+  containerd_mount=$(docker volume inspect diracx-demo-containerd -f '{{ .Mountpoint }}')
+  mv "${demo_dir}/demo_cluster_conf.yaml" "${demo_dir}/demo_cluster_conf.yaml.bak"
+  sed "s@{{ extraMounts }}@  - hostPath: ${containerd_mount}\n    containerPath: /var/lib/containerd\n{{ extraMounts }}@g" "${demo_dir}/demo_cluster_conf.yaml.bak" > "${demo_dir}/demo_cluster_conf.yaml"
 fi
 # Add the mount for the CS
 # hack to cleanup the cs-mount content owned by somebody else
@@ -244,11 +280,11 @@ if [[ ${enable_coverage} ]]; then
   # Make sure the directory is writable by the container
   chmod 777 "${demo_dir}/coverage-reports"
   mv "${demo_dir}/demo_cluster_conf.yaml" "${demo_dir}/demo_cluster_conf.yaml.bak"
-  sed "s@{{ hostPaths }}@  - hostPath: ${demo_dir}/coverage-reports\n    containerPath: /coverage-reports\n{{ hostPaths }}@g" "${demo_dir}/demo_cluster_conf.yaml.bak" > "${demo_dir}/demo_cluster_conf.yaml"
+  sed "s@{{ extraMounts }}@  - hostPath: ${demo_dir}/coverage-reports\n    containerPath: /coverage-reports\n{{ extraMounts }}@g" "${demo_dir}/demo_cluster_conf.yaml.bak" > "${demo_dir}/demo_cluster_conf.yaml"
 fi
-# Cleanup the "{{ hostPaths }}" part of the template and make sure things look reasonable
+# Cleanup the "{{ extraMounts }}" part of the template and make sure things look reasonable
 mv "${demo_dir}/demo_cluster_conf.yaml" "${demo_dir}/demo_cluster_conf.yaml.bak"
-sed "s@{{ hostPaths }}@@g" "${demo_dir}/demo_cluster_conf.yaml.bak" > "${demo_dir}/demo_cluster_conf.yaml"
+sed "s@{{ extraMounts }}@@g" "${demo_dir}/demo_cluster_conf.yaml.bak" > "${demo_dir}/demo_cluster_conf.yaml"
 if grep '{{' "${demo_dir}/demo_cluster_conf.yaml"; then
   printf "%b Error generating Kind template. Found {{ in the template result\n" ${UNICORN_EMOJI}
   exit 1
@@ -291,7 +327,12 @@ printf "%b Starting Kind cluster...\n" ${UNICORN_EMOJI}
 
 # Add an ingress to the cluster
 printf "%b Creating an ingress...\n" ${UNICORN_EMOJI}
-"${demo_dir}/kubectl" apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/main/deploy/static/provider/kind/deploy.yaml
+# TODO: This should move to the chart itself
+if [ ${offline_mode} -eq 0 ]; then
+  curl -L https://raw.githubusercontent.com/kubernetes/ingress-nginx/main/deploy/static/provider/kind/deploy.yaml > "${tmp_dir}/kind-ingress-deploy.yaml"
+  mv "${tmp_dir}/kind-ingress-deploy.yaml" "${demo_dir}/kind-ingress-deploy.yaml"
+fi
+"${demo_dir}/kubectl" apply -f "${demo_dir}/kind-ingress-deploy.yaml"
 printf "%b Waiting for ingress controller to be created...\n" ${UNICORN_EMOJI}
 "${demo_dir}/kubectl" wait --namespace ingress-nginx \
   --for=condition=ready pod \
@@ -341,5 +382,13 @@ while true; do
     printf "%b The machine hostnamae seems to have been fixed. %b\n" "${PARTY_EMOJI}" "${PARTY_EMOJI}"
     printf "%b No need to restart! %b\n" "${PARTY_EMOJI}" "${PARTY_EMOJI}"
     machine_hostname_has_changed=0
+  fi
+  # Check the size of the containerd storage
+  if [ ${mount_containerd} -eq 1 ]; then
+    containerd_volume_size="$(docker exec diracx-demo-control-plane du -s -BG /var/lib/containerd | cut -d 'G' -f 1)"
+    if [[ "${containerd_volume_size}" -gt 10 ]]; then
+      printf "%b Volume for containerd is %s GB, if you want to save space " "${WARN_EMOJI}" "${containerd_volume_size}"
+      printf "shutdown the demo and run \"docker volume rm diracx-demo-containerd\"\n"
+    fi
   fi
 done

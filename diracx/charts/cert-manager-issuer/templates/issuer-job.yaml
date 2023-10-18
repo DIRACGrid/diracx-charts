@@ -19,7 +19,7 @@ spec:
       containers:
         - name: create-issuer
           image: ghcr.io/diracgrid/diracx/secret-generation:latest
-          imagePullPolicy: Always
+          imagePullPolicy: {{ .Values.global.imagePullPolicy }}
           command: ['/bin/bash', '/scripts/create-issuer', '/scripts/issuer.yml']
           volumeMounts:
             - name: scripts
