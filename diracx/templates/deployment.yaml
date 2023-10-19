@@ -27,6 +27,12 @@ spec:
       imagePullSecrets:
         {{- toYaml . | nindent 8 }}
       {{- end }}
+      {{- if .Values.dnsHack.enabled }}
+      hostAliases:
+        - ip: {{ .Values.diracx.hostname | trimSuffix ".nip.io" }}
+          hostnames:
+          - {{ .Values.diracx.hostname }}
+      {{- end }}
       serviceAccountName: {{ include "diracx.serviceAccountName" . }}
       securityContext:
         {{- toYaml .Values.podSecurityContext | nindent 8 }}
