@@ -1,0 +1,27 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: init-indigo-iam
+  namespace: {{ .Release.Namespace }}
+  annotations:
+    "helm.sh/hook": post-install,post-upgrade
+    "helm.sh/hook-weight": "1"
+spec:
+  ttlSecondsAfterFinished: {{ .Values.global.batchJobTTL }}
+  activeDeadlineSeconds: {{ .Values.global.activeDeadlineSeconds }}
+  template:
+    spec:
+      restartPolicy: Never
+      containers:
+        - name: indigo-iam
+          image: "{{ .Values.indigoiam.image.repository }}:{{ .Values.indigoiam.image.tag }}"
+          imagePullPolicy: {{ .Values.global.imagePullPolicy }}
+          command: ["/bin/sh", "/scripts/init-iam"]
+          volumeMounts:
+          - name: scripts
+            mountPath: /scripts
+      volumes:
+      - name: scripts
+        configMap:
+          name: {{ template "init-iam.fullname" . }}
+      restartPolicy: Never

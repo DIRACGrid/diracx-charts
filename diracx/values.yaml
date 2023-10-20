@@ -326,6 +326,20 @@ dex:
 
 ##########################
 
+indigoiam:
+  enabled: true
+  config:
+    issuer: http://anything:32003
+  image:
+    repository: indigoiam/iam-login-service
+    tag: v1.8.2
+  service:
+    type: NodePort
+    port: 8080
+    nodePort: 32003
+
+##########################
+
 mysql:
   enabled: true
   auth:

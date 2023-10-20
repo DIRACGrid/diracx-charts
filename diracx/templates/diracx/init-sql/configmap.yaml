@@ -11,5 +11,5 @@ metadata:
     "helm.sh/hook-delete-policy": hook-succeeded,before-hook-creation
 data:
   init-sql: |
-    {{- include (print $.Template.BasePath "/init-sql/_init-sql.sh.tpl") . | nindent 4 }}
+    {{- include (print $.Template.BasePath "/diracx/init-sql/_init-sql.sh.tpl") . | nindent 4 }}
 {{- end -}}
