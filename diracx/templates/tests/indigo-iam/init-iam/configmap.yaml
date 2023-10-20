@@ -1,0 +1,10 @@
+{{- if .Values.indigoiam.enabled -}}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ template "init-iam.fullname" . }}
+  namespace: {{ .Release.Namespace }}
+data:
+  init-iam: |
+    {{- include (print $.Template.BasePath "/tests/indigo-iam/init-iam/_init-iam.sh.tpl") . | nindent 4 }}
+{{- end -}}

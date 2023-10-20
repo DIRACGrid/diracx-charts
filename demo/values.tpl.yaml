@@ -8,6 +8,7 @@ developer:
     diracx: https://{{ hostname }}:8000
     minio: http://{{ hostname }}:32000
     dex: http://{{ hostname }}:32002
+    iam: http://{{ hostname }}:32003
   demoDir: {{ demo_dir }}
   mountedPythonModulesToInstall: {{ mounted_python_modules }}
   editableMountedPythonModules: {{ editable_mounted_modules }}
@@ -17,7 +18,7 @@ init-cs:
   VOs:
     - name: diracAdmin
       IdP:
-        idp_url: http://{{ hostname }}:32002
+        idp_url: http://{{ hostname }}:32003
         idp_client_id: d396912e-2f04-439b-8ae7-d8c585a34790
       defaultGroup: admin
       Users:
@@ -65,3 +66,7 @@ dex:
       - email: "admin@example.com"
         hash: "$2a$10$2b2cU8CPhOTaGrs1HRQuAueS7JTT5ZHsHSzYiFPm1leZck7Mc8T4W"
         username: "admin"
+
+indigoiam:
+  config:
+    issuer: http://{{ hostname }}:32003
