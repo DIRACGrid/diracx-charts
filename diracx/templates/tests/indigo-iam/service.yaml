@@ -1,0 +1,16 @@
+{{- if .Values.indigoiam.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: iam-login-service
+spec:
+  type: {{ .Values.indigoiam.service.type }}
+  ports:
+    - port: {{ .Values.indigoiam.service.port }}
+      nodePort: {{ .Values.indigoiam.service.nodePort }}
+      targetPort: http
+      protocol: TCP
+      name: http
+  selector:
+    app: iam
+{{- end }}
