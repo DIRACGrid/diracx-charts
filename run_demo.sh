@@ -19,25 +19,24 @@ export HELM_DATA_HOME="${demo_dir}/helm_data"
 function cleanup(){
   trap - SIGTERM;
   echo "Cleaning up";
+  if [[ -n "${space_monitor_pid:-}" ]]; then
+    kill $space_monitor_pid || true
+  fi
   if [[ -f "${demo_dir}/kind" ]] && [[ -f "${KUBECONFIG}" ]]; then
       "${demo_dir}/kind" delete cluster --name diracx-demo
   fi
   rm -rf "${tmp_dir}"
+  if [[ -n "${space_monitor_pid:-}" ]]; then
+    wait $space_monitor_pid || true
+  fi
 }
 
 function space_monitor(){
-  # Continiously monitor if the cluster is low on space
-  # Wait for the container to be available
+  # Check every 60 seconds if the cluster is low on space
   while true; do
-    if docker ps | grep diracx-demo-control-plane &> /dev/null; then
-      break
-    fi
-    sleep 2
-  done
-  # Run the monitoring every 60 seconds
-  while true; do
+    sleep 60
     # Check for the amount of free space on the cluster
-    df_output=$(docker exec diracx-demo-control-plane df -BG 2>/dev/null)
+    df_output=$(docker exec diracx-demo-control-plane df -BG / 2>/dev/null) || continue
     percent_free=$(echo "${df_output}" | awk 'NR == 2 { print substr($5, 1, length($5)-1) }')
     cluster_free_gb=$(echo "${df_output}" | awk 'NR == 2 { print substr($4, 1, length($4)-1) }')
     if [ "${cluster_free_gb}" -lt 50 ]; then
@@ -45,13 +44,12 @@ function space_monitor(){
     fi
     # Check the total size of the containerd volume
     if [ ${mount_containerd} -eq 1 ]; then
-      containerd_volume_size="$(docker exec diracx-demo-control-plane du -s -BG /var/lib/containerd | cut -d 'G' -f 1)"
+      containerd_volume_size="$(docker exec diracx-demo-control-plane du -s -BG /var/lib/containerd | cut -d 'G' -f 1)" || continue
       if [[ "${containerd_volume_size}" -gt 10 ]]; then
         printf "%b Volume for containerd is %s GB, if you want to save space " "${WARN_EMOJI}" "${containerd_volume_size}"
         printf "shutdown the demo and run \"docker volume rm diracx-demo-containerd\"\n"
       fi
     fi
-    sleep 60
   done
 }
 
@@ -304,6 +302,7 @@ fi
 
 # Start background task to monitor the cluster space
 space_monitor &
+space_monitor_pid=$!
 
 # Create the cluster itself
 printf "%b Starting Kind cluster...\n" ${UNICORN_EMOJI}
