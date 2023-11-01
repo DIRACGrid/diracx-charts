@@ -321,7 +321,7 @@ machine_ip=""
 machine_hostname=$(hostname | tr '[:upper:]' '[:lower:]')
 if ! check_hostname "${machine_hostname}"; then
   if [[ "$(uname -s)" = "Linux" ]]; then
-    machine_ip=$(docker inspect --format '{{ .NetworkSettings.Networks.kind.IPAddress }}' diracx-demo-control-plane)
+    machine_ip=$(docker inspect --format '{{ .NetworkSettings.Networks.kind.Gateway }}' diracx-demo-control-plane)
     if [[ -z "${machine_ip}" ]]; then
       printf "%b Error: Failed to find IP address from docker\n" ${SKULL_EMOJI}
       exit 1
