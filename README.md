@@ -58,7 +58,12 @@ TODO
 | https://charts.dexidp.io/ | dex | 0.14.2 |
 | https://charts.jetstack.io | cert-manager | 1.13.1 |
 | https://charts.min.io/ | minio | 5.0.11 |
+| https://grafana.github.io/helm-charts | grafana | 6.59.4 |
+| https://helm.elastic.co | elasticsearch | 8.5.1 |
+| https://jaegertracing.github.io/helm-charts | jaeger | 0.71.14 |
+| https://open-telemetry.github.io/opentelemetry-helm-charts | opentelemetry-collector | 0.68.0 |
 | https://opensearch-project.github.io/helm-charts/ | opensearch | 2.13.1 |
+| https://prometheus-community.github.io/helm-charts | prometheus | 25.0.0 |
 
 ## Values
 
@@ -106,6 +111,7 @@ TODO
 | dex.service.ports.http.port | int | `8000` |  |
 | dex.service.type | string | `"NodePort"` |  |
 | diracx.manageOSIndices | bool | `true` |  |
+| diracx.manageSQLSchema | bool | `true` |  |
 | diracx.mysqlDatabases[0] | string | `"AuthDB"` |  |
 | diracx.mysqlDatabases[1] | string | `"JobDB"` |  |
 | diracx.mysqlDatabases[2] | string | `"JobLoggingDB"` |  |
@@ -116,16 +122,55 @@ TODO
 | diracx.service.port | int | `8000` |  |
 | diracx.service.type | string | `"ClusterIP"` |  |
 | diracx.settings.DIRACX_CONFIG_BACKEND_URL | string | `"git+file:///cs_store/initialRepo"` |  |
+| diracx.settings.DIRACX_LEGACY_EXCHANGE_HASHED_API_KEY | string | `"07cddf6948d316ac9d186544dc3120c4c6697d8f994619665985c0a5bf76265a"` |  |
 | diracx.settings.DIRACX_SERVICE_AUTH_ALLOWED_REDIRECTS | string | `"[\"http://anything:8000/docs/oauth2-redirect\"]"` |  |
 | diracx.settings.DIRACX_SERVICE_AUTH_TOKEN_KEY | string | `"file:///signing-key/rsa256.key"` |  |
 | diracxWeb.image.repository | string | `"ghcr.io/diracgrid/diracx-web/static"` |  |
 | diracxWeb.image.tag | string | `"latest"` |  |
 | diracxWeb.service.port | int | `8080` |  |
 | diracxWeb.service.type | string | `"ClusterIP"` |  |
+| elasticsearch."discovery.seed_hosts"[0] | string | `"elasticsearch-master-headless"` |  |
+| elasticsearch.clusterHealthCheckParams | string | `"local=true"` |  |
+| elasticsearch.enabled | bool | `true` |  |
+| elasticsearch.esJavaOpts | string | `"-Xms128m -Xmx128m"` |  |
+| elasticsearch.replicas | int | `1` |  |
+| elasticsearch.resources.limits.cpu | string | `"1000m"` |  |
+| elasticsearch.resources.limits.memory | string | `"512M"` |  |
+| elasticsearch.resources.requests.cpu | string | `"100m"` |  |
+| elasticsearch.resources.requests.memory | string | `"512M"` |  |
+| elasticsearch.secret.password | string | `"elastic"` |  |
+| elasticsearch.volumeClaimTemplate.accessModes[0] | string | `"ReadWriteOnce"` |  |
+| elasticsearch.volumeClaimTemplate.resources.requests.storage | string | `"100M"` |  |
+| elasticsearch.volumeClaimTemplate.storageClassName | string | `"standard"` |  |
 | fullnameOverride | string | `""` |  |
 | global.activeDeadlineSeconds | int | `900` |  |
 | global.batchJobTTL | int | `600` |  |
 | global.imagePullPolicy | string | `"Always"` |  |
+| grafana.datasources."datasources.yaml".apiVersion | int | `1` |  |
+| grafana.datasources."datasources.yaml".datasources[0].name | string | `"Jaeger"` |  |
+| grafana.datasources."datasources.yaml".datasources[0].type | string | `"jaeger"` |  |
+| grafana.datasources."datasources.yaml".datasources[0].url | string | `"http://diracx-demo-jaeger-query:16686"` |  |
+| grafana.datasources."datasources.yaml".datasources[1].name | string | `"Prometheus"` |  |
+| grafana.datasources."datasources.yaml".datasources[1].type | string | `"prometheus"` |  |
+| grafana.datasources."datasources.yaml".datasources[1].url | string | `"http://diracx-demo-prometheus-server:80"` |  |
+| grafana.datasources."datasources.yaml".datasources[2].basicAuth | bool | `true` |  |
+| grafana.datasources."datasources.yaml".datasources[2].basicAuthUser | string | `"elastic"` |  |
+| grafana.datasources."datasources.yaml".datasources[2].database | string | `"diracx_otel_logs_index"` |  |
+| grafana.datasources."datasources.yaml".datasources[2].isDefault | bool | `false` |  |
+| grafana.datasources."datasources.yaml".datasources[2].jsonData.esVersion | string | `"8.5.1"` |  |
+| grafana.datasources."datasources.yaml".datasources[2].jsonData.logMessageField | string | `"full_message"` |  |
+| grafana.datasources."datasources.yaml".datasources[2].jsonData.maxConcurrentShardRequests | int | `10` |  |
+| grafana.datasources."datasources.yaml".datasources[2].jsonData.timeField | string | `"@timestamp"` |  |
+| grafana.datasources."datasources.yaml".datasources[2].jsonData.timeout | int | `300` |  |
+| grafana.datasources."datasources.yaml".datasources[2].jsonData.tlsSkipVerify | bool | `true` |  |
+| grafana.datasources."datasources.yaml".datasources[2].name | string | `"Elasticsearch"` |  |
+| grafana.datasources."datasources.yaml".datasources[2].secureJsonData.basicAuthPassword | string | `"elastic"` |  |
+| grafana.datasources."datasources.yaml".datasources[2].type | string | `"elasticsearch"` |  |
+| grafana.datasources."datasources.yaml".datasources[2].url | string | `"https://elasticsearch-master:9200"` |  |
+| grafana.enabled | bool | `true` |  |
+| grafana.service.nodePort | int | `32004` |  |
+| grafana.service.port | int | `32004` |  |
+| grafana.service.type | string | `"NodePort"` |  |
 | image.repository | string | `"ghcr.io/diracgrid/diracx/server"` |  |
 | image.tag | string | `"latest"` |  |
 | ingress.annotations | object | `{}` |  |
@@ -141,6 +186,13 @@ TODO
 | init-secrets.serviceAccount.name | string | `nil` |  |
 | init-sql.enabled | bool | `true` |  |
 | init-sql.env | object | `{}` |  |
+| jaeger.agent.enabled | bool | `false` |  |
+| jaeger.allInOne.enabled | bool | `true` |  |
+| jaeger.collector.enabled | bool | `false` |  |
+| jaeger.enabled | bool | `true` |  |
+| jaeger.provisionDataStore.cassandra | bool | `false` |  |
+| jaeger.query.enabled | bool | `false` |  |
+| jaeger.storage.type | string | `"none"` |  |
 | minio.consoleIngress.enabled | bool | `false` |  |
 | minio.consoleService.type | string | `"NodePort"` |  |
 | minio.enabled | bool | `true` |  |
@@ -166,8 +218,46 @@ TODO
 | opensearch.resources.requests.cpu | string | `"100m"` |  |
 | opensearch.resources.requests.memory | string | `"100Mi"` |  |
 | opensearch.singleNode | bool | `true` |  |
+| opentelemetry-collector.config.exporters.elasticsearch/log.endpoints[0] | string | `"https://elastic:elastic@elasticsearch-master:9200"` |  |
+| opentelemetry-collector.config.exporters.elasticsearch/log.logs_index | string | `"diracx_otel_logs_index"` |  |
+| opentelemetry-collector.config.exporters.elasticsearch/log.sending_queue.enabled | bool | `true` |  |
+| opentelemetry-collector.config.exporters.elasticsearch/log.sending_queue.num_consumers | int | `20` |  |
+| opentelemetry-collector.config.exporters.elasticsearch/log.sending_queue.queue_size | int | `1000` |  |
+| opentelemetry-collector.config.exporters.elasticsearch/log.tls.insecure_skip_verify | bool | `true` |  |
+| opentelemetry-collector.config.exporters.logging.loglevel | string | `"debug"` |  |
+| opentelemetry-collector.config.exporters.otlp/jaeger.endpoint | string | `"diracx-demo-jaeger-collector:4317"` |  |
+| opentelemetry-collector.config.exporters.otlp/jaeger.tls.insecure | bool | `true` |  |
+| opentelemetry-collector.config.exporters.prometheus.endpoint | string | `":8889"` |  |
+| opentelemetry-collector.config.exporters.prometheus.metric_expiration | string | `"180m"` |  |
+| opentelemetry-collector.config.exporters.prometheus.send_timestamps | bool | `true` |  |
+| opentelemetry-collector.config.receivers.jaeger | string | `nil` |  |
+| opentelemetry-collector.config.receivers.prometheus | string | `nil` |  |
+| opentelemetry-collector.config.service.pipelines.logs.exporters[0] | string | `"elasticsearch/log"` |  |
+| opentelemetry-collector.config.service.pipelines.logs.exporters[1] | string | `"logging"` |  |
+| opentelemetry-collector.config.service.pipelines.metrics.exporters[0] | string | `"logging"` |  |
+| opentelemetry-collector.config.service.pipelines.metrics.exporters[1] | string | `"prometheus"` |  |
+| opentelemetry-collector.config.service.pipelines.traces.exporters[0] | string | `"otlp/jaeger"` |  |
+| opentelemetry-collector.config.service.pipelines.traces.exporters[1] | string | `"logging"` |  |
+| opentelemetry-collector.enabled | bool | `true` |  |
+| opentelemetry-collector.mode | string | `"deployment"` |  |
+| opentelemetry-collector.ports.promexp.containerPort | int | `8889` |  |
+| opentelemetry-collector.ports.promexp.enabled | bool | `true` |  |
+| opentelemetry-collector.ports.promexp.hostPort | int | `8889` |  |
+| opentelemetry-collector.ports.promexp.protocol | string | `"TCP"` |  |
+| opentelemetry-collector.ports.promexp.servicePort | int | `8889` |  |
+| opentelemetry-collector.presets.kubeletMetrics.enabled | bool | `false` |  |
+| opentelemetry-collector.presets.kubernetesAttributes.enabled | bool | `false` |  |
+| opentelemetry-collector.presets.logsCollection.enabled | bool | `true` |  |
 | podAnnotations | object | `{}` |  |
 | podSecurityContext | object | `{}` |  |
+| prometheus.alertmanager.enabled | bool | `false` |  |
+| prometheus.enabled | bool | `true` |  |
+| prometheus.kube-state-metrics.enabled | bool | `false` |  |
+| prometheus.prometheus-node-exporter.enabled | bool | `false` |  |
+| prometheus.server.persistentVolume.enabled | bool | `false` |  |
+| prometheus.serverFiles."prometheus.yml".scrape_configs[0].job_name | string | `"otel"` |  |
+| prometheus.serverFiles."prometheus.yml".scrape_configs[0].scrape_interval | string | `"10s"` |  |
+| prometheus.serverFiles."prometheus.yml".scrape_configs[0].static_configs[0].targets[0] | string | `"diracx-demo-opentelemetry-collector:8889"` |  |
 | rabbitmq.auth.existingErlangSecret | string | `"rabbitmq-secret"` |  |
 | rabbitmq.auth.existingPasswordSecret | string | `"rabbitmq-secret"` |  |
 | rabbitmq.containerSecurityContext.enabled | bool | `false` |  |
@@ -176,6 +266,9 @@ TODO
 | replicaCount | int | `1` |  |
 | resources | object | `{}` |  |
 | securityContext | object | `{}` |  |
+| service.port | int | `8000` |  |
+| service.tls | list | `[]` |  |
+| service.type | string | `"ClusterIP"` |  |
 | serviceAccount.annotations | object | `{}` |  |
 | serviceAccount.create | bool | `true` |  |
 | serviceAccount.name | string | `""` |  |

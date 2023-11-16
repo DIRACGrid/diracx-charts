@@ -29,6 +29,11 @@ nodes:
   - containerPort: 32001
     hostPort: 32001
     protocol: TCP
+  # Dex web interface
   - containerPort: 32002
     hostPort: 32002
+    protocol: TCP
+  # Grafana web interface
+  - containerPort: 32004
+    hostPort: 32004
     protocol: TCP
