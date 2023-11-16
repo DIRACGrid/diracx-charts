@@ -150,6 +150,15 @@ Depending on the installation you perform, some tasks may be necessary or not. T
 | diracx.osDbs.dbs | string | `nil` | Which DiracX OpenSearch DBs are used? |
 | diracx.osDbs.default | string | `nil` |  |
 | diracx.pythonModulesToInstall | list | `[]` | List of install specifications to pass to pip before launching each container |
+| diracx.manageOSIndices | bool | `true` |  |
+| diracx.manageSQLSchema | bool | `true` |  |
+| diracx.mysqlDatabases[0] | string | `"AuthDB"` |  |
+| diracx.mysqlDatabases[1] | string | `"JobDB"` |  |
+| diracx.mysqlDatabases[2] | string | `"JobLoggingDB"` |  |
+| diracx.mysqlDatabases[3] | string | `"SandboxMetadataDB"` |  |
+| diracx.mysqlDatabases[4] | string | `"TaskQueueDB"` |  |
+| diracx.osDatabases[0] | string | `"JobParametersDB"` |  |
+| diracx.pythonModulesToInstall | list | `[]` |  |
 | diracx.service.port | int | `8000` |  |
 | diracx.settings | object | "e.g. DIRACX_CONFIG_BACKEND_URL=..." | Settings to inject into the API container via environment variables |
 | diracx.settings.DIRACX_CONFIG_BACKEND_URL | string | `"git+file:///cs_store/initialRepo"` | This corresponds to the basic dirac.cfg which must be present on all the servers TODO: autogenerate all of these |
@@ -165,7 +174,6 @@ Depending on the installation you perform, some tasks may be necessary or not. T
 | diracxWeb.image.tag | string | `"latest"` |  |
 | diracxWeb.service.port | int | `8080` |  |
 | diracxWeb.service.type | string | `"ClusterIP"` |  |
-| diracx.settings.DIRACX_SERVICE_AUTH_TOKEN_KEY | string | `"file:///signing-key/rs256.key"` |  |
 | elasticsearch.enabled | bool | `true` |  |
 | elasticsearch.esJavaOpts | string | `"-Xms128m -Xmx128m"` |  |
 | elasticsearch.replicas | int | `1` |  |
@@ -212,12 +220,19 @@ Depending on the installation you perform, some tasks may be necessary or not. T
 | grafana.service.nodePort | int | `32004` |  |
 | grafana.service.port | int | `32004` |  |
 | grafana.service.type | string | `"NodePort"` |  |
-| image.pullPolicy | string | `"IfNotPresent"` |  |
 | image.repository | string | `"ghcr.io/diracgrid/diracx/server"` |  |
 | image.tag | string | `"latest"` |  |
 | ingress.annotations | object | `{}` |  |
+| ingress.annotations."nginx.ingress.kubernetes.io/use-regex" | string | `"true"` |  |
+| ingress.className | string | `"nginx"` |  |
 | ingress.className | string | `"nginx"` |  |
 | ingress.enabled | bool | `true` |  |
+| ingress.enabled | bool | `true` |  |
+| ingress.hosts[0].paths[0].backend.service.name | string | `"diracx-demo"` |  |
+| ingress.hosts[0].paths[0].backend.service.port.number | int | `8000` |  |
+| ingress.hosts[0].paths[0].path | string | `"/"` |  |
+| ingress.hosts[0].paths[0].pathType | string | `"Prefix"` |  |
+| ingress.tls | list | `[]` |  |
 | ingress.tlsSecretName | string | `"myingress-cert"` |  |
 | init-cs.enabled | bool | `true` |  |
 | init-secrets.enabled | bool | `true` |  |
@@ -227,12 +242,15 @@ Depending on the installation you perform, some tasks may be necessary or not. T
 | init-secrets.serviceAccount.name | string | `nil` |  |
 | init-sql.enabled | bool | `true` |  |
 | init-sql.env | object | `{}` |  |
+<<<<<<< HEAD
 | initOs.enabled | bool | `true` |  |
 | ingress.hosts[0].paths[0].backend.service.name | string | `"diracx-demo"` |  |
 | ingress.hosts[0].paths[0].backend.service.port.number | int | `8000` |  |
 | ingress.hosts[0].paths[0].path | string | `"/"` |  |
 | ingress.hosts[0].paths[0].pathType | string | `"Prefix"` |  |
 | ingress.tls | list | `[]` |  |
+=======
+>>>>>>> 5932b5e (regenerate)
 | jaeger.agent.enabled | bool | `false` |  |
 | jaeger.allInOne.enabled | bool | `true` |  |
 | jaeger.collector.enabled | bool | `false` |  |
@@ -297,8 +315,6 @@ Depending on the installation you perform, some tasks may be necessary or not. T
 | opentelemetry-collector.presets.logsCollection.enabled | bool | `true` |  |
 | podAnnotations | object | `{}` |  |
 | podSecurityContext | object | `{}` |  |
-| rabbitmq.auth.existingErlangSecret | string | `"rabbitmq-secret"` |  |
-| rabbitmq.auth.existingPasswordSecret | string | `"rabbitmq-secret"` |  |
 | prometheus.alertmanager.enabled | bool | `false` |  |
 | prometheus.enabled | bool | `true` |  |
 | prometheus.kube-state-metrics.enabled | bool | `false` |  |
@@ -307,15 +323,25 @@ Depending on the installation you perform, some tasks may be necessary or not. T
 | prometheus.serverFiles."prometheus.yml".scrape_configs[0].job_name | string | `"otel"` |  |
 | prometheus.serverFiles."prometheus.yml".scrape_configs[0].scrape_interval | string | `"10s"` |  |
 | prometheus.serverFiles."prometheus.yml".scrape_configs[0].static_configs[0].targets[0] | string | `"diracx-demo-opentelemetry-collector:8889"` |  |
+| rabbitmq.auth.existingErlangSecret | string | `"rabbitmq-secret"` |  |
+| rabbitmq.auth.existingPasswordSecret | string | `"rabbitmq-secret"` |  |
 | rabbitmq.containerSecurityContext.enabled | bool | `false` |  |
 | rabbitmq.enabled | bool | `true` |  |
 | rabbitmq.podSecurityContext.enabled | bool | `false` |  |
 | replicaCount | int | `1` |  |
 | resources | object | `{}` |  |
 | securityContext | object | `{}` |  |
+<<<<<<< HEAD
 | serviceAccount.annotations | object | `{}` | Annotations to add to the service account |
 | serviceAccount.create | bool | `true` | Specifies whether a service account should be created |
 | serviceAccount.name | string | `""` | The name of the service account to use. If not set and create is true, a name is generated using the fullname template |
+=======
+| service.port | int | `8000` |  |
+| service.type | string | `"ClusterIP"` |  |
+| serviceAccount.annotations | object | `{}` |  |
+| serviceAccount.create | bool | `true` |  |
+| serviceAccount.name | string | `""` |  |
+>>>>>>> 5932b5e (regenerate)
 | tolerations | list | `[]` |  |
 
 ----------------------------------------------
