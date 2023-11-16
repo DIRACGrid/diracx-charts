@@ -174,6 +174,8 @@ Depending on the installation you perform, some tasks may be necessary or not. T
 | diracxWeb.image.tag | string | `"latest"` |  |
 | diracxWeb.service.port | int | `8080` |  |
 | diracxWeb.service.type | string | `"ClusterIP"` |  |
+| elasticsearch."discovery.seed_hosts"[0] | string | `"elasticsearch-master-headless"` |  |
+| elasticsearch.clusterHealthCheckParams | string | `"local=true"` |  |
 | elasticsearch.enabled | bool | `true` |  |
 | elasticsearch.esJavaOpts | string | `"-Xms128m -Xmx128m"` |  |
 | elasticsearch.replicas | int | `1` |  |
@@ -223,16 +225,8 @@ Depending on the installation you perform, some tasks may be necessary or not. T
 | image.repository | string | `"ghcr.io/diracgrid/diracx/server"` |  |
 | image.tag | string | `"latest"` |  |
 | ingress.annotations | object | `{}` |  |
-| ingress.annotations."nginx.ingress.kubernetes.io/use-regex" | string | `"true"` |  |
-| ingress.className | string | `"nginx"` |  |
 | ingress.className | string | `"nginx"` |  |
 | ingress.enabled | bool | `true` |  |
-| ingress.enabled | bool | `true` |  |
-| ingress.hosts[0].paths[0].backend.service.name | string | `"diracx-demo"` |  |
-| ingress.hosts[0].paths[0].backend.service.port.number | int | `8000` |  |
-| ingress.hosts[0].paths[0].path | string | `"/"` |  |
-| ingress.hosts[0].paths[0].pathType | string | `"Prefix"` |  |
-| ingress.tls | list | `[]` |  |
 | ingress.tlsSecretName | string | `"myingress-cert"` |  |
 | init-cs.enabled | bool | `true` |  |
 | init-secrets.enabled | bool | `true` |  |
@@ -337,6 +331,7 @@ Depending on the installation you perform, some tasks may be necessary or not. T
 | serviceAccount.name | string | `""` | The name of the service account to use. If not set and create is true, a name is generated using the fullname template |
 =======
 | service.port | int | `8000` |  |
+| service.tls | list | `[]` |  |
 | service.type | string | `"ClusterIP"` |  |
 | serviceAccount.annotations | object | `{}` |  |
 | serviceAccount.create | bool | `true` |  |
