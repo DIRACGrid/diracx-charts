@@ -40,12 +40,12 @@ spec:
         - name: cs-store-mount
           persistentVolumeClaim:
             claimName: pvc-cs-store
-        {{- if and .Values.developer.enabled .Values.developer.pythonModulesToEditableInstall }}
+        {{- if and .Values.developer.enabled .Values.developer.mountedPythonModulesToInstall }}
         - name: diracx-code-mount
           persistentVolumeClaim:
             claimName: pvc-diracx-code
-        {{- range $module := .Values.developer.pythonModulesToEditableInstall }}
-        - name: {{ lower $module }}-editable-install
+        {{- range $module := .Values.developer.mountedPythonModulesToInstall }}
+        - name: {{ base $module | lower }}-editable-install
           emptyDir:
             sizeLimit: 5Mi
         {{- end }}
@@ -74,10 +74,12 @@ spec:
       {{- $commonVolumeMounts = append $commonVolumeMounts (dict "mountPath" "/diracx-coveragerc" "name" "container-entrypoint" "subPath" "coveragerc") }}
       {{- $commonVolumeMounts = append $commonVolumeMounts (dict "mountPath" "/coverage-reports" "name" "coverage-data" "readOnly" false) }}
       {{- end }}
-      {{- if and .Values.developer.enabled .Values.developer.pythonModulesToEditableInstall }}
+      {{- if .Values.developer.mountedPythonModulesToInstall }}
       {{- $commonVolumeMounts = append $commonVolumeMounts (dict "mountPath" .Values.developer.sourcePath "name" "diracx-code-mount" "readOnly" true) }}
-      {{- range $module := .Values.developer.pythonModulesToEditableInstall }}
-      {{- $commonVolumeMounts = append $commonVolumeMounts (dict "mountPath" (printf "%s/%s/src/%s.egg-info" $.Values.developer.sourcePath $module $module) "name" (printf "%s-editable-install" (lower $module)) "readOnly" false) }}
+      {{- if .Values.developer.editableMountedPythonModules }}
+      {{- range $module := .Values.developer.mountedPythonModulesToInstall }}
+      {{- $commonVolumeMounts = append $commonVolumeMounts (dict "mountPath" (printf "%s/%s/src/%s.egg-info" $.Values.developer.sourcePath $module (replace "-" "_" (base $module))) "name" (printf "%s-editable-install" (base $module | lower)) "readOnly" false) }}
+      {{- end }}
       {{- end }}
       {{- end }}
 
@@ -122,7 +124,7 @@ spec:
             - "--forwarded-allow-ips=*"
           {{- if and .Values.developer.enabled .Values.developer.autoReload }}
             - "--reload"
-            {{- if .Values.developer.pythonModulesToEditableInstall }}
+            {{- if .Values.developer.mountedPythonModulesToInstall }}
             - "--reload-dir={{ .Values.developer.sourcePath }}"
             {{- end }}
           {{- end }}

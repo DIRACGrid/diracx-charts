@@ -73,14 +73,15 @@ TODO
 | cert-manager.enabled | bool | `true` |  |
 | cert-manager.installCRDs | bool | `true` |  |
 | developer.autoReload | bool | `true` |  |
+| developer.editableMountedPythonModules | bool | `true` |  |
 | developer.enableCoverage | bool | `false` |  |
 | developer.enabled | bool | `true` |  |
 | developer.ipAlias | string | `nil` |  |
 | developer.localCSPath | string | `"/local_cs_store"` |  |
+| developer.mountedPythonModulesToInstall | list | `[]` |  |
 | developer.nodeImage | string | `"node:16-alpine"` |  |
 | developer.nodeModuleToInstall | string | `nil` |  |
 | developer.offline | bool | `false` |  |
-| developer.pythonModulesToEditableInstall | list | `[]` |  |
 | developer.sourcePath | string | `"/diracx_source"` |  |
 | developer.urls | object | `{}` |  |
 | dex."https.enabled" | bool | `false` |  |
