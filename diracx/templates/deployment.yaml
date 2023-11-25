@@ -76,9 +76,11 @@ spec:
       {{- end }}
       {{- if .Values.developer.mountedPythonModulesToInstall }}
       {{- $commonVolumeMounts = append $commonVolumeMounts (dict "mountPath" .Values.developer.sourcePath "name" "diracx-code-mount" "readOnly" true) }}
-      {{- if .Values.developer.editableMountedPythonModules }}
       {{- range $module := .Values.developer.mountedPythonModulesToInstall }}
+      {{- if $.Values.developer.editableMountedPythonModules }}
       {{- $commonVolumeMounts = append $commonVolumeMounts (dict "mountPath" (printf "%s/%s/src/%s.egg-info" $.Values.developer.sourcePath $module (replace "-" "_" (base $module))) "name" (printf "%s-editable-install" (base $module | lower)) "readOnly" false) }}
+      {{- else }}
+      {{- $commonVolumeMounts = append $commonVolumeMounts (dict "mountPath" (printf "%s/%s/build" $.Values.developer.sourcePath $module (replace "-" "_" (base $module))) "name" (printf "%s-editable-install" (base $module | lower)) "readOnly" false) }}
       {{- end }}
       {{- end }}
       {{- end }}
