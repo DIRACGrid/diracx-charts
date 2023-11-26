@@ -39,7 +39,8 @@ data:
     parallel=True
     sigterm=True
     omit =
-        */diracx/client/*
+        **/diracx/client/*
+        **/diracx/testing/*
     include =
         */site-packages/diracx/*
         /{{ .Values.developer.sourcePath }}/*
