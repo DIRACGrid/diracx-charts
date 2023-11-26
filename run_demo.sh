@@ -70,11 +70,28 @@ function check_hostname(){
   fi
 }
 
+function element_not_in_array() {
+  local element=$1
+  shift
+  local elements=("$@")
+  local found=0
+
+  for existing_element in "${elements[@]}"; do
+      if [[ "$existing_element" == "$element" ]]; then
+          found=1
+          break
+      fi
+  done
+
+  return $found
+}
+
 usage="${0##*/} [-h|--help] [--exit-when-done] [--offline] [--enable-coverage] [--no-mount-containerd] [--set-value key=value] [--] [source directories]"
 usage+="\n\n"
 usage+="  -h|--help: Print this help message and exit\n"
 usage+="  --exit-when-done: Exit after the demo has been started (it will be left running in the background)\n"
 usage+="  --enable-coverage: Enable coverage reporting\n"
+usage+="  --no-editable-python: Do not install Python source directories in editable mode\n"
 usage+="  --offline: Run in a mode which is suitable for fully offline use.\n"
 usage+="             WARNING: This may result in some weird behaviour, see the demo documentation for details.\n"
 usage+="             Implies: --mount-containerd\n"
@@ -91,6 +108,7 @@ mount_containerd=1
 offline_mode=0
 declare -a helm_arguments=()
 enable_coverage=0
+editable_python=1
 while [ -n "${1:-}" ]; do case $1 in
 	# Print a brief usage summary and exit
 	-h|--help|-\?)
@@ -117,7 +135,7 @@ while [ -n "${1:-}" ]; do case $1 in
 
 	# Add new switch checks here
 	--exit-when-done)
-    exit_when_done=1;
+    exit_when_done=1
 		shift
 		continue ;;
 
@@ -127,6 +145,11 @@ while [ -n "${1:-}" ]; do case $1 in
     enable_coverage=1
 		shift
 		continue ;;
+
+  --no-editable-python)
+    editable_python=0
+    shift
+    continue ;;
 
 	--no-mount-containerd)
     mount_containerd=0
@@ -174,44 +197,59 @@ done
 declare -a pkg_dirs=()
 declare -a python_pkg_names=()
 node_pkg_name=""
+diracx_src_dir=""
 
 for src_dir in "$@"; do
+  if [ ${#pkg_dirs[@]} -gt 0 ] && ! element_not_in_array "$src_dir" "${pkg_dirs[@]}"; then
+    printf "%b Error: Source directory %s was given twice!\n" "${SKULL_EMOJI}" "${src_dir}"
+    exit 1
+  fi
   pkg_dirs+=("${src_dir}")
+
+  # DiracX itself
+  if [ -f "${src_dir}/pyproject.toml" ]; then
+    if grep --quiet 'name = "diracx"' "${src_dir}/pyproject.toml"; then
+      if [ "${diracx_src_dir}" != "" ]; then
+        printf "%b Error: Source directory for DiracX was given twice!\n" "${SKULL_EMOJI}"
+        exit 1
+      fi
+      diracx_src_dir="${src_dir}"
+      continue
+    fi
+  fi
+
   # Python packages
-  # shellcheck disable=SC2044
-  for pkg_dir in $(find "$src_dir/src" -mindepth 2 -maxdepth 2 -type f -name '__init__.py'); do
-    pkg_name="$(basename "$(dirname "${pkg_dir}")")"
+  if [ -d "${src_dir}/src" ]; then
+    while IFS='' read -r pkg_dir; do
+      pkg_name="$(basename "$(dirname "${pkg_dir}")")"
 
-    # Check for the presence of $pkg_name in pkg_names array
-    found=0
+      # Check for the presence of $pkg_name in pkg_names array
+      if [ ${#python_pkg_names[@]} -gt 0 ] && ! element_not_in_array "$pkg_name" "${python_pkg_names[@]}"; then
+        printf "%b Error: Source directory for %s was given twice!\n" "${SKULL_EMOJI}" "${pkg_name}"
+        exit 1
+      fi
+      python_pkg_names+=("${pkg_name}")
+    done < <(find "$src_dir/src" -mindepth 2 -maxdepth 2 -type f -name '__init__.py')
+
     if [ ${#python_pkg_names[@]} -gt 0 ]; then
-      for existing_pkg_name in "${python_pkg_names[@]}"; do
-        if [[ "$existing_pkg_name" == "$pkg_name" ]]; then
-          found=1
-          break
-        fi
-      done
+      continue
     fi
-
-    if [[ $found -eq 1 ]]; then
-      printf "%b Error: Source directory for %s was given twice!\n" "${SKULL_EMOJI}" "${pkg_name}"
-      exit 1
-    fi
-    python_pkg_names+=("${pkg_name}")
-  done
+  fi
 
   # Node packages: we keep a single package, the last one found
-  # shellcheck disable=SC2044
-  for pkg_json in $(find "$src_dir" -mindepth 1 -maxdepth 1 -type f -name 'package.json'); do
+  while IFS='' read -r pkg_json; do
     node_pkg_name="$(basename "$(dirname "${pkg_json}")")"
-  done
+  done < <(find "$src_dir" -mindepth 1 -maxdepth 1 -type f -name 'package.json')
 done
 
-if [ ${#python_pkg_names[@]} -gt 0 ] || [ ${#node_pkg_name} != "" ]; then
-  pkg_names_joined=$(IFS=' '; echo "${python_pkg_names[*]} ${node_pkg_name}")
-  printf "%b Found package directories for: %s\n" ${UNICORN_EMOJI} "${pkg_names_joined}"
-else
-  printf "%b No source directories were specified\n" ${UNICORN_EMOJI}
+if [ "${diracx_src_dir}" != "" ]; then
+  printf "%b Found DiracX directory: %s\n" ${UNICORN_EMOJI} "${diracx_src_dir}"
+fi
+if [ ${#python_pkg_names[@]} -gt 0 ]; then
+  printf "%b Found Python package directories for: %s\n" ${UNICORN_EMOJI} "${python_pkg_names[*]}"
+fi
+if [ "${node_pkg_name}" != "" ]; then
+  printf "%b Found Node package directories for: %s\n" ${UNICORN_EMOJI} "${node_pkg_name}"
 fi
 
 trap "cleanup" EXIT
@@ -284,7 +322,7 @@ chmod 777 "${demo_dir}/cs-mount"
 mv "${demo_dir}/demo_cluster_conf.yaml" "${demo_dir}/demo_cluster_conf.yaml.bak"
 sed "s@{{ csStorePath }}@${demo_dir}/cs-mount@g" "${demo_dir}/demo_cluster_conf.yaml.bak" > "${demo_dir}/demo_cluster_conf.yaml"
 # If coverage is enabled mount .demo/coverage-reports into the cluster
-if [[ ${enable_coverage} ]]; then
+if [[ ${enable_coverage} -eq 1 ]]; then
   rm -rf "${demo_dir}/coverage-reports"
   mkdir -p "${demo_dir}/coverage-reports"
   # Make sure the directory is writable by the container
@@ -352,14 +390,26 @@ sed "s@{{ demo_dir }}@${demo_dir}@g" "${demo_dir}/values.yaml.bak" > "${demo_dir
 mv "${demo_dir}/values.yaml" "${demo_dir}/values.yaml.bak"
 
 # Add python packages
+if [[ ${editable_python} -eq 1 ]]; then
+  sed "s/{{ editable_mounted_modules }}/true/g" "${demo_dir}/values.yaml.bak" > "${demo_dir}/values.yaml"
+  mv "${demo_dir}/values.yaml" "${demo_dir}/values.yaml.bak"
+else
+  sed "s/{{ editable_mounted_modules }}/false/g" "${demo_dir}/values.yaml.bak" > "${demo_dir}/values.yaml"
+  mv "${demo_dir}/values.yaml" "${demo_dir}/values.yaml.bak"
+fi
 json="["
 if [ ${#python_pkg_names[@]} -gt 0 ]; then
   for pkg_name in "${python_pkg_names[@]}"; do
       json+="\"$pkg_name\","
   done
 fi
+if [ "${diracx_src_dir}" != "" ]; then
+  for pkg_name in "$(basename "${diracx_src_dir}")/diracx-"{cli,client,api,core,routers,db}; do
+      json+="\"$pkg_name\","
+  done
+fi
 json="${json%,}]"
-sed "s/{{ python_modules_to_mount }}/${json}/g" "${demo_dir}/values.yaml.bak" > "${demo_dir}/values.yaml"
+sed "s#{{ mounted_python_modules }}#${json}#g" "${demo_dir}/values.yaml.bak" > "${demo_dir}/values.yaml"
 mv "${demo_dir}/values.yaml" "${demo_dir}/values.yaml.bak"
 
 # Add the node package

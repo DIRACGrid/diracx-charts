@@ -85,8 +85,10 @@ developer:
   urls: {}
   # Path from which to mount source of DIRACX
   sourcePath: /diracx_source
-  # List of packages which are mounted into developer.sourcePath and should be installed with pip install -e
-  pythonModulesToEditableInstall: []
+  # List of packages which are mounted into developer.sourcePath and should be installed with pip install SOURCEPATH/...
+  mountedPythonModulesToInstall: []
+  # Use pip install -e for mountedPythonModulesToInstall
+  editableMountedPythonModules: true
   # List of node modules to install
   nodeModuleToInstall: null
   # Image to use for the webapp if nodeModuleToInstall is set

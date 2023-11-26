@@ -9,7 +9,8 @@ developer:
     minio: http://{{ hostname }}:32000
     dex: http://{{ hostname }}:32002
   demoDir: {{ demo_dir }}
-  pythonModulesToEditableInstall: {{ python_modules_to_mount }}
+  mountedPythonModulesToInstall: {{ mounted_python_modules }}
+  editableMountedPythonModules: {{ editable_mounted_modules }}
   nodeModuleToInstall: {{ node_module_to_mount }}
 
 init-cs:

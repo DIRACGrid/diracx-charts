@@ -15,11 +15,12 @@ data:
     ulimit -n 8192
     eval "$(micromamba shell hook --shell=posix)" && micromamba activate base
 
+    pip uninstall diracx -y
     {{ if .Values.diracx.pythonModulesToInstall }}
-    pip install{{ if .Values.developer.offline }} --no-build-isolation{{ end}} {{- range $moduleSpec := .Values.diracx.pythonModulesToInstall }} {{ $moduleSpec }} {{- end }}
+    pip install{{ if .Values.developer.offline }} --no-build-isolation{{ end }} {{- range $moduleSpec := .Values.diracx.pythonModulesToInstall }} {{ $moduleSpec }} {{- end }}
     {{- end }}
-    {{ if and .Values.developer.enabled .Values.developer.pythonModulesToEditableInstall }}
-    pip install{{ if .Values.developer.offline }} --no-build-isolation{{ end}} {{- range $moduleName := .Values.developer.pythonModulesToEditableInstall }} -e {{ $.Values.developer.sourcePath }}/{{ $moduleName }} {{- end }}
+    {{ if .Values.developer.mountedPythonModulesToInstall }}
+    pip install{{ if .Values.developer.offline }} --no-build-isolation{{ end }} {{- range $moduleName := .Values.developer.mountedPythonModulesToInstall }} {{ if $.Values.developer.editableMountedPythonModules }}-e {{- end }}{{ $.Values.developer.sourcePath }}/{{ $moduleName }} {{- end }}
     {{- end }}
 
     {{- if and .Values.developer.enabled .Values.developer.enableCoverage }}
@@ -39,6 +40,16 @@ data:
     sigterm=True
     omit =
         */diracx/client/*
+    include =
+        */site-packages/diracx/*
+        /{{ .Values.developer.sourcePath }}/*
+
+    [paths]
+    source =
+        */src/
+        */site-packages/
+        /{{ .Values.developer.sourcePath }}/*/src/
+        /{{ .Values.developer.sourcePath }}/*/*/src/
   {{- end }}
 ---
 {{/* If we're collecting coverage we also need a volume to store it in */}}
