@@ -219,7 +219,7 @@ for src_dir in "$@"; do
   fi
 
   # Python packages
-  if [ -d "${src_dir}/src" ]; then
+  if [ -f "${src_dir}/pyproject.toml" ]; then
     while IFS='' read -r pkg_dir; do
       pkg_name="$(basename "$(dirname "${pkg_dir}")")"
 
