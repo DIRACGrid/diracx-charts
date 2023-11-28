@@ -14,6 +14,13 @@ developer:
   nodeModuleToInstall: {{ node_module_to_mount }}
 
 init-cs:
+  defaultVOs:
+    - name: diracAdmin
+      idp_url: http://{{ hostname }}:32002
+      idp_client_id: d396912e-2f04-439b-8ae7-d8c585a34790
+  defaultGroups:
+    - vo: diracAdmin
+      name: admin
   defaultUsers:
     - vo: diracAdmin
       userGroup: admin
