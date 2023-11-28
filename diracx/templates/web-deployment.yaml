@@ -70,7 +70,7 @@ spec:
           {{- if $nodeDevInstall }}
           image: {{ .Values.developer.nodeImage }}
           {{- else }}
-          image: {{ .Values.diracxWeb.image.repository }}:{{ .Values.diracxWeb.image.tag }}
+          image: {{ .Values.global.images.web.repository }}:{{ .Values.global.images.web.tag }}
           {{- end }}
           imagePullPolicy: {{ .Values.global.imagePullPolicy }}
           ports:
