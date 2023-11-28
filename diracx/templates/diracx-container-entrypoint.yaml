@@ -15,7 +15,6 @@ data:
     ulimit -n 8192
     eval "$(micromamba shell hook --shell=posix)" && micromamba activate base
 
-    pip uninstall diracx -y
     {{ if .Values.diracx.pythonModulesToInstall }}
     pip install{{ if .Values.developer.offline }} --no-build-isolation{{ end }} {{- range $moduleSpec := .Values.diracx.pythonModulesToInstall }} {{ $moduleSpec }} {{- end }}
     {{- end }}
