@@ -14,19 +14,16 @@ developer:
   nodeModuleToInstall: {{ node_module_to_mount }}
 
 init-cs:
-  defaultVOs:
+  VOs:
     - name: diracAdmin
-      idp_url: http://{{ hostname }}:32002
-      idp_client_id: d396912e-2f04-439b-8ae7-d8c585a34790
-  defaultGroups:
-    - vo: diracAdmin
-      name: admin
-  defaultUsers:
-    - vo: diracAdmin
-      userGroup: admin
-      sub: EgVsb2NhbA
-      preferredUsername: admin
-      # TODO: Integrate with dex
+      IdP:
+        idp_url: http://{{ hostname }}:32002
+        idp_client_id: d396912e-2f04-439b-8ae7-d8c585a34790
+      defaultGroup: admin
+      Users:
+      - sub: EgVsb2NhbA
+        preferredUsername: admin
+        # TODO: Integrate with dex
 
 diracx:
   hostname: {{ hostname }}
