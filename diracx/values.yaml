@@ -13,7 +13,7 @@ global:
   # timeout for job deadlines
   activeDeadlineSeconds: 900
   images:
-    tag: "latest"
+    tag: "dev"
     services: ghcr.io/diracgrid/diracx/services
     client: ghcr.io/diracgrid/diracx/client
     web:

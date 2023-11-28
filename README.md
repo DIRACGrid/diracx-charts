@@ -127,7 +127,7 @@ TODO
 | global.imagePullPolicy | string | `"Always"` |  |
 | global.images.client | string | `"ghcr.io/diracgrid/diracx/client"` |  |
 | global.images.services | string | `"ghcr.io/diracgrid/diracx/services"` |  |
-| global.images.tag | string | `"latest"` |  |
+| global.images.tag | string | `"dev"` |  |
 | global.images.web.repository | string | `"ghcr.io/diracgrid/diracx-web/static"` |  |
 | global.images.web.tag | string | `"latest"` |  |
 | ingress.annotations | object | `{}` |  |
