@@ -12,13 +12,16 @@ global:
   imagePullPolicy: Always
   # timeout for job deadlines
   activeDeadlineSeconds: 900
+  images:
+    tag: "dev"
+    services: ghcr.io/diracgrid/diracx/services
+    client: ghcr.io/diracgrid/diracx/client
+    web:
+      tag: "latest"
+      repository: ghcr.io/diracgrid/diracx-web/static
 
 replicaCount: 1
 
-image:
-  repository: ghcr.io/diracgrid/diracx/server
-  # Overrides the image tag whose default is the chart appVersion.
-  tag: "latest"
 
 # Created with
 # kubectl create secret generic regcred \
@@ -58,6 +61,7 @@ securityContext: {}
 #################
 
 init-cs:
+
   # Automatically initialize the repository in the CS volume
   enabled: true
   # Users which should be automatically added to the CS
@@ -103,6 +107,7 @@ developer:
   ipAlias: null
 
 diracx:
+
   # Required: The hostname where the webapp/API is running
   # hostname:
   # Settings to inject into the API container via environment variables
@@ -138,9 +143,6 @@ ingress:
   annotations: {}
 
 diracxWeb:
-  image:
-    repository: ghcr.io/diracgrid/diracx-web/static
-    tag: latest
   service:
     type: ClusterIP
     port: 8080
