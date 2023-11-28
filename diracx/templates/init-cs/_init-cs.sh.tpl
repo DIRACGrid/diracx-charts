@@ -35,7 +35,7 @@ dirac internal add-user /cs_store/initialRepo \
     --sub={{ $user.sub | quote }} \
     --preferred-username={{ $user.preferredUsername | quote }} \
 {{- range $usergroup := $user.groups }}
-    --groups={{ $usergroup | quote }} \
+    --group={{ $usergroup | quote }} \
 {{- end }}
 {{- end }}
 {{- end }}
