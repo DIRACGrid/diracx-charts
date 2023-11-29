@@ -16,7 +16,7 @@ data:
     eval "$(micromamba shell hook --shell=posix)" && micromamba activate base
 
     {{ if .Values.diracx.pythonModulesToInstall }}
-    pip install{{ if .Values.developer.offline }} --no-build-isolation{{ end }} {{- range $moduleSpec := .Values.diracx.pythonModulesToInstall }} {{ $moduleSpec }} {{- end }}
+    pip install{{ if .Values.developer.offline }} --no-build-isolation{{ end }} {{- range $moduleSpec := .Values.diracx.pythonModulesToInstall }} {{ $moduleSpec | quote }} {{- end }}
     {{- end }}
     {{ if .Values.developer.mountedPythonModulesToInstall }}
     pip install{{ if .Values.developer.offline }} --no-build-isolation{{ end }} {{- range $moduleName := .Values.developer.mountedPythonModulesToInstall }} {{ if $.Values.developer.editableMountedPythonModules }}-e {{- end }}{{ $.Values.developer.sourcePath }}/{{ $moduleName }} {{- end }}
