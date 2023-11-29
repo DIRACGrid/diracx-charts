@@ -41,6 +41,25 @@ helm diff upgrade diracx-demo ./diracx --values .demo/values.yaml
 helm upgrade diracx-demo ./diracx --values .demo/values.yaml
 ```
 
+## Deploying a custom branch to DIRAC certification
+
+Apply the following on top of the standard `values.yaml` file, replacing `USERNAME` and `BRANCH_NAME` with the appropriate values.
+
+```yaml
+global:
+  images:
+    tag: "dev"
+    # TODO: We should use the base images here but pythonModulesToInstall would need to be split
+    services: ghcr.io/diracgrid/diracx/services
+    client: ghcr.io/diracgrid/diracx/client
+
+diracx:
+  pythonModulesToInstall:
+    - "git+https://github.com/USERNAME/diracx.git@BRANCH_NAME#egg=diracx_core&subdirectory=diracx-core"
+    - "git+https://github.com/USERNAME/diracx.git@BRANCH_NAME#egg=diracx_db&subdirectory=diracx-db"
+    - "git+https://github.com/USERNAME/diracx.git@BRANCH_NAME#egg=diracx_routers&subdirectory=diracx-routers"yaml
+```
+
 ## Deploying in production
 
 TODO
