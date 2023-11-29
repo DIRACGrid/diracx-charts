@@ -115,6 +115,12 @@ spec:
             httpGet:
               path: /api/docs/
               port: http
+          startupProbe:
+            httpGet:
+              path: /api/docs/
+              port: http
+            failureThreshold: 30
+            periodSeconds: 5
           command: ["bash", "/entrypoint.sh"]
           args:
             - uvicorn
