@@ -12,6 +12,7 @@ fi
 dirac internal generate-cs /cs_store/initialRepo
 
 {{- range $vo := index .Values "init-cs" "VOs" }}
+
 dirac internal add-vo /cs_store/initialRepo \
     --vo={{ $vo.name | quote }} \
     --idp-url={{ $vo.IdP.idp_url | quote }} \
@@ -24,7 +25,7 @@ dirac internal add-vo /cs_store/initialRepo \
 {{- range $group := $vo.Groups }}
 dirac internal add-group /cs_store/initialRepo \
     --vo={{ $vo.name | quote }} \
-    --group={{ $group.name | quote }} \
+    --group={{ $group.name | quote }}
 {{- end }}
 {{- end }}
 
@@ -37,6 +38,7 @@ dirac internal add-user /cs_store/initialRepo \
 {{- range $usergroup := $user.groups }}
     --group={{ $usergroup | quote }} \
 {{- end }}
+
 {{- end }}
 {{- end }}
 {{- end }}

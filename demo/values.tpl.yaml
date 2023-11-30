@@ -23,6 +23,8 @@ init-cs:
       Users:
       - sub: EgVsb2NhbA
         preferredUsername: admin
+        groups:
+          - admin
         # TODO: Integrate with dex
 
 diracx:
