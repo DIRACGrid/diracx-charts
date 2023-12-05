@@ -97,9 +97,9 @@ TODO
 | developer.enabled | bool | `true` |  |
 | developer.ipAlias | string | `nil` |  |
 | developer.localCSPath | string | `"/local_cs_store"` |  |
+| developer.mountedNodeModuleToInstall | string | `nil` |  |
 | developer.mountedPythonModulesToInstall | list | `[]` |  |
 | developer.nodeImage | string | `"node:16-alpine"` |  |
-| developer.nodeModuleToInstall | string | `nil` |  |
 | developer.offline | bool | `false` |  |
 | developer.sourcePath | string | `"/diracx_source"` |  |
 | developer.urls | object | `{}` |  |
@@ -138,6 +138,7 @@ TODO
 | diracx.settings.DIRACX_CONFIG_BACKEND_URL | string | `"git+file:///cs_store/initialRepo"` |  |
 | diracx.settings.DIRACX_SERVICE_AUTH_ALLOWED_REDIRECTS | string | `"[\"http://anything:8000/docs/oauth2-redirect\"]"` |  |
 | diracx.settings.DIRACX_SERVICE_AUTH_TOKEN_KEY | string | `"file:///signing-key/rsa256.key"` |  |
+| diracxWeb.nodeModuleToInstall | string | `nil` |  |
 | diracxWeb.service.port | int | `8080` |  |
 | diracxWeb.service.type | string | `"ClusterIP"` |  |
 | fullnameOverride | string | `""` |  |

@@ -1,5 +1,5 @@
-{{- $nodeDevInstall := and .Values.developer.enabled (empty .Values.developer.nodeModuleToInstall | not) -}}
-{{- $nodeModulePath := $nodeDevInstall | ternary (printf "%s/%s" .Values.developer.sourcePath .Values.developer.nodeModuleToInstall) "" -}}
+{{- $nodeDevInstall := and .Values.developer.enabled (empty .Values.developer.mountedNodeModuleToInstall | not) -}}
+{{- $nodeModulePath := $nodeDevInstall | ternary (printf "%s/%s" .Values.developer.sourcePath .Values.developer.mountedNodeModuleToInstall) "" -}}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -19,8 +19,10 @@ spec:
         {{- with .Values.podAnnotations }}
           {{- toYaml . | nindent 8 }}
         {{- end }}
+        checksum/entrypoint: {{ include (print $.Template.BasePath "/web-container-entrypoint.yaml") . | sha256sum }}
       labels:
         {{- include "diracxWeb.selectorLabels" . | nindent 8 }}
+
     spec:
       {{- with .Values.imagePullSecrets }}
       imagePullSecrets:
@@ -30,6 +32,9 @@ spec:
       securityContext:
         {{- toYaml .Values.podSecurityContext | nindent 8 }}
       volumes:
+        - name: container-entrypoint
+          configMap:
+            name: diracx-web-container-entrypoint
         {{- if $nodeDevInstall }}
         - name: diracx-web-code-mount
           persistentVolumeClaim:
@@ -42,25 +47,27 @@ spec:
             sizeLimit: 1Gi
         {{- end }}
 
+      {{- if or $nodeDevInstall .Values.diracxWeb.nodeModuleToInstall }}
       initContainers:
-      {{- if $nodeDevInstall }}
-        - name: install-deps
+        - name: build-diracx-web
           image: {{ .Values.developer.nodeImage }}
           imagePullPolicy: {{ .Values.global.imagePullPolicy }}
-          # We use "npm ci" instead of "npm install" so it will use the package-lock.json file
-          # rather than using the package.json file. Using package.json would fail as the mount
-          # is read-only so package-lock.json can't be edited.
-          command: ["npm", "ci"]
-          workingDir: {{ $nodeModulePath }}
+
+          command: ["/bin/sh", "/entrypoint.sh"]
           volumeMounts:
-            - mountPath: "{{ .Values.developer.sourcePath }}/{{ .Values.developer.nodeModuleToInstall }}"
+            - mountPath: "/entrypoint.sh"
+              subPath: "entrypoint.sh"
+              name: "container-entrypoint"
+            {{- if $nodeDevInstall }}
+            - mountPath: "{{ .Values.developer.sourcePath }}/{{ .Values.developer.mountedNodeModuleToInstall }}"
               name: "diracx-web-code-mount"
-              subPath: "{{ .Values.developer.nodeModuleToInstall }}"
+              subPath: "{{ .Values.developer.mountedNodeModuleToInstall }}"
               readOnly: true
             - mountPath: "{{ $nodeModulePath }}/node_modules"
               name: "diracx-web-scratch-node-modules"
             - mountPath: "{{ $nodeModulePath }}/.next"
               name: "diracx-web-scratch-next"
+            {{- end }}
       {{- end }}
 
       containers:
@@ -70,7 +77,11 @@ spec:
           {{- if $nodeDevInstall }}
           image: {{ .Values.developer.nodeImage }}
           {{- else }}
+          {{- if .Values.diracxWeb.nodeModuleToInstall}}
+          image: {{ .Values.developer.nodeImage }}
+          {{- else }}
           image: {{ .Values.global.images.web.repository }}:{{ .Values.global.images.web.tag }}
+          {{- end }}
           {{- end }}
           imagePullPolicy: {{ .Values.global.imagePullPolicy }}
           ports:
@@ -87,18 +98,25 @@ spec:
               port: http
           {{- if $nodeDevInstall }}
           command: ["npm", "run", "dev", "--prefix", "{{ $nodeModulePath }}", "--", "-p", "{{ .Values.diracxWeb.service.port }}"]
+          {{- else }}
+          {{ if .Values.diracxWeb.nodeModuleToInstall }}
+          command: ["npm", "run", "start", "--prefix", "/diracx-web", "--", "-p", "{{ .Values.diracxWeb.service.port }}"]
+          {{- end }}
           {{- end }}
           volumeMounts:
           {{- if $nodeDevInstall }}
-            - mountPath: "{{ .Values.developer.sourcePath }}/{{ .Values.developer.nodeModuleToInstall }}"
+            - mountPath: "{{ .Values.developer.sourcePath }}/{{ .Values.developer.mountedNodeModuleToInstall }}"
               name: "diracx-web-code-mount"
-              subPath: "{{ .Values.developer.nodeModuleToInstall }}"
+              subPath: "{{ .Values.developer.mountedNodeModuleToInstall }}"
               readOnly: true
             - mountPath: "{{ $nodeModulePath }}/node_modules"
               name: "diracx-web-scratch-node-modules"
             - mountPath: "{{ $nodeModulePath }}/.next"
               name: "diracx-web-scratch-next"
           {{- end }}
+            - mountPath: "/entrypoint.sh"
+              subPath: "entrypoint.sh"
+              name: "container-entrypoint"
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
       {{- with .Values.nodeSelector }}

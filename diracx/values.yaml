@@ -94,8 +94,8 @@ developer:
   # Use pip install -e for mountedPythonModulesToInstall
   editableMountedPythonModules: true
   # List of node modules to install
-  nodeModuleToInstall: null
-  # Image to use for the webapp if nodeModuleToInstall is set
+  mountedNodeModuleToInstall: null
+  # Image to use for the webapp if (mounted)nodeModuleToInstall is set
   nodeImage: node:16-alpine
   # Enable collection of coverage reports (intended for CI usage only)
   enableCoverage: false
@@ -146,6 +146,8 @@ diracxWeb:
   service:
     type: ClusterIP
     port: 8080
+  # List of install specifications to pass to npm before launching container
+  nodeModuleToInstall: null
 
 ##########################
 
