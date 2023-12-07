@@ -127,7 +127,7 @@ spec:
             - --factory
             - diracx.routers:create_app
             - --host=0.0.0.0
-            - --port=8000
+            - --port={{ .Values.diracx.service.port }}
             - "--proxy-headers"
             - "--forwarded-allow-ips=*"
           {{- if and .Values.developer.enabled .Values.developer.autoReload }}

@@ -60,6 +60,9 @@ securityContext: {}
 
 #################
 
+# TODO: should only be present during install
+# SHould only init git
+# should be filed by run_demo or synced by admin
 init-cs:
 
   # Automatically initialize the repository in the CS volume
@@ -85,13 +88,15 @@ developer:
   enabled: true
   # Make it possible to launch the demo without having an internet connection
   offline: false
-  # URLs which can be used to access various components of the demo
+  # URLs which can be used to access various components of the demo (diracx, minio, dex, etc)
+  # They are used by the diracx tests
   urls: {}
   # Path from which to mount source of DIRACX
   sourcePath: /diracx_source
   # List of packages which are mounted into developer.sourcePath and should be installed with pip install SOURCEPATH/...
   mountedPythonModulesToInstall: []
   # Use pip install -e for mountedPythonModulesToInstall
+  # This is used by the integration tests because editable install might behave differently
   editableMountedPythonModules: true
   # List of node modules to install
   nodeModuleToInstall: null
@@ -100,6 +105,7 @@ developer:
   # Enable collection of coverage reports (intended for CI usage only)
   enableCoverage: false
   # Enable automatic reloading inside uvicorn when the sources change
+  # Used by the integration tests for running closer to prod setup
   autoReload: true
   # If set, mount the CS stored localy instead of initializing a default one
   localCSPath: /local_cs_store
@@ -109,17 +115,39 @@ developer:
 diracx:
 
   # Required: The hostname where the webapp/API is running
+  # TODO: make sure that it gets documented and marked as required
   # hostname:
   # Settings to inject into the API container via environment variables
   settings:
     # This corresponds to the basic dirac.cfg
     # which must be present on all the servers
+    #TODO: autogenerate all of these
     DIRACX_CONFIG_BACKEND_URL: "git+file:///cs_store/initialRepo"
     DIRACX_SERVICE_AUTH_TOKEN_KEY: "file:///signing-key/rsa256.key"
     DIRACX_SERVICE_AUTH_ALLOWED_REDIRECTS: '["http://anything:8000/docs/oauth2-redirect"]'
   # Should DiracX include an init container which manages the OS DB indices?
+  # TODO: move to pre-upgrade hook
   manageOSIndices: true
   # Which DiracX MySQL DBs are used?
+
+  # TODO:
+  # If mysql is enabled, you are not allowed
+  # to set the username passwords
+  # sql-dbs:
+  #   default:
+  #     rootUser: sas
+  #     rootPassword:
+  #     user:
+  #     password:
+  #   dbs:
+  #     - AuthDB
+  #     - JobDB
+  #     - JobLoggingDB
+  #     - SandboxMetadataDB
+  #     - TaskQueueDB
+  #     - name: ProxyDB
+  #       user: proxyUser
+  #       password: hush
   mysqlDatabases:
     - AuthDB
     - JobDB
@@ -133,7 +161,6 @@ diracx:
   pythonModulesToInstall: []
   # Service
   service:
-    type: ClusterIP
     port: 8000
 
 ingress:
@@ -144,7 +171,6 @@ ingress:
 
 diracxWeb:
   service:
-    type: ClusterIP
     port: 8080
 
 ##########################
@@ -241,6 +267,7 @@ minio:
   persistence:
     enabled: false
   mode: standalone
+  #TODO switch to secret if we can ?
   rootUser: rootuser
   rootPassword: rootpass123
   environment:
@@ -325,6 +352,7 @@ cert-manager-issuer:
 
 ##########################
 
+#TODO remove all that
 resources: {}
   # We usually recommend not to specify default resources and to leave this as a conscious
   # choice for the user. This also increases chances charts run on environments with little
