@@ -330,9 +330,12 @@ indigoiam:
   enabled: true
   config:
     issuer: http://anything:32003
+    initial_client:
+      id: null
+      secret: null
   image:
     repository: indigoiam/iam-login-service
-    tag: v1.8.2
+    tag: v1.8.3.rc.20231211
   service:
     type: NodePort
     port: 8080

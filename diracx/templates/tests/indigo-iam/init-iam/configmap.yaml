@@ -2,9 +2,19 @@
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: {{ template "init-iam.fullname" . }}
+  name: indigo-iam-init-script
   namespace: {{ .Release.Namespace }}
 data:
-  init-iam: |
-    {{- include (print $.Template.BasePath "/tests/indigo-iam/init-iam/_init-iam.sh.tpl") . | nindent 4 }}
+  init-iam.py: |
+    {{- include (print $.Template.BasePath "/tests/indigo-iam/init-iam/_init-iam.py.tpl") . | nindent 4 }}
+
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: indigo-iam-config
+  namespace: {{ .Release.Namespace }}
+data:
+  config.yaml: |
+    {{ toYaml .Values.indigoiam.config | nindent 4 }}
 {{- end -}}

@@ -13,7 +13,7 @@ spec:
       labels:
         app: iam
       annotations:
-        checksum/init-iam: {{ include (print $.Template.BasePath "/tests/indigo-iam/init-iam/_init-iam.sh.tpl") . | sha256sum }}
+        checksum/init-iam: {{ include (print $.Template.BasePath "/tests/indigo-iam/init-iam/_init-iam.py.tpl") . | sha256sum }}
     spec:
       volumes:
         - name: iam-secret

@@ -104,17 +104,6 @@ Return the name template for shared-secrets job.
 {{- default "init-secrets" $sharedSecretValues.nameOverride | trunc 63 | trimSuffix "-" -}}
 {{- end -}}
 
-{{- define "init-iam.fullname" -}}
-{{- printf "%s-init-iam" .Release.Name -}}
-{{- end -}}
-
-{{- define "init-iam.jobname" -}}
-{{- $name := include "init-iam.fullname" . | trunc 55 | trimSuffix "-" -}}
-{{- $rand := randAlphaNum 3 | lower }}
-{{- printf "%s-%d-%s" $name .Release.Revision $rand | trunc 63 | trimSuffix "-" -}}
-{{- end -}}
-
-
 {{/*
 Create a default fully qualified job name for init-secrets.
 Due to the job only being allowed to run once, we add the chart revision so helm
