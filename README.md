@@ -149,10 +149,12 @@ TODO
 | global.images.tag | string | `"dev"` |  |
 | global.images.web.repository | string | `"ghcr.io/diracgrid/diracx-web/static"` |  |
 | global.images.web.tag | string | `"latest"` |  |
+| indigoiam.config.initial_client.id | string | `nil` |  |
+| indigoiam.config.initial_client.secret | string | `nil` |  |
 | indigoiam.config.issuer | string | `"http://anything:32003"` |  |
 | indigoiam.enabled | bool | `true` |  |
 | indigoiam.image.repository | string | `"indigoiam/iam-login-service"` |  |
-| indigoiam.image.tag | string | `"v1.8.2"` |  |
+| indigoiam.image.tag | string | `"v1.8.3.rc.20231211"` |  |
 | indigoiam.service.nodePort | int | `32003` |  |
 | indigoiam.service.port | int | `8080` |  |
 | indigoiam.service.type | string | `"NodePort"` |  |
