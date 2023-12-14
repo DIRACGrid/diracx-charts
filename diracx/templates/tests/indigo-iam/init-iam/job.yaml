@@ -1,7 +1,7 @@
 apiVersion: batch/v1
 kind: Job
 metadata:
-  name: init-indigo-iam
+  name: indigo-iam-init
   namespace: {{ .Release.Namespace }}
   annotations:
     "helm.sh/hook": post-install,post-upgrade
@@ -11,17 +11,25 @@ spec:
   activeDeadlineSeconds: {{ .Values.global.activeDeadlineSeconds }}
   template:
     spec:
-      restartPolicy: Never
       containers:
-        - name: indigo-iam
-          image: "{{ .Values.indigoiam.image.repository }}:{{ .Values.indigoiam.image.tag }}"
+        - name: diracx-base
+          image: ghcr.io/diracgrid/diracx/base:latest
           imagePullPolicy: {{ .Values.global.imagePullPolicy }}
-          command: ["/bin/sh", "/scripts/init-iam"]
+          command: ["/bin/bash", "/entrypoint.sh"]
+          args: ["python", "/scripts/init-iam.py"]
+          env:
+            - name: CONFIG_PATH
+              value: /config/config.yaml
           volumeMounts:
           - name: scripts
             mountPath: /scripts
+          - name: config
+            mountPath: /config
       volumes:
       - name: scripts
         configMap:
-          name: {{ template "init-iam.fullname" . }}
+          name: indigo-iam-init-script
+      - name: config
+        configMap:
+          name: indigo-iam-config
       restartPolicy: Never

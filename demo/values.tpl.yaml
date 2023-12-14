@@ -19,10 +19,10 @@ init-cs:
     - name: diracAdmin
       IdP:
         idp_url: http://{{ hostname }}:32003
-        idp_client_id: d396912e-2f04-439b-8ae7-d8c585a34790
+        idp_client_id: client
       defaultGroup: admin
       Users:
-      - sub: EgVsb2NhbA
+      - sub: 73f16d93-2441-4a50-88ff-85360d78c6b5
         preferredUsername: admin
         groups:
           - admin
@@ -70,3 +70,36 @@ dex:
 indigoiam:
   config:
     issuer: http://{{ hostname }}:32003
+
+    admin_user:
+      username: admin
+      password: password
+    initial_client:
+      name: "Admin client (read-write)"
+      id: admin-client-rw
+      secret: secret
+
+    users:
+      - username: jane_doe
+        given_name: Jane
+        family_name: Doe
+        password: password
+
+    clients:
+      - name: "Test client"
+        id: client
+        grant_types:
+          - refresh_token
+          - authorization_code
+          - urn:ietf:params:oauth:grant-type:device_code
+        scope:
+          - offline
+          - openid
+          - profile
+        redirect_uris:
+          - https://{{ hostname }}:8000/api/auth/device/complete
+          - https://{{ hostname }}:8000/api/auth/authorize/complete
+
+    groups:
+      dirac:
+        user: [jane_doe]
