@@ -134,12 +134,10 @@ TODO
 | diracx.osDatabases[0] | string | `"JobParametersDB"` |  |
 | diracx.pythonModulesToInstall | list | `[]` |  |
 | diracx.service.port | int | `8000` |  |
-| diracx.service.type | string | `"ClusterIP"` |  |
 | diracx.settings.DIRACX_CONFIG_BACKEND_URL | string | `"git+file:///cs_store/initialRepo"` |  |
 | diracx.settings.DIRACX_SERVICE_AUTH_ALLOWED_REDIRECTS | string | `"[\"http://anything:8000/docs/oauth2-redirect\"]"` |  |
 | diracx.settings.DIRACX_SERVICE_AUTH_TOKEN_KEY | string | `"file:///signing-key/rsa256.key"` |  |
 | diracxWeb.service.port | int | `8080` |  |
-| diracxWeb.service.type | string | `"ClusterIP"` |  |
 | fullnameOverride | string | `""` |  |
 | global.activeDeadlineSeconds | int | `900` |  |
 | global.batchJobTTL | int | `600` |  |

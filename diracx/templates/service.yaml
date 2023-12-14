@@ -5,7 +5,7 @@ metadata:
   labels:
     {{- include "diracx.labels" . | nindent 4 }}
 spec:
-  type: {{ .Values.diracx.service.type }}
+  type: ClusterIP
   ports:
     - port: {{ .Values.diracx.service.port }}
       targetPort: http
