@@ -1,4 +1,4 @@
-{{- if .Values.indigoiam.enabled -}}
+{{- if .Values.indigoiam.enabled }}
 apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -17,4 +17,4 @@ metadata:
 data:
   config.yaml: |
     {{ toYaml .Values.indigoiam.config | nindent 4 }}
-{{- end -}}
+{{- end }}

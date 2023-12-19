@@ -327,7 +327,7 @@ dex:
 ##########################
 
 indigoiam:
-  enabled: true
+  enabled: false
   config:
     issuer: http://anything:32003
     initial_client:

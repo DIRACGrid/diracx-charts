@@ -48,4 +48,4 @@ spec:
           - name: iam-secret
             mountPath: "/etc/indigo-iam/keystore"
             readOnly: true
-{{- end}}
+{{- end }}

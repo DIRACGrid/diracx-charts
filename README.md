@@ -166,7 +166,7 @@ Depending on the installation you perform, some tasks may be necessary or not. T
 | indigoiam.config.initial_client.id | string | `nil` |  |
 | indigoiam.config.initial_client.secret | string | `nil` |  |
 | indigoiam.config.issuer | string | `"http://anything:32003"` |  |
-| indigoiam.enabled | bool | `true` |  |
+| indigoiam.enabled | bool | `false` |  |
 | indigoiam.image.repository | string | `"indigoiam/iam-login-service"` |  |
 | indigoiam.image.tag | string | `"v1.8.3.rc.20231211"` |  |
 | indigoiam.service.nodePort | int | `32003` |  |

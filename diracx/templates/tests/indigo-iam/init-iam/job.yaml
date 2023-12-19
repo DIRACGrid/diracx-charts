@@ -1,3 +1,4 @@
+{{- if .Values.indigoiam.enabled }}
 apiVersion: batch/v1
 kind: Job
 metadata:
@@ -33,3 +34,4 @@ spec:
         configMap:
           name: indigo-iam-config
       restartPolicy: Never
+{{- end }}
