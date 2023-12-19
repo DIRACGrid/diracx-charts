@@ -16,7 +16,7 @@ spec:
         {{- with .Values.podAnnotations }}
           {{- toYaml . | nindent 8 }}
         {{- end }}
-        checksum/entrypoint: {{ include (print $.Template.BasePath "/diracx-container-entrypoint.yaml") . | sha256sum }}
+        checksum/entrypoint: {{ include (print $.Template.BasePath "/diracx/diracx-container-entrypoint.yaml") . | sha256sum }}
       labels:
         {{- include "diracxCli.selectorLabels" . | nindent 8 }}
     spec:

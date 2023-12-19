@@ -16,17 +16,30 @@ developer:
 
 init-cs:
   VOs:
+    # Dex:
     - name: diracAdmin
       IdP:
-        idp_url: http://{{ hostname }}:32003
-        idp_client_id: client
+        idp_url: http://{{ hostname }}:32002
+        idp_client_id: d396912e-2f04-439b-8ae7-d8c585a34790
       defaultGroup: admin
       Users:
-      - sub: 73f16d93-2441-4a50-88ff-85360d78c6b5
+      - sub: EgVsb2NhbA
         preferredUsername: admin
         groups:
           - admin
         # TODO: Integrate with dex
+
+    # IAM:
+    # - name: diracAdmin
+    #   IdP:
+    #     idp_url: http://{{ hostname }}:32003
+    #     idp_client_id: client
+    #   defaultGroup: admin
+    #   Users:
+    #   - sub: 73f16d93-2441-4a50-88ff-85360d78c6b5
+    #     preferredUsername: admin
+    #     groups:
+    #       - admin
 
 diracx:
   hostname: {{ hostname }}
