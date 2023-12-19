@@ -8,6 +8,7 @@ developer:
     diracx: https://{{ hostname }}:8000
     minio: http://{{ hostname }}:32000
     dex: http://{{ hostname }}:32002
+    iam: http://{{ hostname }}:32003
   demoDir: {{ demo_dir }}
   mountedPythonModulesToInstall: {{ mounted_python_modules }}
   editableMountedPythonModules: {{ editable_mounted_modules }}
@@ -15,6 +16,7 @@ developer:
 
 init-cs:
   VOs:
+    # Dex:
     - name: diracAdmin
       IdP:
         idp_url: http://{{ hostname }}:32002
@@ -26,6 +28,18 @@ init-cs:
         groups:
           - admin
         # TODO: Integrate with dex
+
+    # IAM:
+    # - name: diracAdmin
+    #   IdP:
+    #     idp_url: http://{{ hostname }}:32003
+    #     idp_client_id: client
+    #   defaultGroup: admin
+    #   Users:
+    #   - sub: 73f16d93-2441-4a50-88ff-85360d78c6b5
+    #     preferredUsername: admin
+    #     groups:
+    #       - admin
 
 diracx:
   hostname: {{ hostname }}
@@ -55,3 +69,40 @@ dex:
       - email: "admin@example.com"
         hash: "$2a$10$2b2cU8CPhOTaGrs1HRQuAueS7JTT5ZHsHSzYiFPm1leZck7Mc8T4W"
         username: "admin"
+
+indigoiam:
+  config:
+    issuer: http://{{ hostname }}:32003
+
+    admin_user:
+      username: admin
+      password: password
+    initial_client:
+      name: "Admin client (read-write)"
+      id: admin-client-rw
+      secret: secret
+
+    users:
+      - username: jane_doe
+        given_name: Jane
+        family_name: Doe
+        password: password
+
+    clients:
+      - name: "Test client"
+        id: client
+        grant_types:
+          - refresh_token
+          - authorization_code
+          - urn:ietf:params:oauth:grant-type:device_code
+        scope:
+          - offline
+          - openid
+          - profile
+        redirect_uris:
+          - https://{{ hostname }}:8000/api/auth/device/complete
+          - https://{{ hostname }}:8000/api/auth/authorize/complete
+
+    groups:
+      dirac:
+        user: [jane_doe]
