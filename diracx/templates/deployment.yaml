@@ -31,7 +31,7 @@ spec:
       hostAliases:
         - ip: {{ .Values.developer.ipAlias }}
           hostnames:
-          - {{ .Values.diracx.hostname }}
+          - {{ required "diracx.hostname must be set!" .Values.diracx.hostname }}
       {{- end }}
       serviceAccountName: {{ include "diracx.serviceAccountName" . }}
       securityContext:

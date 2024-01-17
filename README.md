@@ -43,9 +43,10 @@ export MYSQL_ROOT_PASSWORD=$(kubectl get secret --namespace "default" mysql-secr
 export MYSQL_PASSWORD=$(kubectl get secret --namespace "default" mysql-secret -o jsonpath="{.data.mysql-password}" | base64 -d)
 
 # Show what will be changed by running "helm upgrade"
-helm diff upgrade diracx-demo  ./diracx --values .demo/values.yaml --set rabbitmq.auth.password=$RABBITMQ_PASSWORD  --set mysql.auth.^CotPassword=$MYSQL_ROOT_PASSWORD --set mysql.auth.password=$MYSQL_PASSWORD
+helm diff upgrade diracx-demo  ./diracx --values .demo/values.yaml --set rabbitmq.auth.password=$RABBITMQ_PASSWORD  --set mysql.auth.rootPassword=$MYSQL_ROOT_PASSWORD --set mysql.auth.password=$MYSQL_PASSWORD
+
 # Actually run "helm upgrade" to apply changes
-helm upgrade diracx-demo ./diracx --values .demo/values.yaml --set rabbitmq.auth.password=$RABBITMQ_PASSWORD  --set mysql.auth.^CotPassword=$MYSQL_ROOT_PASSWORD --set mysql.auth.password=$MYSQL_PASSWORD
+helm upgrade diracx-demo ./diracx --values .demo/values.yaml --set rabbitmq.auth.password=$RABBITMQ_PASSWORD  --set mysql.auth.rootPassword=$MYSQL_ROOT_PASSWORD --set mysql.auth.password=$MYSQL_PASSWORD
 ```
 
 ## Deploying a custom branch to DIRAC certification
@@ -105,18 +106,18 @@ Depending on the installation you perform, some tasks may be necessary or not. T
 | cert-manager-issuer.enabled | bool | `true` |  |
 | cert-manager.enabled | bool | `true` |  |
 | cert-manager.installCRDs | bool | `true` |  |
-| developer.autoReload | bool | `true` |  |
-| developer.editableMountedPythonModules | bool | `true` |  |
-| developer.enableCoverage | bool | `false` |  |
+| developer.autoReload | bool | `true` | Enable automatic reloading inside uvicorn when the sources change Used by the integration tests for running closer to prod setup |
+| developer.editableMountedPythonModules | bool | `true` | Use pip install -e for mountedPythonModulesToInstall This is used by the integration tests because editable install might behave differently |
+| developer.enableCoverage | bool | `false` | Enable collection of coverage reports (intended for CI usage only) |
 | developer.enabled | bool | `true` |  |
-| developer.ipAlias | string | `nil` |  |
-| developer.localCSPath | string | `"/local_cs_store"` |  |
-| developer.mountedPythonModulesToInstall | list | `[]` |  |
-| developer.nodeImage | string | `"node:16-alpine"` |  |
-| developer.nodeModuleToInstall | string | `nil` |  |
-| developer.offline | bool | `false` |  |
-| developer.sourcePath | string | `"/diracx_source"` |  |
-| developer.urls | object | `{}` |  |
+| developer.ipAlias | string | `nil` | The IP that the demo is running at |
+| developer.localCSPath | string | `"/local_cs_store"` | If set, mount the CS stored localy instead of initializing a default one |
+| developer.mountedPythonModulesToInstall | list | `[]` | List of packages which are mounted into developer.sourcePath and should be installed with pip install SOURCEPATH/... |
+| developer.nodeImage | string | `"node:16-alpine"` | Image to use for the webapp if nodeModuleToInstall is set |
+| developer.nodeModuleToInstall | string | `nil` | List of node modules to install |
+| developer.offline | bool | `false` | Make it possible to launch the demo without having an internet connection |
+| developer.sourcePath | string | `"/diracx_source"` | Path from which to mount source of DIRACX |
+| developer.urls | object | `{}` | URLs which can be used to access various components of the demo (diracx, minio, dex, etc). They are used by the diracx tests |
 | dex."https.enabled" | bool | `false` |  |
 | dex.config.enablePasswordDB | bool | `true` |  |
 | dex.config.expiry.authRequests | string | `"24h"` |  |
@@ -139,22 +140,18 @@ Depending on the installation you perform, some tasks may be necessary or not. T
 | dex.service.ports.http.nodePort | int | `32002` |  |
 | dex.service.ports.http.port | int | `8000` |  |
 | dex.service.type | string | `"NodePort"` |  |
+| diracx.hostname | string | `""` | Required: The hostname where the webapp/API is running |
 | diracx.manageOSIndices | bool | `true` |  |
-| diracx.mysqlDatabases[0] | string | `"AuthDB"` |  |
-| diracx.mysqlDatabases[1] | string | `"JobDB"` |  |
-| diracx.mysqlDatabases[2] | string | `"JobLoggingDB"` |  |
-| diracx.mysqlDatabases[3] | string | `"SandboxMetadataDB"` |  |
-| diracx.mysqlDatabases[4] | string | `"TaskQueueDB"` |  |
-| diracx.osDatabases[0] | string | `"JobParametersDB"` |  |
-| diracx.pythonModulesToInstall | list | `[]` |  |
+| diracx.mysqlDatabases | list | `["AuthDB","JobDB","JobLoggingDB","SandboxMetadataDB","TaskQueueDB"]` | Which DiracX MySQL DBs are used? |
+| diracx.osDatabases | list | `["JobParametersDB"]` | Which DiracX OpenSearch DBs are used? |
+| diracx.pythonModulesToInstall | list | `[]` | List of install specifications to pass to pip before launching each container |
 | diracx.service.port | int | `8000` |  |
-| diracx.settings.DIRACX_CONFIG_BACKEND_URL | string | `"git+file:///cs_store/initialRepo"` |  |
-| diracx.settings.DIRACX_SERVICE_AUTH_ALLOWED_REDIRECTS | string | `"[\"http://anything:8000/docs/oauth2-redirect\"]"` |  |
-| diracx.settings.DIRACX_SERVICE_AUTH_TOKEN_KEY | string | `"file:///signing-key/rsa256.key"` |  |
+| diracx.settings | object | "e.g. DIRACX_CONFIG_BACKEND_URL=..." | Settings to inject into the API container via environment variables |
+| diracx.settings.DIRACX_CONFIG_BACKEND_URL | string | `"git+file:///cs_store/initialRepo"` | This corresponds to the basic dirac.cfg which must be present on all the servers TODO: autogenerate all of these |
 | diracxWeb.service.port | int | `8080` |  |
 | fullnameOverride | string | `""` |  |
-| global.activeDeadlineSeconds | int | `900` |  |
-| global.batchJobTTL | int | `600` |  |
+| global.activeDeadlineSeconds | int | `900` | timeout for job deadlines |
+| global.batchJobTTL | int | `600` | How long should batch jobs be retained after completing? |
 | global.imagePullPolicy | string | `"Always"` |  |
 | global.images.client | string | `"ghcr.io/diracgrid/diracx/client"` |  |
 | global.images.services | string | `"ghcr.io/diracgrid/diracx/services"` |  |
@@ -165,7 +162,6 @@ Depending on the installation you perform, some tasks may be necessary or not. T
 | ingress.className | string | `"nginx"` |  |
 | ingress.enabled | bool | `true` |  |
 | ingress.tlsSecretName | string | `"myingress-cert"` |  |
-| init-cs.defaultUsers | list | `[]` |  |
 | init-cs.enabled | bool | `true` |  |
 | init-secrets.enabled | bool | `true` |  |
 | init-secrets.rbac.create | bool | `true` |  |
@@ -193,7 +189,7 @@ Depending on the installation you perform, some tasks may be necessary or not. T
 | mysql.initdbScriptsConfigMap | string | `"mysql-init-diracx-dbs"` |  |
 | nameOverride | string | `""` | type=kubernetes.io/dockerconfigjson imagePullSecrets:   - name: regcred |
 | nodeSelector | object | `{}` |  |
-| opensearch.config."opensearch.yml" | string | `"cluster.name: opensearch-cluster\n\n# Bind to all interfaces because we don't know what IP address Docker will assign to us.\nnetwork.host: 0.0.0.0\n\n# Setting network.host to a non-loopback address enables the annoying bootstrap checks. \"Single-node\" mode disables them again.\n# Implicitly done if \".singleNode\" is set to \"true\".\n# discovery.type: single-node\n\n# Start OpenSearch Security Demo Configuration\n# WARNING: revise all the lines below before you go into production\nplugins:\n  security:\n    ssl:\n      transport:\n        pemcert_filepath: esnode.pem\n        pemkey_filepath: esnode-key.pem\n        pemtrustedcas_filepath: root-ca.pem\n        enforce_hostname_verification: false\n      http:\n        enabled: true\n        pemcert_filepath: esnode.pem\n        pemkey_filepath: esnode-key.pem\n        pemtrustedcas_filepath: root-ca.pem\n    allow_unsafe_democertificates: true\n    allow_default_init_securityindex: true\n    authcz:\n      admin_dn:\n        - CN=kirk,OU=client,O=client,L=test,C=de\n    audit.type: internal_opensearch\n    enable_snapshot_restore_privilege: true\n    check_snapshot_restore_write_privileges: true\n    restapi:\n      roles_enabled: [\"all_access\", \"security_rest_api_access\"]\n    system_indices:\n      enabled: true\n      indices:\n        [\n          \".opendistro-alerting-config\",\n          \".opendistro-alerting-alert*\",\n          \".opendistro-anomaly-results*\",\n          \".opendistro-anomaly-detector*\",\n          \".opendistro-anomaly-checkpoints\",\n          \".opendistro-anomaly-detection-state\",\n          \".opendistro-reports-*\",\n          \".opendistro-notifications-*\",\n          \".opendistro-notebooks\",\n          \".opendistro-asynchronous-search-response*\",\n        ]\n######## End OpenSearch Security Demo Configuration ########\ncluster:\n  routing:\n    allocation:\n      disk:\n        threshold_enabled: \"true\"\n        watermark:\n          flood_stage: 200mb\n          low: 500mb\n          high: 300mb\n"` |  |
+| opensearch.config | object | `{}` |  |
 | opensearch.enabled | bool | `true` |  |
 | opensearch.opensearchJavaOpts | string | `"-Xms256m -Xmx256m"` |  |
 | opensearch.resources.requests.cpu | string | `"100m"` |  |
@@ -209,9 +205,9 @@ Depending on the installation you perform, some tasks may be necessary or not. T
 | replicaCount | int | `1` |  |
 | resources | object | `{}` |  |
 | securityContext | object | `{}` |  |
-| serviceAccount.annotations | object | `{}` |  |
-| serviceAccount.create | bool | `true` |  |
-| serviceAccount.name | string | `""` |  |
+| serviceAccount.annotations | object | `{}` | Annotations to add to the service account |
+| serviceAccount.create | bool | `true` | Specifies whether a service account should be created |
+| serviceAccount.name | string | `""` | The name of the service account to use. If not set and create is true, a name is generated using the fullname template |
 | tolerations | list | `[]` |  |
 
 ----------------------------------------------

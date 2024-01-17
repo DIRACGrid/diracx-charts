@@ -3,14 +3,14 @@
 # Declare variables to be passed into your templates.
 
 global:
-  # How long should batch jobs be retained after completing?
+  # -- How long should batch jobs be retained after completing?
   batchJobTTL: 600
   # TODO: To avoid being unable to launch a container when the remote registry
   # is down this should be changed to IfNotPresent once we start using tags.
   # For now we override it to Always to avoid confusion around having an
   # outdated reference to the "latest" tag.
   imagePullPolicy: Always
-  # timeout for job deadlines
+  # -- timeout for job deadlines
   activeDeadlineSeconds: 900
   images:
     tag: "dev"
@@ -21,7 +21,6 @@ global:
       repository: ghcr.io/diracgrid/diracx-web/static
 
 replicaCount: 1
-
 
 # Created with
 # kubectl create secret generic regcred \
@@ -35,20 +34,22 @@ nameOverride: ""
 fullnameOverride: ""
 
 serviceAccount:
-  # Specifies whether a service account should be created
+  # -- Specifies whether a service account should be created
   create: true
-  # Annotations to add to the service account
+  # -- Annotations to add to the service account
   annotations: {}
-  # The name of the service account to use.
+  # -- The name of the service account to use.
   # If not set and create is true, a name is generated using the fullname template
   name: ""
 
 podAnnotations: {}
 
-podSecurityContext: {}
+podSecurityContext:
+  {}
   # fsGroup: 2000
 
-securityContext: {}
+securityContext:
+  {}
   # capabilities:
   #   drop:
   #   - ALL
@@ -56,19 +57,12 @@ securityContext: {}
   # runAsNonRoot: true
   # runAsUser: 1000
 
-
-
 #################
 
 # TODO: should only be present during install
-# SHould only init git
-# should be filed by run_demo or synced by admin
 init-cs:
-
   # Automatically initialize the repository in the CS volume
   enabled: true
-  # Users which should be automatically added to the CS
-  defaultUsers: []
 
 init-secrets:
   enabled: true
@@ -86,40 +80,39 @@ init-sql:
 
 developer:
   enabled: true
-  # Make it possible to launch the demo without having an internet connection
+  # -- Make it possible to launch the demo without having an internet connection
   offline: false
-  # URLs which can be used to access various components of the demo (diracx, minio, dex, etc)
+  # -- URLs which can be used to access various components of the demo (diracx, minio, dex, etc).
   # They are used by the diracx tests
   urls: {}
-  # Path from which to mount source of DIRACX
+  # -- Path from which to mount source of DIRACX
   sourcePath: /diracx_source
-  # List of packages which are mounted into developer.sourcePath and should be installed with pip install SOURCEPATH/...
+  # -- List of packages which are mounted into developer.sourcePath and should be installed with pip install SOURCEPATH/...
   mountedPythonModulesToInstall: []
-  # Use pip install -e for mountedPythonModulesToInstall
+  # -- Use pip install -e for mountedPythonModulesToInstall
   # This is used by the integration tests because editable install might behave differently
   editableMountedPythonModules: true
-  # List of node modules to install
+  # -- List of node modules to install
   nodeModuleToInstall: null
-  # Image to use for the webapp if nodeModuleToInstall is set
+  # -- Image to use for the webapp if nodeModuleToInstall is set
   nodeImage: node:16-alpine
-  # Enable collection of coverage reports (intended for CI usage only)
+  # -- Enable collection of coverage reports (intended for CI usage only)
   enableCoverage: false
-  # Enable automatic reloading inside uvicorn when the sources change
+  # -- Enable automatic reloading inside uvicorn when the sources change
   # Used by the integration tests for running closer to prod setup
   autoReload: true
-  # If set, mount the CS stored localy instead of initializing a default one
+  # -- If set, mount the CS stored localy instead of initializing a default one
   localCSPath: /local_cs_store
-  # The IP that the demo is running at
+  # -- The IP that the demo is running at
   ipAlias: null
 
 diracx:
-
-  # Required: The hostname where the webapp/API is running
-  # TODO: make sure that it gets documented and marked as required
-  # hostname:
-  # Settings to inject into the API container via environment variables
+  # -- Required: The hostname where the webapp/API is running
+  hostname: ""
+  # -- Settings to inject into the API container via environment variables
+  # @default -- "e.g. DIRACX_CONFIG_BACKEND_URL=..."
   settings:
-    # This corresponds to the basic dirac.cfg
+    # -- This corresponds to the basic dirac.cfg
     # which must be present on all the servers
     #TODO: autogenerate all of these
     DIRACX_CONFIG_BACKEND_URL: "git+file:///cs_store/initialRepo"
@@ -128,7 +121,7 @@ diracx:
   # Should DiracX include an init container which manages the OS DB indices?
   # TODO: move to pre-upgrade hook
   manageOSIndices: true
-  # Which DiracX MySQL DBs are used?
+
 
   # TODO:
   # If mysql is enabled, you are not allowed
@@ -148,16 +141,17 @@ diracx:
   #     - name: ProxyDB
   #       user: proxyUser
   #       password: hush
+  # -- Which DiracX MySQL DBs are used?
   mysqlDatabases:
     - AuthDB
     - JobDB
     - JobLoggingDB
     - SandboxMetadataDB
     - TaskQueueDB
-  # Which DiracX OpenSearch DBs are used?
+  # -- Which DiracX OpenSearch DBs are used?
   osDatabases:
     - JobParametersDB
-  # List of install specifications to pass to pip before launching each container
+  # -- List of install specifications to pass to pip before launching each container
   pythonModulesToInstall: []
   # Service
   service:
@@ -181,6 +175,7 @@ opensearch:
   # replicas: 1
   singleNode: true
   config:
+    # @ignored
     opensearch.yml: |
       cluster.name: opensearch-cluster
 
@@ -248,7 +243,6 @@ opensearch:
       memory: "100Mi"
 
 ##########################
-
 
 minio:
   enabled: true
@@ -353,7 +347,8 @@ cert-manager-issuer:
 ##########################
 
 #TODO remove all that
-resources: {}
+resources:
+  {}
   # We usually recommend not to specify default resources and to leave this as a conscious
   # choice for the user. This also increases chances charts run on environments with little
   # resources, such as Minikube. If you do want to specify resources, uncomment the following
