@@ -449,6 +449,21 @@ else
     # Dump the CA certificate to a file so that it can be used by the client
     "${demo_dir}/kubectl" get secret/root-secret -o json | jq -r '.data."tls.crt"' | base64 -d > "${demo_dir}/demo-ca.pem"
 
+    printf "%b Creating initial CS content ...\n" ${UNICORN_EMOJI}
+    "${demo_dir}/kubectl" exec -it deployments/diracx-demo-cli -- bash /entrypoint.sh dirac internal add-vo /cs_store/initialRepo \
+     --vo="diracAdmin" \
+     --idp-url="http://172.18.0.1.nip.io:32002" \
+     --idp-client-id="d396912e-2f04-439b-8ae7-d8c585a34790" \
+     --default-group="admin"
+
+    "${demo_dir}/kubectl" exec -it deployments/diracx-demo-cli -- bash /entrypoint.sh  dirac internal add-user /cs_store/initialRepo \
+     --vo="diracAdmin" \
+     --sub="EgVsb2NhbA" \
+     --preferred-username="admin" \
+     --group="admin"
+
+
+    # This file is used by the various CI to test for success
     touch "${demo_dir}/.success"
   else
     printf "%b Installation did not start sucessfully!\n" ${WARN_EMOJI}

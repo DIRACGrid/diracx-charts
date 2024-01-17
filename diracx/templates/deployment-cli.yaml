@@ -1,0 +1,111 @@
+{{ if .Values.developer.enabled  }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "diracx.fullname" . }}-cli
+  labels:
+    {{- include "diracx.labels" . | nindent 4 }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      {{- include "diracx.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      annotations:
+        {{- with .Values.podAnnotations }}
+          {{- toYaml . | nindent 8 }}
+        {{- end }}
+        checksum/entrypoint: {{ include (print $.Template.BasePath "/diracx-container-entrypoint.yaml") . | sha256sum }}
+      labels:
+        {{- include "diracx.selectorLabels" . | nindent 8 }}
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "diracx.serviceAccountName" . }}
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      volumes:
+        - name: cs-store-mount
+          persistentVolumeClaim:
+            claimName: pvc-cs-store
+        {{- if .Values.developer.mountedPythonModulesToInstall }}
+        - name: diracx-code-mount
+          persistentVolumeClaim:
+            claimName: pvc-diracx-code
+        {{- range $module := .Values.developer.mountedPythonModulesToInstall }}
+        - name: {{ base $module | lower }}-editable-install
+          emptyDir:
+            sizeLimit: 5Mi
+        {{- end }}
+        {{- end }}
+        - name: container-entrypoint
+          configMap:
+            name: diracx-container-entrypoint
+        - name: ca-mount
+          secret:
+            secretName: root-secret
+            items:
+            - key: tls.crt
+              path: demo-ca.pem
+        {{- if .Values.developer.enableCoverage }}
+        - name: coverage-data
+          persistentVolumeClaim:
+            claimName: pvc-coverage
+        {{- end }}
+
+      {{/* Define common volume mounts for reusability */}}
+      {{- $commonVolumeMounts := list }}
+      {{- $commonVolumeMounts = append $commonVolumeMounts (dict "mountPath" "/cs_store" "name" "cs-store-mount" "readOnly" false) }}
+      {{- $commonVolumeMounts = append $commonVolumeMounts (dict "mountPath" "/ca" "name" "ca-mount" "readOnly" false) }}
+      {{- $commonVolumeMounts = append $commonVolumeMounts (dict "mountPath" "/entrypoint.sh" "name" "container-entrypoint" "subPath" "entrypoint.sh") }}
+      {{- if .Values.developer.enableCoverage }}
+      {{- $commonVolumeMounts = append $commonVolumeMounts (dict "mountPath" "/diracx-coveragerc" "name" "container-entrypoint" "subPath" "coveragerc") }}
+      {{- $commonVolumeMounts = append $commonVolumeMounts (dict "mountPath" "/coverage-reports" "name" "coverage-data" "readOnly" false) }}
+      {{- end }}
+      {{- if .Values.developer.mountedPythonModulesToInstall }}
+      {{- $commonVolumeMounts = append $commonVolumeMounts (dict "mountPath" .Values.developer.sourcePath "name" "diracx-code-mount" "readOnly" true) }}
+      {{- range $module := .Values.developer.mountedPythonModulesToInstall }}
+      {{- if $.Values.developer.editableMountedPythonModules }}
+      {{- $commonVolumeMounts = append $commonVolumeMounts (dict "mountPath" (printf "%s/%s/src/%s.egg-info" $.Values.developer.sourcePath $module (replace "-" "_" (base $module))) "name" (printf "%s-editable-install" (base $module | lower)) "readOnly" false) }}
+      {{- else }}
+      {{- $commonVolumeMounts = append $commonVolumeMounts (dict "mountPath" (printf "%s/%s/build" $.Values.developer.sourcePath $module (replace "-" "_" (base $module))) "name" (printf "%s-editable-install" (base $module | lower)) "readOnly" false) }}
+      {{- end }}
+      {{- end }}
+      {{- end }}
+
+      containers:
+        - name: {{ .Chart.Name }}-cli
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
+          image: "{{ .Values.global.images.client }}:{{ .Values.global.images.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.global.imagePullPolicy }}
+          command: ["bash", "/entrypoint.sh"]
+          args:
+            - sleep
+            - "2592000" # one month
+          volumeMounts: {{ toYaml $commonVolumeMounts | nindent 12 }}
+          env:
+            - name: DIRACX_URL
+              value: {{ .Values.developer.urls.diracx }}
+            - name: DIRACX_CA_PATH
+              value: /ca/demo-ca.pem
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+
+
+{{ end }}
