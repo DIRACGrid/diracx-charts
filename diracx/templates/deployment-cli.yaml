@@ -9,7 +9,7 @@ spec:
   replicas: 1
   selector:
     matchLabels:
-      {{- include "diracx.selectorLabels" . | nindent 6 }}
+      {{- include "diracxCli.selectorLabels" . | nindent 6 }}
   template:
     metadata:
       annotations:
@@ -18,7 +18,7 @@ spec:
         {{- end }}
         checksum/entrypoint: {{ include (print $.Template.BasePath "/diracx-container-entrypoint.yaml") . | sha256sum }}
       labels:
-        {{- include "diracx.selectorLabels" . | nindent 8 }}
+        {{- include "diracxCli.selectorLabels" . | nindent 8 }}
     spec:
       {{- with .Values.imagePullSecrets }}
       imagePullSecrets:

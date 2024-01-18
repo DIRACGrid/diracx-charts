@@ -57,7 +57,14 @@ generate_secret_if_needed {{ .Values.rabbitmq.auth.existingPasswordSecret }} --f
 generate_secret_if_needed {{ .Values.rabbitmq.auth.existingErlangSecret }} --from-literal=rabbitmq-erlang-cookie=$(gen_random 'a-zA-Z0-9' 32)
 {{- end }}
 
+# If we deploy MySQL ourselves
 {{- if .Values.mysql.enabled }}
+
+# Make sure that there are no default connection settings
+{{ if .Values.diracx.sqlDbs.default }}
+{{ fail "There should be no default connection settings if running mysql from this Chart" }}
+{{ end }}
+
 # Generate the secrets for mysql
 generate_secret_if_needed {{ .Values.mysql.auth.existingSecret }} --from-literal=mysql-root-password=$(gen_random 'a-zA-Z0-9' 32)
 generate_secret_if_needed {{ .Values.mysql.auth.existingSecret }} --from-literal=mysql-replication-password=$(gen_random 'a-zA-Z0-9' 32)
@@ -66,10 +73,50 @@ generate_secret_if_needed {{ .Values.mysql.auth.existingSecret }} --from-literal
 # Make secrets for the sqlalchemy connection urls
 mysql_password=$(kubectl get secret {{ .Values.mysql.auth.existingSecret }} -ojsonpath="{.data.mysql-password}" | base64 -d)
 mysql_root_password=$(kubectl get secret {{ .Values.mysql.auth.existingSecret }} -ojsonpath="{.data.mysql-root-password}" | base64 -d)
-{{- range $dbName := .Values.diracx.mysqlDatabases }}
+
+{{- range $dbName,$dbSettings := .Values.diracx.sqlDbs.dbs }}
+
+
+# Make sure there are no connection settings
+{{ if $dbSettings }}
+{{ fail "There should be no connection settings if running mysql from this Chart" }}
+{{ end }}
+
 generate_secret_if_needed diracx-sql-connection-urls \
   --from-literal=DIRACX_DB_URL_{{ $dbName | upper }}="mysql+aiomysql://{{ $.Values.mysql.auth.username }}:${mysql_password}@{{ $.Release.Name }}-mysql:3306/{{ $dbName }}"
 generate_secret_if_needed diracx-sql-root-connection-urls \
   --from-literal=DIRACX_DB_URL_{{ $dbName | upper }}="mysql+aiomysql://root:${mysql_root_password}@{{ $.Release.Name }}-mysql:3306/{{ $dbName }}"
+{{- end }}
+
+# If we use an external MySQL instance
+{{- else }}
+
+
+{{- $default_db_host := $.Values.diracx.sqlDbs.default.host }}
+{{- $default_db_root_user := $.Values.diracx.sqlDbs.default.rootUser }}
+{{- $default_db_root_password := $.Values.diracx.sqlDbs.default.rootPassword }}
+{{- $default_db_user := $.Values.diracx.sqlDbs.default.user }}
+{{- $default_db_password := $.Values.diracx.sqlDbs.default.password }}
+
+{{- range $db_name, $db_settings := .Values.diracx.sqlDbs.dbs }}
+
+
+{{- if kindIs "map" $db_settings }}
+{{- $db_host :=  $db_settings.host | default $default_db_host  }}
+{{- $db_root_user :=  $db_settings.rootUser | default $default_db_root_user  }}
+{{- $db_root_password :=  $db_settings.rootPassword | default $default_db_root_password  }}
+{{- $db_user := $db_settings.user | default $default_db_user }}
+{{- $db_password :=  $db_settings.password | default $default_db_password  }}
+generate_secret_if_needed diracx-sql-connection-urls \
+  --from-literal=DIRACX_DB_URL_{{ $db_name | upper }}="mysql+aiomysql://{{ $db_user }}:{{ $db_password }}@{{ $db_host }}/{{ $db_name }}"
+generate_secret_if_needed diracx-sql-root-connection-urls \
+  --from-literal=DIRACX_DB_URL_{{ $db_name | upper }}="mysql+aiomysql://{{ $db_root_user }}:{{ $db_root_password }}@{{ $db_host }}/{{ $db_name }}"
+{{- else }}
+generate_secret_if_needed diracx-sql-connection-urls \
+  --from-literal=DIRACX_DB_URL_{{ $db_name | upper }}="mysql+aiomysql://{{ $default_db_user }}:{{ $default_db_password }}@{{ $default_db_host }}/{{ $db_name }}"
+generate_secret_if_needed diracx-sql-root-connection-urls \
+  --from-literal=DIRACX_DB_URL_{{ $db_name | upper }}="mysql+aiomysql://{{ $default_db_root_user }}:{{ $default_db_root_password }}@{{ $default_db_host }}/{{ $db_name }}"
+{{- end }}
+
 {{- end }}
 {{- end }}

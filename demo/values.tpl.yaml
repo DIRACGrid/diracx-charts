@@ -34,6 +34,13 @@ diracx:
     DIRACX_SANDBOX_STORE_BUCKET_NAME: demo-sandboxes
     DIRACX_SANDBOX_STORE_S3_CLIENT_KWARGS: '{"endpoint_url": "http://{{ hostname }}:32000", "aws_access_key_id": "console", "aws_secret_access_key": "console123"}'
     DIRACX_SANDBOX_STORE_AUTO_CREATE_BUCKET: "true"
+  sqlDbs:
+    dbs:
+      AuthDB:
+      JobDB:
+      JobLoggingDB:
+      SandboxMetadataDB:
+      TaskQueueDB:
 
 minio:
   environment:

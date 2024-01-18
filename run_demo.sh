@@ -438,7 +438,7 @@ printf "%b Waiting for ingress controller to be created...\n" ${UNICORN_EMOJI}
 # Install the DiracX chart
 printf "%b Installing DiracX...\n" ${UNICORN_EMOJI}
 helm_arguments+=("--values" "${demo_dir}/values.yaml")
-if ! "${demo_dir}/helm" install diracx-demo "${script_dir}/diracx" "${helm_arguments[@]}"; then
+if ! "${demo_dir}/helm" install --debug diracx-demo "${script_dir}/diracx" "${helm_arguments[@]}"; then
   printf "%b Error using helm DiracX\n" ${WARN_EMOJI}
   echo "Failed to run \"helm install\"" >> "${demo_dir}/.failed"
 else
@@ -452,7 +452,7 @@ else
     printf "%b Creating initial CS content ...\n" ${UNICORN_EMOJI}
     "${demo_dir}/kubectl" exec -it deployments/diracx-demo-cli -- bash /entrypoint.sh dirac internal add-vo /cs_store/initialRepo \
      --vo="diracAdmin" \
-     --idp-url="http://172.18.0.1.nip.io:32002" \
+     --idp-url="http://${machine_hostname}:32002" \
      --idp-client-id="d396912e-2f04-439b-8ae7-d8c585a34790" \
      --default-group="admin"
 

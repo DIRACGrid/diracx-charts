@@ -78,6 +78,9 @@ init-sql:
   enabled: true
   env: {}
 
+init-os:
+  enabled: true
+
 developer:
   enabled: true
   # -- Make it possible to launch the demo without having an internet connection
@@ -126,28 +129,26 @@ diracx:
   # TODO:
   # If mysql is enabled, you are not allowed
   # to set the username passwords
-  # sql-dbs:
-  #   default:
-  #     rootUser: sas
-  #     rootPassword:
-  #     user:
-  #     password:
-  #   dbs:
-  #     - AuthDB
-  #     - JobDB
-  #     - JobLoggingDB
-  #     - SandboxMetadataDB
-  #     - TaskQueueDB
-  #     - name: ProxyDB
-  #       user: proxyUser
-  #       password: hush
-  # -- Which DiracX MySQL DBs are used?
-  mysqlDatabases:
-    - AuthDB
-    - JobDB
-    - JobLoggingDB
-    - SandboxMetadataDB
-    - TaskQueueDB
+  sqlDbs:
+    default:
+  #     rootUser: admin
+  #     rootPassword: hunter123
+  #     user: dirac
+  #     password: password123
+  #     host: sqlHost:123
+  #   # -- Which DiracX MySQL DBs are used?
+    dbs:
+  #    AuthDB:
+  #    JobDB:
+  #    JobLoggingDB:
+  #    SandboxMetadataDB:
+  #    TaskQueueDB:
+  #     ProxyDB:
+  #         user: proxyUser
+  #         password: hush
+  #         host: proxyHost:345
+
+
   # -- Which DiracX OpenSearch DBs are used?
   osDatabases:
     - JobParametersDB
@@ -272,6 +273,8 @@ minio:
 dex:
   enabled: true
   https.enabled: false
+  image:
+    tag: v2.37.0
 
   service:
     type: NodePort

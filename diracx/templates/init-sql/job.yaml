@@ -47,15 +47,13 @@ spec:
             {{ toYaml $commonVolumeMounts | nindent 12 }}
             - name: scripts
               mountPath: /scripts
-          {{- if .Values.mysql.enabled }}
           env:
-          {{- range $dbName := .Values.diracx.mysqlDatabases }}
+          {{- range $dbName,$dbSettings := .Values.diracx.sqlDbs.dbs }}
             - name: DIRACX_DB_URL_{{ $dbName | upper }}
               valueFrom:
                 secretKeyRef:
                   name: diracx-sql-root-connection-urls
                   key: DIRACX_DB_URL_{{ $dbName | upper }}
-          {{- end }}
           {{- end }}
           envFrom:
             - secretRef:

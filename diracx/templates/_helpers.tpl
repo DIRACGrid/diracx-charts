@@ -53,6 +53,10 @@ app.kubernetes.io/instance: {{ .Release.Name }}
 app.kubernetes.io/name: {{ include "diracx.name" . }}-web
 app.kubernetes.io/instance: {{ .Release.Name }}-web
 {{- end }}
+{{- define "diracxCli.selectorLabels" -}}
+app.kubernetes.io/name: {{ include "diracx.name" . }}-cli
+app.kubernetes.io/instance: {{ .Release.Name }}-cli
+{{- end }}
 
 {{/*
 Create the name of the service account to use
@@ -141,6 +145,27 @@ reduce collisions.
 */}}
 {{- define "init-sql.jobname" -}}
 {{- $name := include "init-sql.fullname" . | trunc 55 | trimSuffix "-" -}}
+{{- $rand := randAlphaNum 3 | lower }}
+{{- printf "%s-%d-%s" $name .Release.Revision $rand | trunc 63 | trimSuffix "-" -}}
+{{- end -}}
+
+
+{{/*
+Return the fullname template for the init-os job.
+*/}}
+{{- define "init-os.fullname" -}}
+{{- printf "%s-init-os" .Release.Name -}}
+{{- end -}}
+
+{{/*
+Create a default fully qualified job name for init-os.
+Due to the job only being allowed to run once, we add the chart revision so helm
+upgrades don't cause errors trying to create the already ran job.
+Due to the helm delete not cleaning up these jobs, we add a random value to
+reduce collisions.
+*/}}
+{{- define "init-os.jobname" -}}
+{{- $name := include "init-os.fullname" . | trunc 55 | trimSuffix "-" -}}
 {{- $rand := randAlphaNum 3 | lower }}
 {{- printf "%s-%d-%s" $name .Release.Revision $rand | trunc 63 | trimSuffix "-" -}}
 {{- end -}}

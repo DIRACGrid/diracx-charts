@@ -136,18 +136,20 @@ Depending on the installation you perform, some tasks may be necessary or not. T
 | dex.config.storage.type | string | `"sqlite3"` |  |
 | dex.config.web.http | int | `8000` |  |
 | dex.enabled | bool | `true` |  |
+| dex.image.tag | string | `"v2.37.0"` |  |
 | dex.ingress.enabled | bool | `false` |  |
 | dex.service.ports.http.nodePort | int | `32002` |  |
 | dex.service.ports.http.port | int | `8000` |  |
 | dex.service.type | string | `"NodePort"` |  |
 | diracx.hostname | string | `""` | Required: The hostname where the webapp/API is running |
 | diracx.manageOSIndices | bool | `true` |  |
-| diracx.mysqlDatabases | list | `["AuthDB","JobDB","JobLoggingDB","SandboxMetadataDB","TaskQueueDB"]` | Which DiracX MySQL DBs are used? |
 | diracx.osDatabases | list | `["JobParametersDB"]` | Which DiracX OpenSearch DBs are used? |
 | diracx.pythonModulesToInstall | list | `[]` | List of install specifications to pass to pip before launching each container |
 | diracx.service.port | int | `8000` |  |
 | diracx.settings | object | "e.g. DIRACX_CONFIG_BACKEND_URL=..." | Settings to inject into the API container via environment variables |
 | diracx.settings.DIRACX_CONFIG_BACKEND_URL | string | `"git+file:///cs_store/initialRepo"` | This corresponds to the basic dirac.cfg which must be present on all the servers TODO: autogenerate all of these |
+| diracx.sqlDbs.dbs | string | `nil` |  |
+| diracx.sqlDbs.default | string | `nil` |  |
 | diracxWeb.service.port | int | `8080` |  |
 | fullnameOverride | string | `""` |  |
 | global.activeDeadlineSeconds | int | `900` | timeout for job deadlines |
@@ -163,6 +165,7 @@ Depending on the installation you perform, some tasks may be necessary or not. T
 | ingress.enabled | bool | `true` |  |
 | ingress.tlsSecretName | string | `"myingress-cert"` |  |
 | init-cs.enabled | bool | `true` |  |
+| init-os.enabled | bool | `true` |  |
 | init-secrets.enabled | bool | `true` |  |
 | init-secrets.rbac.create | bool | `true` |  |
 | init-secrets.serviceAccount.create | bool | `true` |  |

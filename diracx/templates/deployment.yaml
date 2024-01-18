@@ -142,7 +142,7 @@ spec:
             #     name: diracx-env-config
             - secretRef:
                 name: diracx-secrets
-            {{- if and .Values.mysql.enabled .Values.diracx.mysqlDatabases }}
+            {{- if .Values.diracx.sqlDbs.dbs }}
             - secretRef:
                 name: diracx-sql-connection-urls
             {{- end }}
