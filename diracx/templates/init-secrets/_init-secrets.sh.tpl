@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+set -x
 set -euo pipefail
 IFS=$'\n\t'
 
@@ -98,7 +99,7 @@ generate_secret_if_needed diracx-sql-root-connection-urls \
 {{- $default_db_user := $.Values.diracx.sqlDbs.default.user }}
 {{- $default_db_password := $.Values.diracx.sqlDbs.default.password }}
 
-{{- range $db_name, $db_settings := .Values.diracx.sqlDbs.dbs }}
+{{- range $osDbName, $db_settings := .Values.diracx.sqlDbs.dbs }}
 
 
 {{- if kindIs "map" $db_settings }}
@@ -108,14 +109,83 @@ generate_secret_if_needed diracx-sql-root-connection-urls \
 {{- $db_user := $db_settings.user | default $default_db_user }}
 {{- $db_password :=  $db_settings.password | default $default_db_password  }}
 generate_secret_if_needed diracx-sql-connection-urls \
-  --from-literal=DIRACX_DB_URL_{{ $db_name | upper }}="mysql+aiomysql://{{ $db_user }}:{{ $db_password }}@{{ $db_host }}/{{ $db_name }}"
+  --from-literal=DIRACX_DB_URL_{{ $osDbName | upper }}="mysql+aiomysql://{{ $db_user }}:{{ $db_password }}@{{ $db_host }}/{{ $osDbName }}"
 generate_secret_if_needed diracx-sql-root-connection-urls \
-  --from-literal=DIRACX_DB_URL_{{ $db_name | upper }}="mysql+aiomysql://{{ $db_root_user }}:{{ $db_root_password }}@{{ $db_host }}/{{ $db_name }}"
+  --from-literal=DIRACX_DB_URL_{{ $osDbName | upper }}="mysql+aiomysql://{{ $db_root_user }}:{{ $db_root_password }}@{{ $db_host }}/{{ $osDbName }}"
 {{- else }}
 generate_secret_if_needed diracx-sql-connection-urls \
-  --from-literal=DIRACX_DB_URL_{{ $db_name | upper }}="mysql+aiomysql://{{ $default_db_user }}:{{ $default_db_password }}@{{ $default_db_host }}/{{ $db_name }}"
+  --from-literal=DIRACX_DB_URL_{{ $osDbName | upper }}="mysql+aiomysql://{{ $default_db_user }}:{{ $default_db_password }}@{{ $default_db_host }}/{{ $osDbName }}"
 generate_secret_if_needed diracx-sql-root-connection-urls \
-  --from-literal=DIRACX_DB_URL_{{ $db_name | upper }}="mysql+aiomysql://{{ $default_db_root_user }}:{{ $default_db_root_password }}@{{ $default_db_host }}/{{ $db_name }}"
+  --from-literal=DIRACX_DB_URL_{{ $osDbName | upper }}="mysql+aiomysql://{{ $default_db_root_user }}:{{ $default_db_root_password }}@{{ $default_db_host }}/{{ $osDbName }}"
+{{- end }}
+
+{{- end }}
+{{- end }}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# If we deploy MySQL ourselves
+{{- if .Values.opensearch.enabled }}
+
+# Make sure that there are no default connection settings
+{{ if .Values.diracx.osDbs.default }}
+{{ fail "There should be no default connection settings if running mysql from this Chart" }}
+{{ end }}
+
+{{- range $osDbName,$osDbSettings := .Values.diracx.osDbs.dbs }}
+
+
+# Make sure there are no connection settings
+{{ if $osDbSettings }}
+{{ fail "There should be no connection settings if running mysql from this Chart" }}
+{{ end }}
+
+generate_secret_if_needed diracx-os-connection-urls \
+  --from-literal=DIRACX_OS_DB_{{ $osDbName | upper }}='{"hosts": "admin:admin@opensearch-cluster-master:9200", "use_ssl": true, "verify_certs": false}'
+generate_secret_if_needed diracx-os-root-connection-urls \
+  --from-literal=DIRACX_OS_DB_{{ $osDbName | upper }}='{"hosts": "admin:admin@opensearch-cluster-master:9200", "use_ssl": true, "verify_certs": false}'
+{{- end }}
+
+# If we use an external MySQL instance
+{{- else }}
+
+
+{{- $defaultOsDbHost := $.Values.diracx.osDbs.default.host }}
+{{- $defaultOsDbRootUser := $.Values.diracx.osDbs.default.rootUser }}
+{{- $defaultOsDbRootPassword := $.Values.diracx.osDbs.default.rootPassword }}
+{{- $defaultOsDbUser := $.Values.diracx.osDbs.default.user }}
+{{- $defaultOsDbPassword := $.Values.diracx.osDbs.default.password }}
+
+{{- range $osDbName, $osDbSettings := .Values.diracx.osDbs.dbs }}
+
+
+{{- if kindIs "map" $osDbSettings }}
+{{- $osDbHost :=  $osDbSettings.host | default $defaultOsDbHost  }}
+{{- $osDbRootUser :=  $osDbSettings.rootUser | default $defaultOsDbRootUser  }}
+{{- $osDbRootPassword :=  $osDbSettings.rootPassword | default $defaultOsDbRootPassword  }}
+{{- $osDbUser := $osDbSettings.user | default $defaultOsDbUser }}
+{{- $osDbPassword :=  $osDbSettings.password | default $defaultOsDbPassword  }}
+generate_secret_if_needed diracx-os-connection-urls \
+  --from-literal=DIRACX_OS_DB_{{ $osDbName | upper }}='{"hosts": "{{ $osDbUser }}:{{ $osDbPassword }}@{{ $osDbHost }}", "use_ssl": true, "verify_certs": false}'
+generate_secret_if_needed diracx-os-root-connection-urls \
+  --from-literal=DIRACX_OS_DB_{{ $osDbName | upper }}='{"hosts": "{{ $osDbRootUser }}:{{ $osDbRootPassword }}@{{ $osDbHost }}", "use_ssl": true, "verify_certs": false}'
+{{- else }}
+generate_secret_if_needed diracx-os-connection-urls \
+  --from-literal=DIRACX_OS_DB_{{ $osDbName | upper }}='{"hosts": "{{ $defaultOsDbUser }}:{{ $defaultOsDbPassword }}@{{ $defaultOsDbHost }}", "use_ssl": true, "verify_certs": false}'
+generate_secret_if_needed diracx-os-root-connection-urls \
+  --from-literal=DIRACX_OS_DB_{{ $osDbName | upper }}='{"hosts": "{{ $defaultOsDbRootUser }}:{{ $defaultOsDbRootPassword }}@{{ $defaultOsDbHost }}", "use_ssl": true, "verify_certs": false}'
 {{- end }}
 
 {{- end }}

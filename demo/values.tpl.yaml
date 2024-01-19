@@ -41,6 +41,9 @@ diracx:
       JobLoggingDB:
       SandboxMetadataDB:
       TaskQueueDB:
+  osDbs:
+    dbs:
+      JobParametersDB:
 
 minio:
   environment:

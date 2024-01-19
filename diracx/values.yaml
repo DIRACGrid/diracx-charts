@@ -78,7 +78,7 @@ init-sql:
   enabled: true
   env: {}
 
-init-os:
+initOs:
   enabled: true
 
 developer:
@@ -148,10 +148,13 @@ diracx:
   #         password: hush
   #         host: proxyHost:345
 
+  osDbs:
+    default:
+    # -- Which DiracX OpenSearch DBs are used?
+    dbs:
+      # JobParametersDB:
 
-  # -- Which DiracX OpenSearch DBs are used?
-  osDatabases:
-    - JobParametersDB
+
   # -- List of install specifications to pass to pip before launching each container
   pythonModulesToInstall: []
   # Service

@@ -1,0 +1,85 @@
+
+{{- if .Values.initOs.enabled }}
+
+{{/* Define common volume mounts for reusability */}}
+{{- $commonVolumeMounts := list }}
+{{- $commonVolumeMounts = append $commonVolumeMounts (dict "mountPath" "/entrypoint.sh" "name" "container-entrypoint" "subPath" "entrypoint.sh") }}
+{{- if and .Values.developer.enabled .Values.developer.enableCoverage }}
+{{- $commonVolumeMounts = append $commonVolumeMounts (dict "mountPath" "/diracx-coveragerc" "name" "container-entrypoint" "subPath" "coveragerc") }}
+{{- $commonVolumeMounts = append $commonVolumeMounts (dict "mountPath" "/coverage-reports" "name" "coverage-data" "readOnly" false) }}
+{{- end }}
+{{- if and .Values.developer.enabled .Values.developer.mountedPythonModulesToInstall }}
+{{- $commonVolumeMounts = append $commonVolumeMounts (dict "mountPath" .Values.developer.sourcePath "name" "diracx-code-mount" "readOnly" true) }}
+{{- range $module := .Values.developer.mountedPythonModulesToInstall }}
+{{- if $.Values.developer.editableMountedPythonModules }}
+{{- $commonVolumeMounts = append $commonVolumeMounts (dict "mountPath" (printf "%s/%s/src/%s.egg-info" $.Values.developer.sourcePath $module (replace "-" "_" (base $module))) "name" (printf "%s-editable-install" (base $module | lower)) "readOnly" false) }}
+{{- else }}
+{{- $commonVolumeMounts = append $commonVolumeMounts (dict "mountPath" (printf "%s/%s/build" $.Values.developer.sourcePath $module (replace "-" "_" (base $module))) "name" (printf "%s-editable-install" (base $module | lower)) "readOnly" false) }}
+{{- end }}
+{{- end }}
+{{- end }}
+
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{ template "init-os.jobname" . }}
+  namespace: {{ .Release.Namespace }}
+  annotations:
+    "helm.sh/hook": post-install,pre-upgrade
+spec:
+  ttlSecondsAfterFinished: {{ .Values.global.batchJobTTL }}
+  activeDeadlineSeconds: {{ .Values.global.activeDeadlineSeconds }}
+  template:
+    metadata:
+      annotations:
+      {{- range $key, $value := .Values.initOs.annotations }}
+        {{ $key }}: {{ $value | quote }}
+      {{- end }}
+    spec:
+      restartPolicy: Never
+      containers:
+        - name: {{ .Chart.Name }}
+          image: "{{ .Values.global.images.services }}:{{ .Values.global.images.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.global.imagePullPolicy }}
+          command: ["/bin/bash", "/entrypoint.sh"]
+          args: ["/bin/bash", "/scripts/init-os"]
+          volumeMounts:
+            {{ toYaml $commonVolumeMounts | nindent 12 }}
+            - name: scripts
+              mountPath: /scripts
+          env:
+          {{- range $dbName,$dbSettings := .Values.diracx.osDbs.dbs }}
+            - name: DIRACX_OS_DB_{{ $dbName | upper }}
+              valueFrom:
+                secretKeyRef:
+                  name: diracx-os-root-connection-urls
+                  key: DIRACX_OS_DB_{{ $dbName | upper }}
+          {{- end }}
+          envFrom:
+            - secretRef:
+                name: diracx-init-os-secrets
+          resources:
+            {{- toYaml .Values.initOs.resources | nindent 12 }}
+      volumes:
+      - name: scripts
+        configMap:
+          name: {{ template "init-os.fullname" . }}
+      {{- if and .Values.developer.enabled .Values.developer.mountedPythonModulesToInstall }}
+      - name: diracx-code-mount
+        persistentVolumeClaim:
+          claimName: pvc-diracx-code
+      {{- range $module := .Values.developer.mountedPythonModulesToInstall }}
+      - name: {{ base $module | lower }}-editable-install
+        emptyDir:
+          sizeLimit: 5Mi
+      {{- end }}
+      {{- end }}
+      - name: container-entrypoint
+        configMap:
+          name: diracx-container-entrypoint
+      {{- if and .Values.developer.enabled .Values.developer.enableCoverage }}
+      - name: coverage-data
+        persistentVolumeClaim:
+          claimName: pvc-coverage
+      {{- end }}
+{{- end }}

@@ -143,7 +143,8 @@ Depending on the installation you perform, some tasks may be necessary or not. T
 | dex.service.type | string | `"NodePort"` |  |
 | diracx.hostname | string | `""` | Required: The hostname where the webapp/API is running |
 | diracx.manageOSIndices | bool | `true` |  |
-| diracx.osDatabases | list | `["JobParametersDB"]` | Which DiracX OpenSearch DBs are used? |
+| diracx.osDbs.dbs | string | `nil` | Which DiracX OpenSearch DBs are used? |
+| diracx.osDbs.default | string | `nil` |  |
 | diracx.pythonModulesToInstall | list | `[]` | List of install specifications to pass to pip before launching each container |
 | diracx.service.port | int | `8000` |  |
 | diracx.settings | object | "e.g. DIRACX_CONFIG_BACKEND_URL=..." | Settings to inject into the API container via environment variables |
@@ -165,7 +166,6 @@ Depending on the installation you perform, some tasks may be necessary or not. T
 | ingress.enabled | bool | `true` |  |
 | ingress.tlsSecretName | string | `"myingress-cert"` |  |
 | init-cs.enabled | bool | `true` |  |
-| init-os.enabled | bool | `true` |  |
 | init-secrets.enabled | bool | `true` |  |
 | init-secrets.rbac.create | bool | `true` |  |
 | init-secrets.serviceAccount.create | bool | `true` |  |
@@ -173,6 +173,7 @@ Depending on the installation you perform, some tasks may be necessary or not. T
 | init-secrets.serviceAccount.name | string | `nil` |  |
 | init-sql.enabled | bool | `true` |  |
 | init-sql.env | object | `{}` |  |
+| initOs.enabled | bool | `true` |  |
 | minio.consoleIngress.enabled | bool | `false` |  |
 | minio.consoleService.type | string | `"NodePort"` |  |
 | minio.enabled | bool | `true` |  |

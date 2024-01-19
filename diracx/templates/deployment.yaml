@@ -85,18 +85,6 @@ spec:
       {{- end }}
       {{- end }}
 
-      initContainers:
-      {{- if .Values.diracx.manageOSIndices }}
-      - name: create-os-db-indices
-        image: "{{ .Values.global.images.services }}:{{ .Values.global.images.tag | default .Chart.AppVersion }}"
-        imagePullPolicy: {{ .Values.global.imagePullPolicy }}
-        command: ["bash", "/entrypoint.sh"]
-        args: ["python", "-m", "diracx.db", "init-os"]
-        volumeMounts: {{ toYaml $commonVolumeMounts | nindent 10 }}
-        envFrom:
-          - secretRef:
-              name: diracx-init-os-secrets
-      {{- end }}
       containers:
         - name: {{ .Chart.Name }}
           securityContext:
