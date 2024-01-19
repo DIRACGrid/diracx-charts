@@ -59,7 +59,6 @@ securityContext:
 
 #################
 
-# TODO: should only be present during install
 init-cs:
   # Automatically initialize the repository in the CS volume
   enabled: true
@@ -121,12 +120,8 @@ diracx:
     DIRACX_CONFIG_BACKEND_URL: "git+file:///cs_store/initialRepo"
     DIRACX_SERVICE_AUTH_TOKEN_KEY: "file:///signing-key/rsa256.key"
     DIRACX_SERVICE_AUTH_ALLOWED_REDIRECTS: '["http://anything:8000/docs/oauth2-redirect"]'
-  # Should DiracX include an init container which manages the OS DB indices?
-  # TODO: move to pre-upgrade hook
-  manageOSIndices: true
 
 
-  # TODO:
   # If mysql is enabled, you are not allowed
   # to set the username passwords
   sqlDbs:
@@ -136,7 +131,7 @@ diracx:
   #     user: dirac
   #     password: password123
   #     host: sqlHost:123
-  #   # -- Which DiracX MySQL DBs are used?
+  # -- Which DiracX MySQL DBs are used?
     dbs:
   #    AuthDB:
   #    JobDB:
@@ -148,8 +143,11 @@ diracx:
   #         password: hush
   #         host: proxyHost:345
 
+  # If opensearch is enabled, you are not allowed
+  # to set the username passwords
   osDbs:
     default:
+
     # -- Which DiracX OpenSearch DBs are used?
     dbs:
       # JobParametersDB:
@@ -365,13 +363,6 @@ resources:
   # requests:
   #   cpu: 100m
   #   memory: 128Mi
-
-autoscaling:
-  enabled: false
-  minReplicas: 1
-  maxReplicas: 100
-  targetCPUUtilizationPercentage: 80
-  # targetMemoryUtilizationPercentage: 80
 
 nodeSelector: {}
 

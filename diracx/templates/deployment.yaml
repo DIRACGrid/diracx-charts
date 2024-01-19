@@ -5,9 +5,7 @@ metadata:
   labels:
     {{- include "diracx.labels" . | nindent 4 }}
 spec:
-  {{- if not .Values.autoscaling.enabled }}
   replicas: {{ .Values.replicaCount }}
-  {{- end }}
   selector:
     matchLabels:
       {{- include "diracx.selectorLabels" . | nindent 6 }}

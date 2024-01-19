@@ -55,9 +55,6 @@ spec:
                   name: diracx-os-root-connection-urls
                   key: DIRACX_OS_DB_{{ $dbName | upper }}
           {{- end }}
-          envFrom:
-            - secretRef:
-                name: diracx-init-os-secrets
           resources:
             {{- toYaml .Values.initOs.resources | nindent 12 }}
       volumes:

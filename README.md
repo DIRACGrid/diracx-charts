@@ -38,15 +38,19 @@ When running the demo some an `values.yaml` file is created as `.demo/values.yam
 This file can be used with helm to interact with the running demo to make changes to what is running in the cluster.
 
 ```bash
+
+# Show what will be changed by running "helm upgrade"
+# Note: helm diff has a ``bug`` that requires you to specify the existing password
+# https://github.com/databus23/helm-diff/issues/460
+
 export RABBITMQ_PASSWORD=$(kubectl get secret --namespace "default" rabbitmq-secret -o jsonpath="{.data.rabbitmq-password}" | base64 -d)
 export MYSQL_ROOT_PASSWORD=$(kubectl get secret --namespace "default" mysql-secret -o jsonpath="{.data.mysql-root-password}" | base64 -d)
 export MYSQL_PASSWORD=$(kubectl get secret --namespace "default" mysql-secret -o jsonpath="{.data.mysql-password}" | base64 -d)
 
-# Show what will be changed by running "helm upgrade"
 helm diff upgrade diracx-demo  ./diracx --values .demo/values.yaml --set rabbitmq.auth.password=$RABBITMQ_PASSWORD  --set mysql.auth.rootPassword=$MYSQL_ROOT_PASSWORD --set mysql.auth.password=$MYSQL_PASSWORD
 
 # Actually run "helm upgrade" to apply changes
-helm upgrade diracx-demo ./diracx --values .demo/values.yaml --set rabbitmq.auth.password=$RABBITMQ_PASSWORD  --set mysql.auth.rootPassword=$MYSQL_ROOT_PASSWORD --set mysql.auth.password=$MYSQL_PASSWORD
+helm upgrade diracx-demo ./diracx --values .demo/values.yaml
 ```
 
 ## Deploying a custom branch to DIRAC certification
@@ -99,10 +103,6 @@ Depending on the installation you perform, some tasks may be necessary or not. T
 | Key | Type | Default | Description |
 |-----|------|---------|-------------|
 | affinity | object | `{}` |  |
-| autoscaling.enabled | bool | `false` |  |
-| autoscaling.maxReplicas | int | `100` |  |
-| autoscaling.minReplicas | int | `1` |  |
-| autoscaling.targetCPUUtilizationPercentage | int | `80` |  |
 | cert-manager-issuer.enabled | bool | `true` |  |
 | cert-manager.enabled | bool | `true` |  |
 | cert-manager.installCRDs | bool | `true` |  |
@@ -142,14 +142,13 @@ Depending on the installation you perform, some tasks may be necessary or not. T
 | dex.service.ports.http.port | int | `8000` |  |
 | dex.service.type | string | `"NodePort"` |  |
 | diracx.hostname | string | `""` | Required: The hostname where the webapp/API is running |
-| diracx.manageOSIndices | bool | `true` |  |
 | diracx.osDbs.dbs | string | `nil` | Which DiracX OpenSearch DBs are used? |
 | diracx.osDbs.default | string | `nil` |  |
 | diracx.pythonModulesToInstall | list | `[]` | List of install specifications to pass to pip before launching each container |
 | diracx.service.port | int | `8000` |  |
 | diracx.settings | object | "e.g. DIRACX_CONFIG_BACKEND_URL=..." | Settings to inject into the API container via environment variables |
 | diracx.settings.DIRACX_CONFIG_BACKEND_URL | string | `"git+file:///cs_store/initialRepo"` | This corresponds to the basic dirac.cfg which must be present on all the servers TODO: autogenerate all of these |
-| diracx.sqlDbs.dbs | string | `nil` |  |
+| diracx.sqlDbs.dbs | string | `nil` | Which DiracX MySQL DBs are used? |
 | diracx.sqlDbs.default | string | `nil` |  |
 | diracxWeb.service.port | int | `8080` |  |
 | fullnameOverride | string | `""` |  |

@@ -92,6 +92,8 @@ spec:
               value: {{ .Values.developer.urls.diracx }}
             - name: DIRACX_CA_PATH
               value: /ca/demo-ca.pem
+            - name: CHRIS_TEST
+              value: /ca/demo-ca.pem
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
       {{- with .Values.nodeSelector }}

@@ -136,7 +136,8 @@ generate_secret_if_needed diracx-sql-root-connection-urls \
 
 
 
-# If we deploy MySQL ourselves
+{{- if .Values.initOs.enabled }}
+# If we deploy opensearch ourselves
 {{- if .Values.opensearch.enabled }}
 
 # Make sure that there are no default connection settings
@@ -188,5 +189,6 @@ generate_secret_if_needed diracx-os-root-connection-urls \
   --from-literal=DIRACX_OS_DB_{{ $osDbName | upper }}='{"hosts": "{{ $defaultOsDbRootUser }}:{{ $defaultOsDbRootPassword }}@{{ $defaultOsDbHost }}", "use_ssl": true, "verify_certs": false}'
 {{- end }}
 
+{{- end }}
 {{- end }}
 {{- end }}

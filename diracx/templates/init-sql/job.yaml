@@ -55,9 +55,6 @@ spec:
                   name: diracx-sql-root-connection-urls
                   key: DIRACX_DB_URL_{{ $dbName | upper }}
           {{- end }}
-          envFrom:
-            - secretRef:
-                name: diracx-init-mysql-secrets
           resources:
             {{- toYaml $initSQLValues.resources | nindent 12 }}
       volumes:
