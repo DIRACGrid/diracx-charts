@@ -99,7 +99,7 @@ generate_secret_if_needed diracx-sql-root-connection-urls \
 {{- $default_db_user := $.Values.diracx.sqlDbs.default.user }}
 {{- $default_db_password := $.Values.diracx.sqlDbs.default.password }}
 
-{{- range $osDbName, $db_settings := .Values.diracx.sqlDbs.dbs }}
+{{- range $dbName, $db_settings := .Values.diracx.sqlDbs.dbs }}
 
 
 {{- if kindIs "map" $db_settings }}
@@ -108,15 +108,17 @@ generate_secret_if_needed diracx-sql-root-connection-urls \
 {{- $db_root_password :=  $db_settings.rootPassword | default $default_db_root_password  }}
 {{- $db_user := $db_settings.user | default $default_db_user }}
 {{- $db_password :=  $db_settings.password | default $default_db_password  }}
+{{- $db_internal_name :=  $db_settings.internalName | default $dbName  }}
+
 generate_secret_if_needed diracx-sql-connection-urls \
-  --from-literal=DIRACX_DB_URL_{{ $osDbName | upper }}="mysql+aiomysql://{{ $db_user }}:{{ $db_password }}@{{ $db_host }}/{{ $osDbName }}"
+  --from-literal=DIRACX_DB_URL_{{ $dbName | upper }}="mysql+aiomysql://{{ $db_user }}:{{ $db_password }}@{{ $db_host }}/{{ $db_internal_name }}"
 generate_secret_if_needed diracx-sql-root-connection-urls \
-  --from-literal=DIRACX_DB_URL_{{ $osDbName | upper }}="mysql+aiomysql://{{ $db_root_user }}:{{ $db_root_password }}@{{ $db_host }}/{{ $osDbName }}"
+  --from-literal=DIRACX_DB_URL_{{ $dbName | upper }}="mysql+aiomysql://{{ $db_root_user }}:{{ $db_root_password }}@{{ $db_host }}/{{ $db_internal_name }}"
 {{- else }}
 generate_secret_if_needed diracx-sql-connection-urls \
-  --from-literal=DIRACX_DB_URL_{{ $osDbName | upper }}="mysql+aiomysql://{{ $default_db_user }}:{{ $default_db_password }}@{{ $default_db_host }}/{{ $osDbName }}"
+  --from-literal=DIRACX_DB_URL_{{ $dbName | upper }}="mysql+aiomysql://{{ $default_db_user }}:{{ $default_db_password }}@{{ $default_db_host }}/{{ $dbName }}"
 generate_secret_if_needed diracx-sql-root-connection-urls \
-  --from-literal=DIRACX_DB_URL_{{ $osDbName | upper }}="mysql+aiomysql://{{ $default_db_root_user }}:{{ $default_db_root_password }}@{{ $default_db_host }}/{{ $osDbName }}"
+  --from-literal=DIRACX_DB_URL_{{ $dbName | upper }}="mysql+aiomysql://{{ $default_db_root_user }}:{{ $default_db_root_password }}@{{ $default_db_host }}/{{ $dbName }}"
 {{- end }}
 
 {{- end }}

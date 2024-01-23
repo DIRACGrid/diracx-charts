@@ -134,14 +134,16 @@ diracx:
   # -- Which DiracX MySQL DBs are used?
     dbs:
   #    AuthDB:
+  #      internalName: DiracXAuthDB
   #    JobDB:
   #    JobLoggingDB:
   #    SandboxMetadataDB:
   #    TaskQueueDB:
-  #     ProxyDB:
-  #         user: proxyUser
-  #         password: hush
-  #         host: proxyHost:345
+  #    ProxyDB:
+  #      user: proxyUser
+  #      password: hush
+  #      host: proxyHost:345
+
 
   # If opensearch is enabled, you are not allowed
   # to set the username passwords
