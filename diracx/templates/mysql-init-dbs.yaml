@@ -5,7 +5,7 @@ metadata:
 data:
   # Create the databases for DiracX and grant privileges
   init-diracx-dbs.sql: |
-{{- range $dbName := .Values.diracx.mysqlDatabases }}
+{{- range $dbName,$dbSettings := .Values.diracx.sqlDbs.dbs }}
     CREATE DATABASE IF NOT EXISTS `{{ $dbName }}`;
     GRANT SELECT, INSERT, UPDATE, DELETE, INDEX, CREATE TEMPORARY TABLES, LOCK TABLES ON {{ $dbName }}.* TO '{{ $.Values.mysql.auth.username }}'@'%';
 {{- end }}

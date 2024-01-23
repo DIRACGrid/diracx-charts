@@ -1,5 +1,5 @@
-{{- $initSQLValues := index .Values "init-sql" -}}
-{{- if $initSQLValues.enabled }}
+
+{{- if .Values.initOs.enabled }}
 
 {{/* Define common volume mounts for reusability */}}
 {{- $commonVolumeMounts := list }}
@@ -22,7 +22,7 @@
 apiVersion: batch/v1
 kind: Job
 metadata:
-  name: {{ template "init-sql.jobname" . }}
+  name: {{ template "init-os.jobname" . }}
   namespace: {{ .Release.Namespace }}
   annotations:
     "helm.sh/hook": post-install,pre-upgrade
@@ -32,7 +32,7 @@ spec:
   template:
     metadata:
       annotations:
-      {{- range $key, $value := $initSQLValues.annotations }}
+      {{- range $key, $value := .Values.initOs.annotations }}
         {{ $key }}: {{ $value | quote }}
       {{- end }}
     spec:
@@ -42,25 +42,25 @@ spec:
           image: "{{ .Values.global.images.services }}:{{ .Values.global.images.tag | default .Chart.AppVersion }}"
           imagePullPolicy: {{ .Values.global.imagePullPolicy }}
           command: ["/bin/bash", "/entrypoint.sh"]
-          args: ["/bin/bash", "/scripts/init-sql"]
+          args: ["/bin/bash", "/scripts/init-os"]
           volumeMounts:
             {{ toYaml $commonVolumeMounts | nindent 12 }}
             - name: scripts
               mountPath: /scripts
           env:
-          {{- range $dbName,$dbSettings := .Values.diracx.sqlDbs.dbs }}
-            - name: DIRACX_DB_URL_{{ $dbName | upper }}
+          {{- range $dbName,$dbSettings := .Values.diracx.osDbs.dbs }}
+            - name: DIRACX_OS_DB_{{ $dbName | upper }}
               valueFrom:
                 secretKeyRef:
-                  name: diracx-sql-root-connection-urls
-                  key: DIRACX_DB_URL_{{ $dbName | upper }}
+                  name: diracx-os-root-connection-urls
+                  key: DIRACX_OS_DB_{{ $dbName | upper }}
           {{- end }}
           resources:
-            {{- toYaml $initSQLValues.resources | nindent 12 }}
+            {{- toYaml .Values.initOs.resources | nindent 12 }}
       volumes:
       - name: scripts
         configMap:
-          name: {{ template "init-sql.fullname" . }}
+          name: {{ template "init-os.fullname" . }}
       {{- if and .Values.developer.enabled .Values.developer.mountedPythonModulesToInstall }}
       - name: diracx-code-mount
         persistentVolumeClaim:

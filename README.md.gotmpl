@@ -35,11 +35,24 @@ When running the demo some an `values.yaml` file is created as `.demo/values.yam
 This file can be used with helm to interact with the running demo to make changes to what is running in the cluster.
 
 ```bash
+
+
 # Show what will be changed by running "helm upgrade"
-helm diff upgrade diracx-demo ./diracx --values .demo/values.yaml
+# Note: helm diff has a ``bug`` that requires you to specify the existing password
+# https://github.com/databus23/helm-diff/issues/460
+
+export RABBITMQ_PASSWORD=$(kubectl get secret --namespace "default" rabbitmq-secret -o jsonpath="{.data.rabbitmq-password}" | base64 -d)
+export MYSQL_ROOT_PASSWORD=$(kubectl get secret --namespace "default" mysql-secret -o jsonpath="{.data.mysql-root-password}" | base64 -d)
+export MYSQL_PASSWORD=$(kubectl get secret --namespace "default" mysql-secret -o jsonpath="{.data.mysql-password}" | base64 -d)
+
+helm diff upgrade diracx-demo  ./diracx --values .demo/values.yaml --set rabbitmq.auth.password=$RABBITMQ_PASSWORD  --set mysql.auth.rootPassword=$MYSQL_ROOT_PASSWORD --set mysql.auth.password=$MYSQL_PASSWORD
+
 # Actually run "helm upgrade" to apply changes
 helm upgrade diracx-demo ./diracx --values .demo/values.yaml
 ```
+
+
+
 
 ## Deploying a custom branch to DIRAC certification
 
@@ -63,6 +76,18 @@ diracx:
 ## Deploying in production
 
 TODO
+
+
+## Workflow
+
+4 types of installations:
+* demo/dev: we install everything and configure everything with pre-configured values
+* prod: you already have a DIRAC installation with it's own DBs and everything, so you want to create a cluster, but bridge on existing external resources (like DBs)
+* New: you start from absolutely nothing (no DIRAC), and you want to install all the dependencies
+* New without dependencies: you start with nothing, but you want to use externally managed resources (like DB provided by your IT service)
+
+Depending on the installation you perform, some tasks may be necessary or not. The bottom line is that to simplify the various cases, we want to be able to always run the initialization steps (like DB initialization, or CS initialization) but they should be adiabatic and non destructive.
+
 
 {{ template "chart.requirementsSection" . }}
 

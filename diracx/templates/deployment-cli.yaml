@@ -1,35 +1,28 @@
+{{ if .Values.developer.enabled  }}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ include "diracx.fullname" . }}
+  name: {{ include "diracx.fullname" . }}-cli
   labels:
     {{- include "diracx.labels" . | nindent 4 }}
 spec:
-  replicas: {{ .Values.replicaCount }}
+  replicas: 1
   selector:
     matchLabels:
-      {{- include "diracx.selectorLabels" . | nindent 6 }}
+      {{- include "diracxCli.selectorLabels" . | nindent 6 }}
   template:
     metadata:
       annotations:
         {{- with .Values.podAnnotations }}
           {{- toYaml . | nindent 8 }}
         {{- end }}
-        checksum/settings: {{ include (print $.Template.BasePath "/secrets.yaml") . | sha256sum }}
-        checksum/init-settings: {{ include (print $.Template.BasePath "/init-secrets/configmap.yaml") . | sha256sum }}
         checksum/entrypoint: {{ include (print $.Template.BasePath "/diracx-container-entrypoint.yaml") . | sha256sum }}
       labels:
-        {{- include "diracx.selectorLabels" . | nindent 8 }}
+        {{- include "diracxCli.selectorLabels" . | nindent 8 }}
     spec:
       {{- with .Values.imagePullSecrets }}
       imagePullSecrets:
         {{- toYaml . | nindent 8 }}
-      {{- end }}
-      {{- if .Values.developer.ipAlias }}
-      hostAliases:
-        - ip: {{ .Values.developer.ipAlias }}
-          hostnames:
-          - {{ required "diracx.hostname must be set!" .Values.diracx.hostname }}
       {{- end }}
       serviceAccountName: {{ include "diracx.serviceAccountName" . }}
       securityContext:
@@ -38,7 +31,7 @@ spec:
         - name: cs-store-mount
           persistentVolumeClaim:
             claimName: pvc-cs-store
-        {{- if and .Values.developer.enabled .Values.developer.mountedPythonModulesToInstall }}
+        {{- if .Values.developer.mountedPythonModulesToInstall }}
         - name: diracx-code-mount
           persistentVolumeClaim:
             claimName: pvc-diracx-code
@@ -51,13 +44,13 @@ spec:
         - name: container-entrypoint
           configMap:
             name: diracx-container-entrypoint
-        - name: signing-key-mount
+        - name: ca-mount
           secret:
-            secretName: diracx-token-signing-key
+            secretName: root-secret
             items:
-            - key: rsa256.key
-              path: rsa256.key
-        {{- if and .Values.developer.enabled .Values.developer.enableCoverage }}
+            - key: tls.crt
+              path: demo-ca.pem
+        {{- if .Values.developer.enableCoverage }}
         - name: coverage-data
           persistentVolumeClaim:
             claimName: pvc-coverage
@@ -66,9 +59,9 @@ spec:
       {{/* Define common volume mounts for reusability */}}
       {{- $commonVolumeMounts := list }}
       {{- $commonVolumeMounts = append $commonVolumeMounts (dict "mountPath" "/cs_store" "name" "cs-store-mount" "readOnly" false) }}
-      {{- $commonVolumeMounts = append $commonVolumeMounts (dict "mountPath" "/signing-key" "name" "signing-key-mount" "readOnly" false) }}
+      {{- $commonVolumeMounts = append $commonVolumeMounts (dict "mountPath" "/ca" "name" "ca-mount" "readOnly" false) }}
       {{- $commonVolumeMounts = append $commonVolumeMounts (dict "mountPath" "/entrypoint.sh" "name" "container-entrypoint" "subPath" "entrypoint.sh") }}
-      {{- if and .Values.developer.enabled .Values.developer.enableCoverage }}
+      {{- if .Values.developer.enableCoverage }}
       {{- $commonVolumeMounts = append $commonVolumeMounts (dict "mountPath" "/diracx-coveragerc" "name" "container-entrypoint" "subPath" "coveragerc") }}
       {{- $commonVolumeMounts = append $commonVolumeMounts (dict "mountPath" "/coverage-reports" "name" "coverage-data" "readOnly" false) }}
       {{- end }}
@@ -84,54 +77,23 @@ spec:
       {{- end }}
 
       containers:
-        - name: {{ .Chart.Name }}
+        - name: {{ .Chart.Name }}-cli
           securityContext:
             {{- toYaml .Values.securityContext | nindent 12 }}
-          image: "{{ .Values.global.images.services }}:{{ .Values.global.images.tag | default .Chart.AppVersion }}"
+          image: "{{ .Values.global.images.client }}:{{ .Values.global.images.tag | default .Chart.AppVersion }}"
           imagePullPolicy: {{ .Values.global.imagePullPolicy }}
-          ports:
-            - name: http
-              containerPort: {{ .Values.diracx.service.port }}
-              protocol: TCP
-          livenessProbe:
-            httpGet:
-              path: /api/docs/
-              port: http
-          readinessProbe:
-            httpGet:
-              path: /api/docs/
-              port: http
-          startupProbe:
-            httpGet:
-              path: /api/docs/
-              port: http
-            failureThreshold: 30
-            periodSeconds: 5
           command: ["bash", "/entrypoint.sh"]
           args:
-            - uvicorn
-            - --factory
-            - diracx.routers:create_app
-            - --host=0.0.0.0
-            - --port={{ .Values.diracx.service.port }}
-            - "--proxy-headers"
-            - "--forwarded-allow-ips=*"
-          {{- if and .Values.developer.enabled .Values.developer.autoReload }}
-            - "--reload"
-            {{- if .Values.developer.mountedPythonModulesToInstall }}
-            - "--reload-dir={{ .Values.developer.sourcePath }}"
-            {{- end }}
-          {{- end }}
+            - sleep
+            - "2592000" # one month
           volumeMounts: {{ toYaml $commonVolumeMounts | nindent 12 }}
-          envFrom:
-            # - configMapRef:
-            #     name: diracx-env-config
-            - secretRef:
-                name: diracx-secrets
-            {{- if .Values.diracx.sqlDbs.dbs }}
-            - secretRef:
-                name: diracx-sql-connection-urls
-            {{- end }}
+          env:
+            - name: DIRACX_URL
+              value: {{ .Values.developer.urls.diracx }}
+            - name: DIRACX_CA_PATH
+              value: /ca/demo-ca.pem
+            - name: CHRIS_TEST
+              value: /ca/demo-ca.pem
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
       {{- with .Values.nodeSelector }}
@@ -146,3 +108,6 @@ spec:
       tolerations:
         {{- toYaml . | nindent 8 }}
       {{- end }}
+
+
+{{ end }}
