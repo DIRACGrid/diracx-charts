@@ -450,17 +450,17 @@ else
     "${demo_dir}/kubectl" get secret/root-secret -o json | jq -r '.data."tls.crt"' | base64 -d > "${demo_dir}/demo-ca.pem"
 
     printf "%b Creating initial CS content ...\n" ${UNICORN_EMOJI}
-    "${demo_dir}/kubectl" exec -it deployments/diracx-demo-cli -- bash /entrypoint.sh dirac internal add-vo /cs_store/initialRepo \
+    "${demo_dir}/kubectl" exec deployments/diracx-demo-cli -- bash /entrypoint.sh dirac internal add-vo /cs_store/initialRepo \
      --vo="diracAdmin" \
      --idp-url="http://${machine_hostname}:32002" \
      --idp-client-id="d396912e-2f04-439b-8ae7-d8c585a34790" \
-     --default-group="admin"
+     --default-group="admin" >> /tmp/init_cs.log
 
-    "${demo_dir}/kubectl" exec -it deployments/diracx-demo-cli -- bash /entrypoint.sh  dirac internal add-user /cs_store/initialRepo \
+    "${demo_dir}/kubectl" exec deployments/diracx-demo-cli -- bash /entrypoint.sh  dirac internal add-user /cs_store/initialRepo \
      --vo="diracAdmin" \
      --sub="EgVsb2NhbA" \
      --preferred-username="admin" \
-     --group="admin"
+     --group="admin" >> /tmp/init_cs.log
 
 
     # This file is used by the various CI to test for success
