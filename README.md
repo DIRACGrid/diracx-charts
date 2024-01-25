@@ -150,30 +150,12 @@ Depending on the installation you perform, some tasks may be necessary or not. T
 | diracx.osDbs.dbs | string | `nil` | Which DiracX OpenSearch DBs are used? |
 | diracx.osDbs.default | string | `nil` |  |
 | diracx.pythonModulesToInstall | list | `[]` | List of install specifications to pass to pip before launching each container |
-| diracx.manageOSIndices | bool | `true` |  |
-| diracx.manageSQLSchema | bool | `true` |  |
-| diracx.mysqlDatabases[0] | string | `"AuthDB"` |  |
-| diracx.mysqlDatabases[1] | string | `"JobDB"` |  |
-| diracx.mysqlDatabases[2] | string | `"JobLoggingDB"` |  |
-| diracx.mysqlDatabases[3] | string | `"SandboxMetadataDB"` |  |
-| diracx.mysqlDatabases[4] | string | `"TaskQueueDB"` |  |
-| diracx.osDatabases[0] | string | `"JobParametersDB"` |  |
-| diracx.pythonModulesToInstall | list | `[]` |  |
 | diracx.service.port | int | `8000` |  |
 | diracx.settings | object | "e.g. DIRACX_CONFIG_BACKEND_URL=..." | Settings to inject into the API container via environment variables |
 | diracx.settings.DIRACX_CONFIG_BACKEND_URL | string | `"git+file:///cs_store/initialRepo"` | This corresponds to the basic dirac.cfg which must be present on all the servers TODO: autogenerate all of these |
 | diracx.sqlDbs.dbs | string | `nil` | Which DiracX MySQL DBs are used? |
 | diracx.sqlDbs.default | string | `nil` |  |
 | diracxWeb.service.port | int | `8080` |  |
-| diracx.service.type | string | `"ClusterIP"` |  |
-| diracx.settings.DIRACX_CONFIG_BACKEND_URL | string | `"git+file:///cs_store/initialRepo"` |  |
-| diracx.settings.DIRACX_LEGACY_EXCHANGE_HASHED_API_KEY | string | `"07cddf6948d316ac9d186544dc3120c4c6697d8f994619665985c0a5bf76265a"` |  |
-| diracx.settings.DIRACX_SERVICE_AUTH_ALLOWED_REDIRECTS | string | `"[\"http://anything:8000/docs/oauth2-redirect\"]"` |  |
-| diracx.settings.DIRACX_SERVICE_AUTH_TOKEN_KEY | string | `"file:///signing-key/rsa256.key"` |  |
-| diracxWeb.image.repository | string | `"ghcr.io/diracgrid/diracx-web/static"` |  |
-| diracxWeb.image.tag | string | `"latest"` |  |
-| diracxWeb.service.port | int | `8080` |  |
-| diracxWeb.service.type | string | `"ClusterIP"` |  |
 | elasticsearch."discovery.seed_hosts"[0] | string | `"elasticsearch-master-headless"` |  |
 | elasticsearch.clusterHealthCheckParams | string | `"local=true"` |  |
 | elasticsearch.enabled | bool | `true` |  |
@@ -187,7 +169,6 @@ Depending on the installation you perform, some tasks may be necessary or not. T
 | elasticsearch.volumeClaimTemplate.accessModes[0] | string | `"ReadWriteOnce"` |  |
 | elasticsearch.volumeClaimTemplate.resources.requests.storage | string | `"100M"` |  |
 | elasticsearch.volumeClaimTemplate.storageClassName | string | `"standard"` |  |
-
 | fullnameOverride | string | `""` |  |
 | global.activeDeadlineSeconds | int | `900` | timeout for job deadlines |
 | global.batchJobTTL | int | `600` | How long should batch jobs be retained after completing? |
@@ -222,8 +203,6 @@ Depending on the installation you perform, some tasks may be necessary or not. T
 | grafana.service.nodePort | int | `32004` |  |
 | grafana.service.port | int | `32004` |  |
 | grafana.service.type | string | `"NodePort"` |  |
-| image.repository | string | `"ghcr.io/diracgrid/diracx/server"` |  |
-| image.tag | string | `"latest"` |  |
 | ingress.annotations | object | `{}` |  |
 | ingress.className | string | `"nginx"` |  |
 | ingress.enabled | bool | `true` |  |
@@ -236,15 +215,7 @@ Depending on the installation you perform, some tasks may be necessary or not. T
 | init-secrets.serviceAccount.name | string | `nil` |  |
 | init-sql.enabled | bool | `true` |  |
 | init-sql.env | object | `{}` |  |
-<<<<<<< HEAD
 | initOs.enabled | bool | `true` |  |
-| ingress.hosts[0].paths[0].backend.service.name | string | `"diracx-demo"` |  |
-| ingress.hosts[0].paths[0].backend.service.port.number | int | `8000` |  |
-| ingress.hosts[0].paths[0].path | string | `"/"` |  |
-| ingress.hosts[0].paths[0].pathType | string | `"Prefix"` |  |
-| ingress.tls | list | `[]` |  |
-=======
->>>>>>> 5932b5e (regenerate)
 | jaeger.agent.enabled | bool | `false` |  |
 | jaeger.allInOne.enabled | bool | `true` |  |
 | jaeger.collector.enabled | bool | `false` |  |
@@ -323,20 +294,13 @@ Depending on the installation you perform, some tasks may be necessary or not. T
 | rabbitmq.enabled | bool | `true` |  |
 | rabbitmq.podSecurityContext.enabled | bool | `false` |  |
 | replicaCount | int | `1` |  |
-| resources | object | `{}` |  |
 | securityContext | object | `{}` |  |
-<<<<<<< HEAD
-| serviceAccount.annotations | object | `{}` | Annotations to add to the service account |
-| serviceAccount.create | bool | `true` | Specifies whether a service account should be created |
-| serviceAccount.name | string | `""` | The name of the service account to use. If not set and create is true, a name is generated using the fullname template |
-=======
 | service.port | int | `8000` |  |
 | service.tls | list | `[]` |  |
 | service.type | string | `"ClusterIP"` |  |
-| serviceAccount.annotations | object | `{}` |  |
-| serviceAccount.create | bool | `true` |  |
-| serviceAccount.name | string | `""` |  |
->>>>>>> 5932b5e (regenerate)
+| serviceAccount.annotations | object | `{}` | Annotations to add to the service account |
+| serviceAccount.create | bool | `true` | Specifies whether a service account should be created |
+| serviceAccount.name | string | `""` | The name of the service account to use. If not set and create is true, a name is generated using the fullname template |
 | tolerations | list | `[]` |  |
 
 ----------------------------------------------
