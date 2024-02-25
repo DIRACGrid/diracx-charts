@@ -52,6 +52,9 @@ function generate_secret_if_needed(){
 ssh-keygen -P '' -trsa -b4096 -mPEM -f"$PWD/rsa256.key"
 generate_secret_if_needed diracx-token-signing-key --from-file "$PWD/rsa256.key"
 
+# Generate the token state key (to safely pass information between authorize/device requests)
+generate_secret_if_needed diracx-dynamic-secrets --from-literal=DIRACX_SERVICE_AUTH_STATE_KEY=$(head -c 32 /dev/urandom | base64)
+
 {{- if .Values.rabbitmq.enabled }}
 # Generate the secrets for rabbitmq
 generate_secret_if_needed {{ .Values.rabbitmq.auth.existingPasswordSecret }} --from-literal=rabbitmq-password=$(gen_random 'a-zA-Z0-9' 32)

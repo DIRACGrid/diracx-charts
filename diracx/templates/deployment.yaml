@@ -128,6 +128,8 @@ spec:
             #     name: diracx-env-config
             - secretRef:
                 name: diracx-secrets
+            - secretRef:
+                name: diracx-dynamic-secrets
             {{- if .Values.diracx.sqlDbs.dbs }}
             - secretRef:
                 name: diracx-sql-connection-urls
