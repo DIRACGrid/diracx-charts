@@ -56,7 +56,7 @@ function space_monitor(){
 function check_hostname(){
   # Check that the hostname resolves to an IP address
   # dig doesn't consider the effect of /etc/hosts so we use ping instead
-  if ! ip_address=$(ping -c 1 "$1" | grep -Eo '([0-9]{1,3}\.){3}[0-9]{1,3}' | head -n 1); then
+  if ! ip_address=$(ping -4 -c 1 "$1" | grep -Eo '([0-9]{1,3}\.){3}[0-9]{1,3}' | head -n 1); then
     printf "%b ping command exited with a non-zero exit code\n" ${SKULL_EMOJI}
     return 1
   fi
@@ -370,7 +370,7 @@ if ! check_hostname "${machine_hostname}"; then
     machine_ip=$(ifconfig | grep 'inet ' | awk '{ print $2 }' | grep -v '^127' | head -n 1 | cut -d '/' -f 1)
     # We use nip.io to have an actual DNS name and be allowed to specify this in
     # the ingress host
-    machine_hostname="${machine_hostname}.nip.io"
+    machine_hostname="${machine_ip}.nip.io"
     if ! check_hostname "${machine_hostname}"; then
       echo "Failed to find an appropriate hostname for the demo."
       exit 1
