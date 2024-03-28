@@ -1,0 +1,37 @@
+{{- if .Values.indigoiam.enabled }}
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: indigo-iam-init
+  namespace: {{ .Release.Namespace }}
+  annotations:
+    "helm.sh/hook": post-install,post-upgrade
+    "helm.sh/hook-weight": "1"
+spec:
+  ttlSecondsAfterFinished: {{ .Values.global.batchJobTTL }}
+  activeDeadlineSeconds: {{ .Values.global.activeDeadlineSeconds }}
+  template:
+    spec:
+      containers:
+        - name: diracx-base
+          image: ghcr.io/diracgrid/diracx/base:latest
+          imagePullPolicy: {{ .Values.global.imagePullPolicy }}
+          command: ["/bin/bash", "/entrypoint.sh"]
+          args: ["python", "/scripts/init-iam.py"]
+          env:
+            - name: CONFIG_PATH
+              value: /config/config.yaml
+          volumeMounts:
+          - name: scripts
+            mountPath: /scripts
+          - name: config
+            mountPath: /config
+      volumes:
+      - name: scripts
+        configMap:
+          name: indigo-iam-init-script
+      - name: config
+        configMap:
+          name: indigo-iam-config
+      restartPolicy: Never
+{{- end }}

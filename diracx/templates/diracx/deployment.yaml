@@ -15,9 +15,9 @@ spec:
         {{- with .Values.podAnnotations }}
           {{- toYaml . | nindent 8 }}
         {{- end }}
-        checksum/settings: {{ include (print $.Template.BasePath "/secrets.yaml") . | sha256sum }}
-        checksum/init-settings: {{ include (print $.Template.BasePath "/init-secrets/configmap.yaml") . | sha256sum }}
-        checksum/entrypoint: {{ include (print $.Template.BasePath "/diracx-container-entrypoint.yaml") . | sha256sum }}
+        checksum/settings: {{ include (print $.Template.BasePath "/diracx/secrets.yaml") . | sha256sum }}
+        checksum/init-settings: {{ include (print $.Template.BasePath "/diracx/init-secrets/configmap.yaml") . | sha256sum }}
+        checksum/entrypoint: {{ include (print $.Template.BasePath "/diracx/diracx-container-entrypoint.yaml") . | sha256sum }}
       labels:
         {{- include "diracx.selectorLabels" . | nindent 8 }}
     spec:

@@ -1,0 +1,20 @@
+{{- if .Values.indigoiam.enabled }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: indigo-iam-init-script
+  namespace: {{ .Release.Namespace }}
+data:
+  init-iam.py: |
+    {{- include (print $.Template.BasePath "/tests/indigo-iam/init-iam/_init-iam.py.tpl") . | nindent 4 }}
+
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: indigo-iam-config
+  namespace: {{ .Release.Namespace }}
+data:
+  config.yaml: |
+    {{ toYaml .Values.indigoiam.config | nindent 4 }}
+{{- end }}
