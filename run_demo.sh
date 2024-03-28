@@ -250,6 +250,8 @@ if [ ${#python_pkg_names[@]} -gt 0 ]; then
 fi
 if [ "${node_pkg_name}" != "" ]; then
   printf "%b Found Node package directories for: %s\n" ${UNICORN_EMOJI} "${node_pkg_name}"
+  # Ensure node_modules and .next exist, else create them, as volumes will be mounted there
+  mkdir -p "${node_pkg_name}"/node_modules "${node_pkg_name}"/.next
 fi
 
 trap "cleanup" EXIT
