@@ -54,7 +54,6 @@ spec:
             - mountPath: "{{ .Values.developer.sourcePath }}/{{ .Values.developer.nodeModuleToInstall }}"
               name: "diracx-web-code-mount"
               subPath: "{{ .Values.developer.nodeModuleToInstall }}"
-              readOnly: true
             - mountPath: "{{ $nodeModulePath }}/node_modules"
               name: "diracx-web-scratch-node-modules"
             - mountPath: "{{ $nodeModulePath }}/.next"
@@ -85,13 +84,15 @@ spec:
               port: http
           {{- if $nodeDevInstall }}
           command: ["npm", "run", "dev", "--prefix", "{{ $nodeModulePath }}", "--", "-p", "{{ .Values.diracxWeb.service.port }}"]
+          env:
+            - name: NEXT_TELEMETRY_DISABLED
+              value: "1"
           {{- end }}
           volumeMounts:
           {{- if $nodeDevInstall }}
             - mountPath: "{{ .Values.developer.sourcePath }}/{{ .Values.developer.nodeModuleToInstall }}"
               name: "diracx-web-code-mount"
               subPath: "{{ .Values.developer.nodeModuleToInstall }}"
-              readOnly: true
             - mountPath: "{{ $nodeModulePath }}/node_modules"
               name: "diracx-web-scratch-node-modules"
             - mountPath: "{{ $nodeModulePath }}/.next"

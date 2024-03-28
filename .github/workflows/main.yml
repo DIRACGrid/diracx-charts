@@ -61,9 +61,10 @@ jobs:
       run: |
         git clone https://github.com/DIRACGrid/diracx.git /tmp/diracx
         git clone https://github.com/DIRACGrid/DIRAC.git /tmp/DIRAC
+        git clone https://github.com/DIRACGrid/diracx-web.git /tmp/diracx-web
     - name: Start demo
       run: |
-        ./run_demo.sh --exit-when-done /tmp/diracx /tmp/DIRAC
+        ./run_demo.sh --exit-when-done /tmp/diracx /tmp/DIRAC /tmp/diracx-web
     - name: Debugging information
       run: |
         export KUBECONFIG=$PWD/.demo/kube.conf

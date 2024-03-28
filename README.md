@@ -113,7 +113,7 @@ Depending on the installation you perform, some tasks may be necessary or not. T
 | developer.ipAlias | string | `nil` | The IP that the demo is running at |
 | developer.localCSPath | string | `"/local_cs_store"` | If set, mount the CS stored localy instead of initializing a default one |
 | developer.mountedPythonModulesToInstall | list | `[]` | List of packages which are mounted into developer.sourcePath and should be installed with pip install SOURCEPATH/... |
-| developer.nodeImage | string | `"node:16-alpine"` | Image to use for the webapp if nodeModuleToInstall is set |
+| developer.nodeImage | string | `"node:alpine"` | Image to use for the webapp if nodeModuleToInstall is set |
 | developer.nodeModuleToInstall | string | `nil` | List of node modules to install |
 | developer.offline | bool | `false` | Make it possible to launch the demo without having an internet connection |
 | developer.sourcePath | string | `"/diracx_source"` | Path from which to mount source of DIRACX |
