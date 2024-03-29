@@ -97,7 +97,7 @@ developer:
   # -- List of node modules to install
   nodeModuleToInstall: null
   # -- Image to use for the webapp if nodeModuleToInstall is set
-  nodeImage: node:16-alpine
+  nodeImage: node:alpine
   # -- Enable collection of coverage reports (intended for CI usage only)
   enableCoverage: false
   # -- Enable automatic reloading inside uvicorn when the sources change
