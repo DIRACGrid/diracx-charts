@@ -1,5 +1,5 @@
-{{- $nodeDevInstall := and .Values.developer.enabled (empty .Values.developer.nodeModuleToInstall | not) -}}
-{{- $nodeModulePath := $nodeDevInstall | ternary (printf "%s/%s" .Values.developer.sourcePath .Values.developer.nodeModuleToInstall) "" -}}
+{{- $nodeDevInstall := and .Values.developer.enabled (empty .Values.developer.mountedNodeModuleToInstall | not) -}}
+{{- $nodeMountedModulePath := $nodeDevInstall | ternary (printf "%s/%s" .Values.developer.sourcePath .Values.developer.mountedNodeModuleToInstall) "" -}}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -19,6 +19,7 @@ spec:
         {{- end }}
       labels:
         {{- include "diracxWeb.selectorLabels" . | nindent 8 }}
+
     spec:
       {{- with .Values.imagePullSecrets }}
       imagePullSecrets:
@@ -29,46 +30,96 @@ spec:
         {{- toYaml .Values.podSecurityContext | nindent 8 }}
       volumes:
         {{- if $nodeDevInstall }}
+        # This volume is used to mount the source code of the diracx-web repository
         - name: diracx-web-code-mount
           persistentVolumeClaim:
             claimName: pvc-diracx-code
+        # These volumes override the node_modules and .next directories to
+        # start from a clean state
         - name: diracx-web-scratch-node-modules
           emptyDir:
             sizeLimit: 1Gi
         - name: diracx-web-scratch-next
           emptyDir:
             sizeLimit: 1Gi
+        {{- else }}
+        {{- if .Values.diracxWeb.branch }}
+        # This volume is used to clone the specified diracx-web repository branch
+        - name: diracx-web-code
+          emptyDir:
+            sizeLimit: 2Gi
+        # This volume is used to store the static files of the diracx-web repository
+        - name: diracx-web-static-files
+          emptyDir:
+            sizeLimit: 2Gi
+        {{- end }}
         {{- end }}
 
       initContainers:
-      {{- if $nodeDevInstall }}
-        - name: install-deps
+        {{- if and (not $nodeDevInstall) .Values.diracxWeb.branch }}
+        # This init container is used to clone the specified diracx-web repository branch
+        - name: clone-diracx-web
+          image: ghcr.io/diracgrid/diracx/secret-generation:latest
+          imagePullPolicy: {{ .Values.global.imagePullPolicy }}
+          command: ["/bin/sh", "-c"]
+          args:
+            - |
+              # Clone the specified diracx-web repository branch
+              apk add --no-cache git && \
+              git clone --single-branch -b {{ .Values.diracxWeb.branch }} {{ required "A valid .Values.diracxWeb.repoURL is required!" .Values.diracxWeb.repoURL }} /diracx-web;
+
+          volumeMounts:
+            - mountPath: "/diracx-web"
+              name: "diracx-web-code"
+        {{- end }}
+
+        {{- if or $nodeDevInstall .Values.diracxWeb.branch }}
+        # This init container is used to install the node module
+        - name: install-diracx-web
           image: {{ .Values.developer.nodeImage }}
           imagePullPolicy: {{ .Values.global.imagePullPolicy }}
-          # We use "npm ci" instead of "npm install" so it will use the package-lock.json file
-          # rather than using the package.json file. Using package.json would fail as the mount
-          # is read-only so package-lock.json can't be edited.
+
+          {{- if $nodeDevInstall }}
+          # Install the mounted node module
           command: ["npm", "ci"]
-          workingDir: {{ $nodeModulePath }}
+          workingDir: "{{ $nodeMountedModulePath }}"
+
+          # These volumes contain the source code of the mounted diracx-web directory,
+          # minus the node_modules and next directories
           volumeMounts:
-            - mountPath: "{{ .Values.developer.sourcePath }}/{{ .Values.developer.nodeModuleToInstall }}"
+            - mountPath: "{{ $nodeMountedModulePath }}"
               name: "diracx-web-code-mount"
-              subPath: "{{ .Values.developer.nodeModuleToInstall }}"
-            - mountPath: "{{ $nodeModulePath }}/node_modules"
+              subPath: "{{ .Values.developer.mountedNodeModuleToInstall }}"
+            - mountPath: "{{ $nodeMountedModulePath }}/node_modules"
               name: "diracx-web-scratch-node-modules"
-            - mountPath: "{{ $nodeModulePath }}/.next"
+            - mountPath: "{{ $nodeMountedModulePath }}/.next"
               name: "diracx-web-scratch-next"
-      {{- end }}
+          {{- else }}
+          # Install the diracx-web repository, specific branch
+          command: ["/bin/sh", "-c"]
+          args:
+            - |
+              # Install dependencies and build the app
+              npm ci && \
+              NEXT_TELEMETRY_DISABLED=1 npm run build && \
+              mv out/* /app/
+          workingDir: "/diracx-web"
+
+          volumeMounts:
+            # This volume contains the source code of the cloned diracx-web repository
+            - mountPath: "/diracx-web"
+              name: "diracx-web-code"
+            # This volume will contain the static files of the diracx-web repository
+            - mountPath: "/app"
+              name: "diracx-web-static-files"
+          {{- end }}
+        {{- end }}
+
 
       containers:
         - name: {{ .Chart.Name }}-web
           securityContext:
             {{- toYaml .Values.securityContext | nindent 12 }}
-          {{- if $nodeDevInstall }}
-          image: {{ .Values.developer.nodeImage }}
-          {{- else }}
-          image: {{ .Values.global.images.web.repository }}:{{ .Values.global.images.web.tag }}
-          {{- end }}
           imagePullPolicy: {{ .Values.global.imagePullPolicy }}
           ports:
             - name: http
@@ -82,21 +133,32 @@ spec:
             httpGet:
               path: /
               port: http
+
           {{- if $nodeDevInstall }}
-          command: ["npm", "run", "dev", "--prefix", "{{ $nodeModulePath }}", "--", "-p", "{{ .Values.diracxWeb.service.port }}"]
+          # Start the node module in development mode
+          image: {{ .Values.developer.nodeImage }}
+          command: ["npm", "run", "dev", "--prefix", "{{ $nodeMountedModulePath }}", "--", "-p", "{{ .Values.diracxWeb.service.port }}"]
           env:
             - name: NEXT_TELEMETRY_DISABLED
               value: "1"
-          {{- end }}
           volumeMounts:
-          {{- if $nodeDevInstall }}
-            - mountPath: "{{ .Values.developer.sourcePath }}/{{ .Values.developer.nodeModuleToInstall }}"
+            - mountPath: "{{ $nodeMountedModulePath }}"
               name: "diracx-web-code-mount"
-              subPath: "{{ .Values.developer.nodeModuleToInstall }}"
-            - mountPath: "{{ $nodeModulePath }}/node_modules"
+              subPath: "{{ .Values.developer.mountedNodeModuleToInstall }}"
+            - mountPath: "{{ $nodeMountedModulePath }}/node_modules"
               name: "diracx-web-scratch-node-modules"
-            - mountPath: "{{ $nodeModulePath }}/.next"
+            - mountPath: "{{ $nodeMountedModulePath }}/.next"
               name: "diracx-web-scratch-next"
+          {{- else }}
+          # Start the node module in production mode
+          image: {{ .Values.global.images.web.repository }}:{{ .Values.global.images.web.tag }}
+
+          {{ if .Values.diracxWeb.branch }}
+          # Start it from the specified branch
+          volumeMounts:
+            - mountPath: "/usr/share/nginx/html"
+              name: "diracx-web-static-files"
+          {{- end }}
           {{- end }}
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
