@@ -150,8 +150,8 @@ Depending on the installation you perform, some tasks may be necessary or not. T
 | diracx.settings.DIRACX_CONFIG_BACKEND_URL | string | `"git+file:///cs_store/initialRepo"` | This corresponds to the basic dirac.cfg which must be present on all the servers TODO: autogenerate all of these |
 | diracx.sqlDbs.dbs | string | `nil` | Which DiracX MySQL DBs are used? |
 | diracx.sqlDbs.default | string | `nil` |  |
-| diracxWeb.branch | string | `"main_FEAT_url-saved-state"` |  |
-| diracxWeb.repoURL | string | `"https://github.com/aldbr/diracx-web"` | install specification to pass to npm before launching container |
+| diracxWeb.branch | string | `""` |  |
+| diracxWeb.repoURL | string | `""` | install specification to pass to npm before launching container |
 | diracxWeb.service.port | int | `8080` |  |
 | fullnameOverride | string | `""` |  |
 | global.activeDeadlineSeconds | int | `900` | timeout for job deadlines |

@@ -171,8 +171,8 @@ diracxWeb:
   service:
     port: 8080
   # -- install specification to pass to npm before launching container
-  repoURL: https://github.com/aldbr/diracx-web
-  branch: main_FEAT_url-saved-state
+  repoURL: ""
+  branch: ""
 
 ##########################
 
