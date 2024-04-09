@@ -65,7 +65,6 @@ spec:
           args:
             - |
               # Clone the specified diracx-web repository branch
-              apk add --no-cache git && \
               git clone --single-branch -b {{ .Values.diracxWeb.branch }} {{ required "A valid .Values.diracxWeb.repoURL is required!" .Values.diracxWeb.repoURL }} /diracx-web;
 
           volumeMounts:
