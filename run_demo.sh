@@ -452,7 +452,7 @@ else
     printf "%b %b %b Pods are ready! %b %b %b\n" "${PARTY_EMOJI}" "${PARTY_EMOJI}" "${PARTY_EMOJI}" "${PARTY_EMOJI}" "${PARTY_EMOJI}" "${PARTY_EMOJI}"
 
     # Dump the CA certificate to a file so that it can be used by the client
-    "${demo_dir}/kubectl" get secret/root-secret -o json | jq -r '.data."tls.crt"' | base64 -d > "${demo_dir}/demo-ca.pem"
+    "${demo_dir}/kubectl" get secret/root-secret -o template --template='{{ index .data "tls.crt" }}' | base64 -d > "${demo_dir}/demo-ca.pem"
 
     printf "%b Creating initial CS content ...\n" ${UNICORN_EMOJI}
     "${demo_dir}/kubectl" exec deployments/diracx-demo-cli -- bash /entrypoint.sh dirac internal add-vo /cs_store/initialRepo \
