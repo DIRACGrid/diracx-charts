@@ -54,9 +54,18 @@ function space_monitor(){
 }
 
 function check_hostname(){
+
+  # Force the use of ipv4.
+  # MacOS does not have the -4 option....
+  if [[ "$(uname -s)" = "Linux" ]]; then
+    ping_cmd="ping -4";
+  else
+    ping_cmd="ping";
+  fi
+
   # Check that the hostname resolves to an IP address
   # dig doesn't consider the effect of /etc/hosts so we use ping instead
-  if ! ip_address=$(ping -4 -c 1 "$1" | grep -Eo '([0-9]{1,3}\.){3}[0-9]{1,3}' | head -n 1); then
+  if ! ip_address=$($ping_cmd -c 1 "$1" | grep -Eo '([0-9]{1,3}\.){3}[0-9]{1,3}' | head -n 1); then
     printf "%b ping command exited with a non-zero exit code\n" ${SKULL_EMOJI}
     return 1
   fi
