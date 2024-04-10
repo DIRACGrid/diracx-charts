@@ -71,6 +71,14 @@ function check_hostname(){
     printf "%b Hostname %s resolves to 127.0.0.1 but this is not supported\n" ${SKULL_EMOJI} "${1}"
     return 1
   fi
+  if ! docker_ip_address=$(docker run --rm alpine ping -c 1 "$1" | grep -Eo '([0-9]{1,3}\.){3}[0-9]{1,3}' | head -n 1); then
+    printf "%b ping command exited with a non-zero exit code from within docker\n" ${SKULL_EMOJI}
+    return 1
+  fi
+  if [[ "${ip_address}" != "${docker_ip_address}" ]]; then
+    printf "%b Hostname %s resolves to %s but within docker it resolves to %s\n" ${SKULL_EMOJI} "${1}" "${ip_address}" "${docker_ip_address}"
+    return 1
+  fi
 }
 
 function element_not_in_array() {
@@ -319,7 +327,7 @@ fi
 # Add the mount for the CS
 # hack to cleanup the cs-mount content owned by somebody else
 # (long term solution is proper security policy in the cluster)
-docker run -v "${demo_dir}/cs-mount":/cs-mount busybox:latest rm -rf /cs-mount/initialRepo
+docker run --rm -v "${demo_dir}/cs-mount":/cs-mount busybox:latest rm -rf /cs-mount/initialRepo
 rm -rf "${demo_dir}/cs-mount"
 mkdir -p "${demo_dir}/cs-mount"
 # Make sure the directory is writable by the container
@@ -452,7 +460,7 @@ else
     printf "%b %b %b Pods are ready! %b %b %b\n" "${PARTY_EMOJI}" "${PARTY_EMOJI}" "${PARTY_EMOJI}" "${PARTY_EMOJI}" "${PARTY_EMOJI}" "${PARTY_EMOJI}"
 
     # Dump the CA certificate to a file so that it can be used by the client
-    "${demo_dir}/kubectl" get secret/root-secret -o json | jq -r '.data."tls.crt"' | base64 -d > "${demo_dir}/demo-ca.pem"
+    "${demo_dir}/kubectl" get secret/root-secret -o template --template='{{ index .data "tls.crt" }}' | base64 -d > "${demo_dir}/demo-ca.pem"
 
     printf "%b Creating initial CS content ...\n" ${UNICORN_EMOJI}
     "${demo_dir}/kubectl" exec deployments/diracx-demo-cli -- bash /entrypoint.sh dirac internal add-vo /cs_store/initialRepo \

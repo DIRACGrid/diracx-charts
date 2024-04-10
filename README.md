@@ -162,6 +162,7 @@ Depending on the installation you perform, some tasks may be necessary or not. T
 | global.images.tag | string | `"dev"` |  |
 | global.images.web.repository | string | `"ghcr.io/diracgrid/diracx-web/static"` |  |
 | global.images.web.tag | string | `"latest"` |  |
+| global.storageClassName | string | `"standard"` |  |
 | ingress.annotations | object | `{}` |  |
 | ingress.className | string | `"nginx"` |  |
 | ingress.enabled | bool | `true` |  |

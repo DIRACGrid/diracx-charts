@@ -10,6 +10,8 @@ global:
   # For now we override it to Always to avoid confusion around having an
   # outdated reference to the "latest" tag.
   imagePullPolicy: Always
+  # What storage class should we use for DiracX volumes
+  storageClassName: standard
   # -- timeout for job deadlines
   activeDeadlineSeconds: 900
   images:
@@ -120,7 +122,6 @@ diracx:
     DIRACX_CONFIG_BACKEND_URL: "git+file:///cs_store/initialRepo"
     DIRACX_SERVICE_AUTH_TOKEN_KEY: "file:///signing-key/rsa256.key"
     DIRACX_SERVICE_AUTH_ALLOWED_REDIRECTS: '["http://anything:8000/docs/oauth2-redirect"]'
-
 
   # If mysql is enabled, you are not allowed
   # to set the username passwords
