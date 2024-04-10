@@ -71,6 +71,14 @@ function check_hostname(){
     printf "%b Hostname %s resolves to 127.0.0.1 but this is not supported\n" ${SKULL_EMOJI} "${1}"
     return 1
   fi
+  if ! docker_ip_address=$(docker run --rm alpine ping -c 1 "$1" | grep -Eo '([0-9]{1,3}\.){3}[0-9]{1,3}' | head -n 1); then
+    printf "%b ping command exited with a non-zero exit code from within docker\n" ${SKULL_EMOJI}
+    return 1
+  fi
+  if [[ "${ip_address}" != "${docker_ip_address}" ]]; then
+    printf "%b Hostname %s resolves to %s but within docker it resolves to %s\n" ${SKULL_EMOJI} "${1}" "${ip_address}" "${docker_ip_address}"
+    return 1
+  fi
 }
 
 function element_not_in_array() {
