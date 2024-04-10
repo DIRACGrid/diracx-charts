@@ -42,7 +42,7 @@ spec:
         - name: wait-for-mysql
           image: busybox:latest
           imagePullPolicy: IfNotPresent
-          command: ['sh', '-c', 'until nc -vz {{ .Release.Name }}-mysql-headless 3306; do echo "Waiting for mysql..."; sleep 3; done;']
+          command: ['sh', '-c', 'until nc -vz {{ .Release.Name }}-mysql 3306; do echo "Waiting for mysql..."; sleep 3; done;']
       {{ end }}
       containers:
         - name: {{ .Chart.Name }}
