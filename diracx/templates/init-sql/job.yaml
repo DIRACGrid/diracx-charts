@@ -37,6 +37,13 @@ spec:
       {{- end }}
     spec:
       restartPolicy: Never
+      {{- if .Values.mysql.enabled }}
+      initContainers:
+        - name: wait-for-mysql
+          image: busybox:latest
+          imagePullPolicy: IfNotPresent
+          command: ['sh', '-c', 'until nc -vz {{ .Release.Name }}-mysql-headless 3306; do echo "Waiting for mysql..."; sleep 3; done;']
+      {{ end }}
       containers:
         - name: {{ .Chart.Name }}
           image: "{{ .Values.global.images.services }}:{{ .Values.global.images.tag | default .Chart.AppVersion }}"
