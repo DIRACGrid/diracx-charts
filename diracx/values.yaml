@@ -95,7 +95,7 @@ developer:
   # This is used by the integration tests because editable install might behave differently
   editableMountedPythonModules: true
   # -- List of node modules to install
-  nodeModuleToInstall: null
+  mountedNodeModuleToInstall: null
   # -- Image to use for the webapp if nodeModuleToInstall is set
   nodeImage: node:alpine
   # -- Enable collection of coverage reports (intended for CI usage only)
@@ -170,6 +170,9 @@ ingress:
 diracxWeb:
   service:
     port: 8080
+  # -- install specification to pass to npm before launching container
+  repoURL: ""
+  branch: ""
 
 ##########################
 

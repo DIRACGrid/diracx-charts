@@ -11,7 +11,7 @@ developer:
   demoDir: {{ demo_dir }}
   mountedPythonModulesToInstall: {{ mounted_python_modules }}
   editableMountedPythonModules: {{ editable_mounted_modules }}
-  nodeModuleToInstall: {{ node_module_to_mount }}
+  mountedNodeModuleToInstall: {{ node_module_to_mount }}
 
 init-cs:
   VOs:
