@@ -1,0 +1,19 @@
+DIRAC: {}
+Operations:
+  Defaults: {}
+Registry:
+  diracAdmin:
+    DefaultGroup: admin
+    Groups:
+      admin:
+        Properties: !!set
+          NormalUser: null
+        Quota: null
+        Users: !!set
+          EgVsb2NhbA: null
+    IdP:
+      ClientID: d396912e-2f04-439b-8ae7-d8c585a34790
+      URL: http://<your_hostname>:32002
+    Users:
+      EgVsb2NhbA:
+        PreferedUsername: admin
