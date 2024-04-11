@@ -37,6 +37,13 @@ spec:
       {{- end }}
     spec:
       restartPolicy: Never
+      {{- if .Values.opensearch.enabled }}
+      initContainers:
+        - name: wait-for-opensearch
+          image: busybox:latest
+          imagePullPolicy: IfNotPresent
+          command: ['sh', '-c', 'until nc -vz  opensearch-cluster-master 9200; do echo "Waiting for opensearch..."; sleep 3; done;']
+      {{ end }}
       containers:
         - name: {{ .Chart.Name }}
           image: "{{ .Values.global.images.services }}:{{ .Values.global.images.tag | default .Chart.AppVersion }}"
