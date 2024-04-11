@@ -1,15 +1,14 @@
-{{- $initSQLValues := index .Values "init-sql" "enabled" -}}
-{{- if $initSQLValues -}}
+{{- if .Values.initOs.enabled -}}
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: {{ template "init-sql.fullname" . }}
+  name: {{ template "init-os.fullname" . }}
   namespace: {{ .Release.Namespace }}
   annotations:
     "helm.sh/hook": post-install,pre-upgrade
     "helm.sh/hook-weight": "-3"
     "helm.sh/hook-delete-policy": hook-succeeded,before-hook-creation
 data:
-  init-sql: |
-    {{- include (print $.Template.BasePath "/init-sql/_init-sql.sh.tpl") . | nindent 4 }}
+  init-os: |
+    {{- include (print $.Template.BasePath "/diracx/init-os/_init-os.sh.tpl") . | nindent 4 }}
 {{- end -}}

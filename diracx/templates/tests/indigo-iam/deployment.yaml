@@ -1,0 +1,51 @@
+{{- if .Values.indigoiam.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: indigo-iam
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: iam
+  template:
+    metadata:
+      labels:
+        app: iam
+      annotations:
+        checksum/init-iam: {{ include (print $.Template.BasePath "/tests/indigo-iam/init-iam/_init-iam.py.tpl") . | sha256sum }}
+    spec:
+      volumes:
+        - name: iam-secret
+          secret:
+            secretName: indigo-iam-init-secrets
+      containers:
+        - name: indigo-iam
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
+          image: "{{ .Values.indigoiam.image.repository }}:{{ .Values.indigoiam.image.tag }}"
+          imagePullPolicy: {{ .Values.global.imagePullPolicy }}
+          ports:
+            - name: http
+              containerPort: {{ .Values.indigoiam.service.port }}
+              protocol: TCP
+          livenessProbe:
+            httpGet:
+              path: /.well-known/openid-configuration
+              port: http
+          readinessProbe:
+            httpGet:
+              path: /.well-known/openid-configuration
+              port: http
+          env:
+          - name: IAM_KEY_STORE_LOCATION
+            value: "file:///etc/indigo-iam/keystore/iam-keystore.jwks"
+          - name: IAM_BASE_URL
+            value: "{{ .Values.indigoiam.config.issuer }}"
+          - name: IAM_ISSUER
+            value: "{{ .Values.indigoiam.config.issuer }}"
+          volumeMounts:
+          - name: iam-secret
+            mountPath: "/etc/indigo-iam/keystore"
+            readOnly: true
+{{- end }}

@@ -11,5 +11,5 @@ metadata:
     "helm.sh/hook-delete-policy": hook-succeeded,before-hook-creation
 data:
   init-secrets: |
-    {{- include (print $.Template.BasePath "/init-secrets/_init-secrets.sh.tpl") . | nindent 4 }}
+    {{- include (print $.Template.BasePath "/diracx/init-secrets/_init-secrets.sh.tpl") . | nindent 4 }}
 {{- end -}}
