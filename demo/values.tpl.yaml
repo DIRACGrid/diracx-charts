@@ -21,6 +21,9 @@ diracx:
     DIRACX_SANDBOX_STORE_BUCKET_NAME: demo-sandboxes
     DIRACX_SANDBOX_STORE_S3_CLIENT_KWARGS: '{"endpoint_url": "http://{{ hostname }}:32000", "aws_access_key_id": "console", "aws_secret_access_key": "console123"}'
     DIRACX_SANDBOX_STORE_AUTO_CREATE_BUCKET: "true"
+    DIRACX_OTEL_ENABLED: "{{ open_telemetry }}"
+    DIRACX_OTEL_GRPC_ENDPOINT: "diracx-demo-opentelemetry-collector:4317"
+    DIRACX_OTEL_GRPC_INSECURE: "true"
   sqlDbs:
     dbs:
       AuthDB:
@@ -41,12 +44,12 @@ dex:
     issuer: http://{{ hostname }}:32002
 
     staticClients:
-    - id: d396912e-2f04-439b-8ae7-d8c585a34790
-      public: true
-      name: 'CLI app'
-      redirectURIs:
-        - 'https://{{ hostname }}:8000/api/auth/device/complete'
-        - https://{{ hostname }}:8000/api/auth/authorize/complete
+      - id: d396912e-2f04-439b-8ae7-d8c585a34790
+        public: true
+        name: "CLI app"
+        redirectURIs:
+          - "https://{{ hostname }}:8000/api/auth/device/complete"
+          - https://{{ hostname }}:8000/api/auth/authorize/complete
 
     staticPasswords:
       - email: "admin@example.com"
@@ -89,3 +92,21 @@ indigoiam:
     groups:
       dirac:
         user: [jane_doe]
+
+## Open telemetry
+
+opentelemetry-collector:
+  enabled: {{ open_telemetry }}
+
+elasticsearch:
+  enabled: {{ open_telemetry }}
+
+jaeger:
+  enabled: {{ open_telemetry }}
+
+grafana:
+  enabled: {{ open_telemetry }}
+
+prometheus:
+  enabled: {{ open_telemetry }}
+###

@@ -32,9 +32,9 @@ function cleanup(){
 }
 
 function space_monitor(){
-  # Check every 60 seconds if the cluster is low on space
+  # Check every 600 seconds if the cluster is low on space
   while true; do
-    sleep 60
+    sleep 600
     # Check for the amount of free space on the cluster
     df_output=$(docker exec diracx-demo-control-plane df -BG / 2>/dev/null) || continue
     percent_free=$(echo "${df_output}" | awk 'NR == 2 { print substr($5, 1, length($5)-1) }')
@@ -109,6 +109,8 @@ usage+="             Implies: --mount-containerd\n"
 usage+="  --no-mount-containerd: Mount a directory on the host for the kind containerd storage.\n"
 usage+="                         This option avoids needing to pull container images every time the demo is started.\n"
 usage+="                         WARNING: There is no garbage collection so the directory will grow without bound.\n"
+usage+="  --enable-open-telemetry: lauches OpenTelemetry collection.\n"
+usage+="                           WARNING: experimental and resource hungry.\n"
 usage+="  --set-value: Set a value in the Helm values file. This can be used to override the default values.\n"
 usage+="               For example, to enable coverage reporting pass: --set-value developer.enableCoverage=true\n"
 usage+="  source directories: A list of directories containing Python packages to mount in the demo cluster.\n"
@@ -120,6 +122,7 @@ offline_mode=0
 declare -a helm_arguments=()
 enable_coverage=0
 editable_python=1
+open_telemetry=0
 while [ -n "${1:-}" ]; do case $1 in
 	# Print a brief usage summary and exit
 	-h|--help|-\?)
@@ -173,6 +176,11 @@ while [ -n "${1:-}" ]; do case $1 in
     helm_arguments+=("--set" "global.imagePullPolicy=IfNotPresent")
     helm_arguments+=("--set" "developer.offline=true")
 		shift
+		continue ;;
+
+  --enable-open-telemetry)
+    open_telemetry=1
+    shift
 		continue ;;
 
 	--set-value)
@@ -401,6 +409,16 @@ sed "s/{{ hostname }}/${machine_hostname}/g" "${script_dir}/demo/values.tpl.yaml
 mv "${demo_dir}/values.yaml" "${demo_dir}/values.yaml.bak"
 sed "s@{{ demo_dir }}@${demo_dir}@g" "${demo_dir}/values.yaml.bak" > "${demo_dir}/values.yaml"
 mv "${demo_dir}/values.yaml" "${demo_dir}/values.yaml.bak"
+
+# Enable OpenTelemetry
+if [[ ${open_telemetry} -eq 1 ]]; then
+  sed "s/{{ open_telemetry }}/true/g" "${demo_dir}/values.yaml.bak" > "${demo_dir}/values.yaml"
+  mv "${demo_dir}/values.yaml" "${demo_dir}/values.yaml.bak"
+else
+  sed "s/{{ open_telemetry }}/false/g" "${demo_dir}/values.yaml.bak" > "${demo_dir}/values.yaml"
+  mv "${demo_dir}/values.yaml" "${demo_dir}/values.yaml.bak"
+fi
+
 
 # Add python packages
 if [[ ${editable_python} -eq 1 ]]; then

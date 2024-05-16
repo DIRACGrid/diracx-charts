@@ -20,18 +20,27 @@ nodes:
 
   # Expose the ingress port
   extraPortMappings:
+  # diracx-web
   - containerPort: 443
     hostPort: 8000
     protocol: TCP
+  # Minio
   - containerPort: 32000
     hostPort: 32000
     protocol: TCP
+  # Minio web interface
   - containerPort: 32001
     hostPort: 32001
     protocol: TCP
+  # Dex web interface
   - containerPort: 32002
     hostPort: 32002
     protocol: TCP
+  # IAM
   - containerPort: 32003
     hostPort: 32003
+    protocol: TCP
+  # Grafana web interface (OpenTelemetry)
+  - containerPort: 32004
+    hostPort: 32004
     protocol: TCP
