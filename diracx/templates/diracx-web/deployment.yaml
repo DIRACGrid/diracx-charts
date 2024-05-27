@@ -38,7 +38,7 @@ spec:
         # start from a clean state
         - name: diracx-web-scratch-node-modules
           emptyDir:
-            sizeLimit: 1Gi
+            sizeLimit: 2Gi
         - name: diracx-web-scratch-next
           emptyDir:
             sizeLimit: 1Gi
@@ -136,10 +136,12 @@ spec:
           {{- if $nodeDevInstall }}
           # Start the node module in development mode
           image: {{ .Values.developer.nodeImage }}
-          command: ["npm", "run", "dev", "--prefix", "{{ $nodeMountedModulePath }}", "--", "-p", "{{ .Values.diracxWeb.service.port }}"]
+          command: ["npm", "run", "dev", "--prefix", "{{ $nodeMountedModulePath }}"]
           env:
             - name: NEXT_TELEMETRY_DISABLED
               value: "1"
+            - name: PORT
+              value: "{{ .Values.diracxWeb.service.port }}"
           volumeMounts:
             - mountPath: "{{ $nodeMountedModulePath }}"
               name: "diracx-web-code-mount"
