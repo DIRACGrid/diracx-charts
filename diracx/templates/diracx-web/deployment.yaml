@@ -38,7 +38,7 @@ spec:
         # start from a clean state
         - name: diracx-web-scratch-node-modules
           emptyDir:
-            sizeLimit: 1Gi
+            sizeLimit: 1.2Gi
         - name: diracx-web-scratch-next
           emptyDir:
             sizeLimit: 1Gi
