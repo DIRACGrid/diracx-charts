@@ -27,6 +27,11 @@ dependencies:
   repository:  https://opensearch-project.github.io/helm-charts/
   condition: opensearch.enabled
 
+- name: elasticsearch
+  version: 8.5.1
+  repository:  https://helm.elastic.co
+  # condition: elasticsearch.enabled
+
 - name: dex
   version: 0.14.2
   repository: https://charts.dexidp.io/
@@ -47,6 +52,7 @@ dependencies:
   repository: https://charts.bitnami.com/bitnami/
   condition: mysql.enabled
 
+
 - name: cert-manager
   version: 1.13.1
   repository: https://charts.jetstack.io
@@ -55,3 +61,23 @@ dependencies:
 - name: cert-manager-issuer
   version: '*.*.*'
   condition: cert-manager-issuer.enabled
+
+- name: opentelemetry-collector
+  version: 0.68.0
+  repository: https://open-telemetry.github.io/opentelemetry-helm-charts
+  condition: opentelemetry-collector.enabled
+
+- name: jaeger
+  version: 0.71.14
+  repository: https://jaegertracing.github.io/helm-charts
+  condition: jaeger.enabled
+
+- name: grafana
+  version: 6.59.4
+  repository: https://grafana.github.io/helm-charts
+  condition: grafana.enabled
+
+- name: prometheus
+  version: 25.0.0
+  repository: https://prometheus-community.github.io/helm-charts
+  condition: prometheus.enabled

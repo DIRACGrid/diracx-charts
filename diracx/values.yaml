@@ -127,12 +127,12 @@ diracx:
   # to set the username passwords
   sqlDbs:
     default:
-  #     rootUser: admin
-  #     rootPassword: hunter123
-  #     user: dirac
-  #     password: password123
-  #     host: sqlHost:123
-  # -- Which DiracX MySQL DBs are used?
+    #     rootUser: admin
+    #     rootPassword: hunter123
+    #     user: dirac
+    #     password: password123
+    #     host: sqlHost:123
+    # -- Which DiracX MySQL DBs are used?
     dbs:
   #    AuthDB:
   #      internalName: DiracXAuthDB
@@ -145,7 +145,6 @@ diracx:
   #      password: hush
   #      host: proxyHost:345
 
-
   # If opensearch is enabled, you are not allowed
   # to set the username passwords
   osDbs:
@@ -154,7 +153,6 @@ diracx:
     # -- Which DiracX OpenSearch DBs are used?
     dbs:
       # JobParametersDB:
-
 
   # -- List of install specifications to pass to pip before launching each container
   pythonModulesToInstall: []
@@ -373,19 +371,246 @@ cert-manager-issuer:
 
 ##########################
 
-#TODO remove all that
-resources:
-  {}
-  # We usually recommend not to specify default resources and to leave this as a conscious
-  # choice for the user. This also increases chances charts run on environments with little
-  # resources, such as Minikube. If you do want to specify resources, uncomment the following
-  # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
-  # limits:
-  #   cpu: 100m
-  #   memory: 128Mi
-  # requests:
-  #   cpu: 100m
-  #   memory: 128Mi
+#########################################################
+#
+# OPENTELEMETRY START
+#
+# This is highly experimental, and will change very often
+# For convenience, the values that are filled here are valid
+# only for run_demo.sh
+#
+#
+#########################################################
+
+# https://www.otelbin.io/
+opentelemetry-collector:
+  enabled: false
+  mode: deployment
+  #internalTrafficPolicy:Local
+
+  # # For opensearch https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/exporter/opensearchexporter
+  # extensions:
+  #   basicauth/client:
+  #   client_auth:
+  #     username: admin
+  #     password: admin
+
+  # These presets control what information from the cluster itselfs are taken
+  presets:
+    # enables the k8sattributesprocessor and adds it to the traces, metrics, and logs pipelines
+    kubernetesAttributes:
+      enabled: false
+    # enables the kubeletstatsreceiver and adds it to the metrics pipelines
+    kubeletMetrics:
+      enabled: false
+    # Enables the filelog receiver and adds it to the logs pipelines
+    logsCollection:
+      enabled: false
+
+  # https://github.com/open-telemetry/opentelemetry-operator/issues/931
+  # Expose the port such that prometheus can scrape
+  ports:
+    promexp:
+      enabled: true
+      containerPort: 8889
+      servicePort: 8889
+      hostPort: 8889
+      protocol: TCP
+
+  #Example taken from https://opentelemetry.io/docs/collector/configuration/
+
+  config:
+    receivers:
+      otlp:
+        protocols:
+          grpc:
+          http:
+      jaeger: null
+      prometheus: null
+
+    exporters:
+      otlp/jaeger:
+        endpoint: diracx-demo-jaeger-collector:4317
+        tls:
+          insecure: true
+      logging:
+        loglevel: debug
+
+      prometheus:
+        endpoint: ":8889"
+        #namespace: test-space
+        # const_labels:
+        #   cst_label1: value1
+        send_timestamps: true
+        metric_expiration: 180m
+        #resource_to_telemetry_conversion:
+        #  enabled: true
+
+      # prometheusremotewrite:
+      #   endpoint: "http://diracx-demo-prometheus-pushgateway:9091/api/v1/push"
+      #   external_labels:
+      #     label_name1: label_value1
+      #     label_name2: label_value2
+
+      # Unfortunately, OpenTelemetry cannot yet send data to OpenSearch directly
+      #
+      # https://opentelemetry.io/docs/collector/custom-collector/
+      # https://github.com/open-telemetry/opentelemetry-collector-contrib/issues/7905
+      # https://opensearch.org/blog/distributed-tracing-pipeline-with-opentelemetry/
+      #
+      # So we use elastic search
+      # https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/exporter/elasticsearchexporter
+      elasticsearch/log:
+        endpoints: [https://elastic:elastic@elasticsearch-master:9200]
+        logs_index: diracx_otel_logs_index
+        sending_queue:
+          enabled: true
+          num_consumers: 20
+          queue_size: 1000
+        tls:
+          insecure_skip_verify: true
+        # insecure: true
+
+    service:
+      pipelines:
+        traces:
+          receivers: [otlp]
+          exporters: [otlp/jaeger, logging]
+        metrics:
+          receivers: [otlp]
+          exporters: [prometheus, logging]
+        logs:
+          receivers: [otlp]
+          exporters: [elasticsearch/log, logging]
+
+##########################
+
+# Elasticsearch is ONLY for the opentelemetry usage as opensearch isn't ready
+elasticsearch:
+  enabled: false
+  esJavaOpts: "-Xms128m -Xmx128m"
+  replicas: 1
+  clusterHealthCheckParams: "local=true"
+  discovery.seed_hosts: ["elasticsearch-master-headless"]
+  # Allocate smaller chunks of memory per pod.
+  resources:
+    requests:
+      cpu: "100m"
+      memory: "512M"
+    limits:
+      cpu: "1000m"
+      memory: "512M"
+
+  # Request smaller persistent volumes.
+  volumeClaimTemplate:
+    accessModes: ["ReadWriteOnce"]
+    storageClassName: "standard"
+    resources:
+      requests:
+        storage: 100M
+
+  secret:
+    password: "elastic"
+
+##############################
+
+jaeger:
+  enabled: false
+
+  provisionDataStore:
+    cassandra: false
+  allInOne:
+    enabled: true
+  storage:
+    type: none
+  agent:
+    enabled: false
+  collector:
+    enabled: false
+  query:
+    enabled: false
+
+##########################
+grafana:
+  enabled: false
+  # To get the password for admin
+  # kubectl get secrets diracx-demo-grafana -o jsonpath="{.data.admin-password}" | base64 --decode ; echo
+
+  service:
+    type: NodePort
+    port: 32004
+    nodePort: 32004
+
+  # data source jaeger with url http://diracx-demo-jaeger-query:16686
+  # https://grafana.com/docs/grafana/latest/datasources/jaeger/#provision-the-data-source
+  datasources:
+    datasources.yaml:
+      apiVersion: 1
+      datasources:
+        - name: Jaeger
+          type: jaeger
+          url: http://diracx-demo-jaeger-query:16686
+        - name: Prometheus
+          type: prometheus
+          url: http://diracx-demo-prometheus-server:80
+        - name: Elasticsearch
+          type: elasticsearch
+          url: https://elasticsearch-master:9200
+          basicAuth: true
+          basicAuthUser: elastic
+          database: diracx_otel_logs_index
+          isDefault: false
+          jsonData:
+            esVersion: 8.5.1
+            logMessageField: full_message
+            timeField: "@timestamp"
+            timeout: 300
+            tlsSkipVerify: true
+            maxConcurrentShardRequests: 10
+          secureJsonData:
+            basicAuthPassword: elastic
+
+##########################
+
+prometheus:
+  enabled: false
+  # Use emptydir to store the data
+  server:
+    persistentVolume:
+      enabled: false
+
+  alertmanager:
+    enabled: false
+  kube-state-metrics:
+    enabled: false
+  prometheus-node-exporter:
+    enabled: false
+
+  serverFiles:
+    prometheus.yml:
+      scrape_configs:
+        - job_name: otel
+          scrape_interval: 10s
+          static_configs:
+            - targets:
+                - diracx-demo-opentelemetry-collector:8889
+
+#######################################################
+#
+# OPENTELEMETRY END
+#
+#######################################################
+
+# We usually recommend not to specify default resources and to leave this as a conscious
+# choice for the user. This also increases chances charts run on environments with little
+# resources, such as Minikube. If you do want to specify resources, uncomment the following
+# lines, adjust them as necessary, and remove the curly braces after 'resources:'.
+# limits:
+#   cpu: 100m
+#   memory: 128Mi
+# requests:
+#   cpu: 100m
+#   memory: 128Mi
 
 nodeSelector: {}
 

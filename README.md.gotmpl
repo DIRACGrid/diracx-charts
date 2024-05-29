@@ -53,7 +53,6 @@ helm upgrade diracx-demo ./diracx --values .demo/values.yaml
 
 
 
-
 ## Deploying a custom branch to DIRAC certification
 
 Apply the following on top of the standard `values.yaml` file, replacing `USERNAME` and `BRANCH_NAME` with the appropriate values.
@@ -72,6 +71,50 @@ diracx:
     - "git+https://github.com/USERNAME/diracx.git@BRANCH_NAME#egg=diracx_db&subdirectory=diracx-db"
     - "git+https://github.com/USERNAME/diracx.git@BRANCH_NAME#egg=diracx_routers&subdirectory=diracx-routers"yaml
 ```
+
+
+## ``run_demo.sh``
+
+This is the script used to start a demo or the integration tests.
+
+```
+Usage: run_demo.sh [-h|--help] [--exit-when-done] [--offline] [--enable-coverage] [--no-mount-containerd] [--set-value key=value] [--] [source directories]
+
+  -h|--help: Print this help message and exit
+  --exit-when-done: Exit after the demo has been started (it will be left running in the background)
+  --enable-coverage: Enable coverage reporting
+  --no-editable-python: Do not install Python source directories in editable mode
+  --offline: Run in a mode which is suitable for fully offline use.
+             WARNING: This may result in some weird behaviour, see the demo documentation for details.
+             Implies: --mount-containerd
+  --no-mount-containerd: Mount a directory on the host for the kind containerd storage.
+                         This option avoids needing to pull container images every time the demo is started.
+                         WARNING: There is no garbage collection so the directory will grow without bound.
+  --enable-open-telemetry: lauches OpenTelemetry collection.
+                           WARNING: experimental and resource hungry.
+  --set-value: Set a value in the Helm values file. This can be used to override the default values.
+               For example, to enable coverage reporting pass: --set-value developer.enableCoverage=true
+  source directories: A list of directories containing Python packages to mount in the demo cluster.
+```
+
+
+## OpenTelemetry
+
+> :warning: **Experimental**: opentelemetry is an evolving product, and so is our implementation of it.
+
+``diracx`` aim at relying on [OpenTelemetry](https://opentelemetry.io/) for traces, monitoring and logging. When running in demo mode, this chart can spawn the necessary component for the telemetry to be reported:
+* OpenTelemetry-collector to collect all the data
+* Prometheus for the metrics
+* Jaeger for traces
+* ElasticSearch for logs (OpenSearch not yet supported)
+* Grafana to display all that (accessible on port 32004 of the demo)
+
+To enable it, run ``run_demo.sh`` with ``enable-open-telemetry``
+
+Note that this configuration is trivial and does not follow production recommandations (like using batch processing)
+
+![OTEL collector configuration](./demo/otel-collector.png)
+
 
 ## Deploying in production
 

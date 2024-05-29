@@ -72,6 +72,47 @@ diracx:
     - "git+https://github.com/USERNAME/diracx.git@BRANCH_NAME#egg=diracx_routers&subdirectory=diracx-routers"yaml
 ```
 
+## ``run_demo.sh``
+
+This is the script used to start a demo or the integration tests.
+
+```
+Usage: run_demo.sh [-h|--help] [--exit-when-done] [--offline] [--enable-coverage] [--no-mount-containerd] [--set-value key=value] [--] [source directories]
+
+  -h|--help: Print this help message and exit
+  --exit-when-done: Exit after the demo has been started (it will be left running in the background)
+  --enable-coverage: Enable coverage reporting
+  --no-editable-python: Do not install Python source directories in editable mode
+  --offline: Run in a mode which is suitable for fully offline use.
+             WARNING: This may result in some weird behaviour, see the demo documentation for details.
+             Implies: --mount-containerd
+  --no-mount-containerd: Mount a directory on the host for the kind containerd storage.
+                         This option avoids needing to pull container images every time the demo is started.
+                         WARNING: There is no garbage collection so the directory will grow without bound.
+  --enable-open-telemetry: lauches OpenTelemetry collection.
+                           WARNING: experimental and resource hungry.
+  --set-value: Set a value in the Helm values file. This can be used to override the default values.
+               For example, to enable coverage reporting pass: --set-value developer.enableCoverage=true
+  source directories: A list of directories containing Python packages to mount in the demo cluster.
+```
+
+## OpenTelemetry
+
+> :warning: **Experimental**: opentelemetry is an evolving product, and so is our implementation of it.
+
+``diracx`` aim at relying on [OpenTelemetry](https://opentelemetry.io/) for traces, monitoring and logging. When running in demo mode, this chart can spawn the necessary component for the telemetry to be reported:
+* OpenTelemetry-collector to collect all the data
+* Prometheus for the metrics
+* Jaeger for traces
+* ElasticSearch for logs (OpenSearch not yet supported)
+* Grafana to display all that (accessible on port 32004 of the demo)
+
+To enable it, run ``run_demo.sh`` with ``enable-open-telemetry``
+
+Note that this configuration is trivial and does not follow production recommandations (like using batch processing)
+
+![OTEL collector configuration](./demo/otel-collector.png)
+
 ## Deploying in production
 
 TODO
@@ -96,7 +137,12 @@ Depending on the installation you perform, some tasks may be necessary or not. T
 | https://charts.dexidp.io/ | dex | 0.14.2 |
 | https://charts.jetstack.io | cert-manager | 1.13.1 |
 | https://charts.min.io/ | minio | 5.0.11 |
+| https://grafana.github.io/helm-charts | grafana | 6.59.4 |
+| https://helm.elastic.co | elasticsearch | 8.5.1 |
+| https://jaegertracing.github.io/helm-charts | jaeger | 0.71.14 |
+| https://open-telemetry.github.io/opentelemetry-helm-charts | opentelemetry-collector | 0.68.0 |
 | https://opensearch-project.github.io/helm-charts/ | opensearch | 2.13.1 |
+| https://prometheus-community.github.io/helm-charts | prometheus | 25.0.0 |
 
 ## Values
 
@@ -153,6 +199,19 @@ Depending on the installation you perform, some tasks may be necessary or not. T
 | diracxWeb.branch | string | `""` |  |
 | diracxWeb.repoURL | string | `""` | install specification to pass to npm before launching container |
 | diracxWeb.service.port | int | `8080` |  |
+| elasticsearch."discovery.seed_hosts"[0] | string | `"elasticsearch-master-headless"` |  |
+| elasticsearch.clusterHealthCheckParams | string | `"local=true"` |  |
+| elasticsearch.enabled | bool | `false` |  |
+| elasticsearch.esJavaOpts | string | `"-Xms128m -Xmx128m"` |  |
+| elasticsearch.replicas | int | `1` |  |
+| elasticsearch.resources.limits.cpu | string | `"1000m"` |  |
+| elasticsearch.resources.limits.memory | string | `"512M"` |  |
+| elasticsearch.resources.requests.cpu | string | `"100m"` |  |
+| elasticsearch.resources.requests.memory | string | `"512M"` |  |
+| elasticsearch.secret.password | string | `"elastic"` |  |
+| elasticsearch.volumeClaimTemplate.accessModes[0] | string | `"ReadWriteOnce"` |  |
+| elasticsearch.volumeClaimTemplate.resources.requests.storage | string | `"100M"` |  |
+| elasticsearch.volumeClaimTemplate.storageClassName | string | `"standard"` |  |
 | fullnameOverride | string | `""` |  |
 | global.activeDeadlineSeconds | int | `900` | timeout for job deadlines |
 | global.batchJobTTL | int | `600` | How long should batch jobs be retained after completing? |
@@ -163,6 +222,31 @@ Depending on the installation you perform, some tasks may be necessary or not. T
 | global.images.web.repository | string | `"ghcr.io/diracgrid/diracx-web/static"` |  |
 | global.images.web.tag | string | `"latest"` |  |
 | global.storageClassName | string | `"standard"` |  |
+| grafana.datasources."datasources.yaml".apiVersion | int | `1` |  |
+| grafana.datasources."datasources.yaml".datasources[0].name | string | `"Jaeger"` |  |
+| grafana.datasources."datasources.yaml".datasources[0].type | string | `"jaeger"` |  |
+| grafana.datasources."datasources.yaml".datasources[0].url | string | `"http://diracx-demo-jaeger-query:16686"` |  |
+| grafana.datasources."datasources.yaml".datasources[1].name | string | `"Prometheus"` |  |
+| grafana.datasources."datasources.yaml".datasources[1].type | string | `"prometheus"` |  |
+| grafana.datasources."datasources.yaml".datasources[1].url | string | `"http://diracx-demo-prometheus-server:80"` |  |
+| grafana.datasources."datasources.yaml".datasources[2].basicAuth | bool | `true` |  |
+| grafana.datasources."datasources.yaml".datasources[2].basicAuthUser | string | `"elastic"` |  |
+| grafana.datasources."datasources.yaml".datasources[2].database | string | `"diracx_otel_logs_index"` |  |
+| grafana.datasources."datasources.yaml".datasources[2].isDefault | bool | `false` |  |
+| grafana.datasources."datasources.yaml".datasources[2].jsonData.esVersion | string | `"8.5.1"` |  |
+| grafana.datasources."datasources.yaml".datasources[2].jsonData.logMessageField | string | `"full_message"` |  |
+| grafana.datasources."datasources.yaml".datasources[2].jsonData.maxConcurrentShardRequests | int | `10` |  |
+| grafana.datasources."datasources.yaml".datasources[2].jsonData.timeField | string | `"@timestamp"` |  |
+| grafana.datasources."datasources.yaml".datasources[2].jsonData.timeout | int | `300` |  |
+| grafana.datasources."datasources.yaml".datasources[2].jsonData.tlsSkipVerify | bool | `true` |  |
+| grafana.datasources."datasources.yaml".datasources[2].name | string | `"Elasticsearch"` |  |
+| grafana.datasources."datasources.yaml".datasources[2].secureJsonData.basicAuthPassword | string | `"elastic"` |  |
+| grafana.datasources."datasources.yaml".datasources[2].type | string | `"elasticsearch"` |  |
+| grafana.datasources."datasources.yaml".datasources[2].url | string | `"https://elasticsearch-master:9200"` |  |
+| grafana.enabled | bool | `false` |  |
+| grafana.service.nodePort | int | `32004` |  |
+| grafana.service.port | int | `32004` |  |
+| grafana.service.type | string | `"NodePort"` |  |
 | indigoiam.config.initial_client.id | string | `nil` |  |
 | indigoiam.config.initial_client.secret | string | `nil` |  |
 | indigoiam.config.issuer | string | `"http://anything:32003"` |  |
@@ -185,6 +269,13 @@ Depending on the installation you perform, some tasks may be necessary or not. T
 | init-sql.enabled | bool | `true` |  |
 | init-sql.env | object | `{}` |  |
 | initOs.enabled | bool | `true` |  |
+| jaeger.agent.enabled | bool | `false` |  |
+| jaeger.allInOne.enabled | bool | `true` |  |
+| jaeger.collector.enabled | bool | `false` |  |
+| jaeger.enabled | bool | `false` |  |
+| jaeger.provisionDataStore.cassandra | bool | `false` |  |
+| jaeger.query.enabled | bool | `false` |  |
+| jaeger.storage.type | string | `"none"` |  |
 | minio.consoleIngress.enabled | bool | `false` |  |
 | minio.consoleService.type | string | `"NodePort"` |  |
 | minio.enabled | bool | `true` |  |
@@ -210,15 +301,57 @@ Depending on the installation you perform, some tasks may be necessary or not. T
 | opensearch.resources.requests.cpu | string | `"100m"` |  |
 | opensearch.resources.requests.memory | string | `"100Mi"` |  |
 | opensearch.singleNode | bool | `true` |  |
+| opentelemetry-collector.config.exporters.elasticsearch/log.endpoints[0] | string | `"https://elastic:elastic@elasticsearch-master:9200"` |  |
+| opentelemetry-collector.config.exporters.elasticsearch/log.logs_index | string | `"diracx_otel_logs_index"` |  |
+| opentelemetry-collector.config.exporters.elasticsearch/log.sending_queue.enabled | bool | `true` |  |
+| opentelemetry-collector.config.exporters.elasticsearch/log.sending_queue.num_consumers | int | `20` |  |
+| opentelemetry-collector.config.exporters.elasticsearch/log.sending_queue.queue_size | int | `1000` |  |
+| opentelemetry-collector.config.exporters.elasticsearch/log.tls.insecure_skip_verify | bool | `true` |  |
+| opentelemetry-collector.config.exporters.logging.loglevel | string | `"debug"` |  |
+| opentelemetry-collector.config.exporters.otlp/jaeger.endpoint | string | `"diracx-demo-jaeger-collector:4317"` |  |
+| opentelemetry-collector.config.exporters.otlp/jaeger.tls.insecure | bool | `true` |  |
+| opentelemetry-collector.config.exporters.prometheus.endpoint | string | `":8889"` |  |
+| opentelemetry-collector.config.exporters.prometheus.metric_expiration | string | `"180m"` |  |
+| opentelemetry-collector.config.exporters.prometheus.send_timestamps | bool | `true` |  |
+| opentelemetry-collector.config.receivers.jaeger | string | `nil` |  |
+| opentelemetry-collector.config.receivers.otlp.protocols.grpc | string | `nil` |  |
+| opentelemetry-collector.config.receivers.otlp.protocols.http | string | `nil` |  |
+| opentelemetry-collector.config.receivers.prometheus | string | `nil` |  |
+| opentelemetry-collector.config.service.pipelines.logs.exporters[0] | string | `"elasticsearch/log"` |  |
+| opentelemetry-collector.config.service.pipelines.logs.exporters[1] | string | `"logging"` |  |
+| opentelemetry-collector.config.service.pipelines.logs.receivers[0] | string | `"otlp"` |  |
+| opentelemetry-collector.config.service.pipelines.metrics.exporters[0] | string | `"prometheus"` |  |
+| opentelemetry-collector.config.service.pipelines.metrics.exporters[1] | string | `"logging"` |  |
+| opentelemetry-collector.config.service.pipelines.metrics.receivers[0] | string | `"otlp"` |  |
+| opentelemetry-collector.config.service.pipelines.traces.exporters[0] | string | `"otlp/jaeger"` |  |
+| opentelemetry-collector.config.service.pipelines.traces.exporters[1] | string | `"logging"` |  |
+| opentelemetry-collector.config.service.pipelines.traces.receivers[0] | string | `"otlp"` |  |
+| opentelemetry-collector.enabled | bool | `false` |  |
+| opentelemetry-collector.mode | string | `"deployment"` |  |
+| opentelemetry-collector.ports.promexp.containerPort | int | `8889` |  |
+| opentelemetry-collector.ports.promexp.enabled | bool | `true` |  |
+| opentelemetry-collector.ports.promexp.hostPort | int | `8889` |  |
+| opentelemetry-collector.ports.promexp.protocol | string | `"TCP"` |  |
+| opentelemetry-collector.ports.promexp.servicePort | int | `8889` |  |
+| opentelemetry-collector.presets.kubeletMetrics.enabled | bool | `false` |  |
+| opentelemetry-collector.presets.kubernetesAttributes.enabled | bool | `false` |  |
+| opentelemetry-collector.presets.logsCollection.enabled | bool | `false` |  |
 | podAnnotations | object | `{}` |  |
 | podSecurityContext | object | `{}` |  |
+| prometheus.alertmanager.enabled | bool | `false` |  |
+| prometheus.enabled | bool | `false` |  |
+| prometheus.kube-state-metrics.enabled | bool | `false` |  |
+| prometheus.prometheus-node-exporter.enabled | bool | `false` |  |
+| prometheus.server.persistentVolume.enabled | bool | `false` |  |
+| prometheus.serverFiles."prometheus.yml".scrape_configs[0].job_name | string | `"otel"` |  |
+| prometheus.serverFiles."prometheus.yml".scrape_configs[0].scrape_interval | string | `"10s"` |  |
+| prometheus.serverFiles."prometheus.yml".scrape_configs[0].static_configs[0].targets[0] | string | `"diracx-demo-opentelemetry-collector:8889"` |  |
 | rabbitmq.auth.existingErlangSecret | string | `"rabbitmq-secret"` |  |
 | rabbitmq.auth.existingPasswordSecret | string | `"rabbitmq-secret"` |  |
 | rabbitmq.containerSecurityContext.enabled | bool | `false` |  |
 | rabbitmq.enabled | bool | `true` |  |
 | rabbitmq.podSecurityContext.enabled | bool | `false` |  |
 | replicaCount | int | `1` |  |
-| resources | object | `{}` |  |
 | securityContext | object | `{}` |  |
 | serviceAccount.annotations | object | `{}` | Annotations to add to the service account |
 | serviceAccount.create | bool | `true` | Specifies whether a service account should be created |
