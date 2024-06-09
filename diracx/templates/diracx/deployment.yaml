@@ -154,6 +154,10 @@ spec:
             - secretRef:
                 name: diracx-sql-connection-urls
             {{- end }}
+            {{- if .Values.diracx.osDbs.dbs }}
+            - secretRef:
+                name: diracx-os-connection-urls
+            {{- end }}
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
       {{- with .Values.nodeSelector }}
