@@ -9,6 +9,7 @@ developer:
     minio: http://{{ hostname }}:32000
     dex: http://{{ hostname }}:32002
     iam: http://{{ hostname }}:32003
+    grafana: http://{{ hostname }}:32004
   demoDir: {{ demo_dir }}
   mountedPythonModulesToInstall: {{ mounted_python_modules }}
   editableMountedPythonModules: {{ editable_mounted_modules }}
