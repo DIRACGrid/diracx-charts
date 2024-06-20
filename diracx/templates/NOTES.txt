@@ -16,6 +16,10 @@ Then see the chart README for more information on how to use kubectl/helm.
   export DIRACX_URL={{ .Values.developer.urls.diracx }}
   export DIRACX_CA_PATH={{ .Values.developer.demoDir }}/demo-ca.pem
 
+i  To use the demo with a DiracX client without local installation:
+
+  kubectl exec -it  deployment/diracx-demo-cli -- bash
+
 ℹ️  To access the web application visit:
 
   {{ .Values.developer.urls.diracx }}
@@ -31,7 +35,7 @@ Then see the chart README for more information on how to use kubectl/helm.
 
 i  Grafana dashboard for telemetry (if enabled)
 
-  {{ .Values.developer.urls.diracx }}:32004
+  {{ .Values.developer.urls.grafana }}
 
   Username: admin
   Password: run ``kubectl get secrets diracx-demo-grafana -o jsonpath="{.data.admin-password}" | base64 --decode ; echo``
