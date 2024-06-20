@@ -39,7 +39,7 @@ Check that you follow the recommendations https://docs.k3s.io/installation/requi
 Install kubectl (on laptop)
 ---------------------------
 
-```
+```bash
 # kubectl
 curl -LO https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl
 
@@ -57,7 +57,7 @@ sudo install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl
 Install helm (on laptop)
 ---------------------------
 
-```
+```bash
 curl -fsSL -o get_helm.sh https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3
 chmod 700 get_helm.sh
 ./get_helm.sh
@@ -66,7 +66,7 @@ chmod 700 get_helm.sh
 Enable completion (optional but useful)
 ---------------------------------------
 
-```
+```bash
 # kubectl
 source <(kubectl completion bash)
 
@@ -80,14 +80,14 @@ source <(helm completion bash)
 Install k3sup (on laptop)
 -------------------------
 
-```
+```bash
 curl -sLS https://get.k3sup.dev | sh
 sudo install k3sup /usr/local/bin/
 ```
 
 Assuming your cluster is composed of 2 machines (main server and agent server)
 
-```
+```bash
 # install k3s on main server
 
 export SERVER_IP=xxx.xxx.xxx.xxx
@@ -107,7 +107,7 @@ k3sup join --ip $AGENT_IP --server-ip $SERVER_IP --user $USER
 Test your cluster
 -----------------
 
-```
+```bash
 export KUBECONFIG=`pwd`/kubeconfig
 kubectl config use-context default
 kubectl get node
@@ -118,7 +118,7 @@ kubectl get pods -A
 
 ## Deploy Kubernetes Dashboard (optional but useful)
 
-```
+```bash
 kubectl apply -f https://raw.githubusercontent.com/kubernetes/dashboard/v2.7.0/aio/deploy/recommended.yaml
 
 kubectl apply -f ./manifest/dashboard/cluster-role.yaml
@@ -126,12 +126,12 @@ kubectl apply -f ./manifest/dashboard/secret.yaml
 kubectl apply -f ./manifest/dashboard/service-account.yaml
 ```
 
-```
+```bash
 # generate token
 kubectl -n kubernetes-dashboard create token admin-user
 ```
 
-```
+```bash
 # launch web server
 kubectl proxy &
 ```
@@ -145,7 +145,7 @@ Choose `Token` as login method, paste the token just generated
 
 Traefik comes out of the box with k3s. In order to access Traefik Dashboard from your laptop:
 
-```
+```bash
 kubectl --namespace kube-system port-forward deployments/traefik 9000:9000 &
 ```
 
@@ -155,7 +155,8 @@ Storage configuration (Longhorn)
 --------------------------------
 
 Deploy longhorn in your cluster:
-```
+
+```bash
 kubectl apply -f https://raw.githubusercontent.com/longhorn/longhorn/v1.5.3/deploy/prerequisite/longhorn-iscsi-installation.yaml
 
 kubectl apply -f https://raw.githubusercontent.com/longhorn/longhorn/v1.5.3/deploy/prerequisite/longhorn-nfs-installation.yaml
@@ -163,66 +164,106 @@ kubectl apply -f https://raw.githubusercontent.com/longhorn/longhorn/v1.5.3/depl
 ```
 
 **Single or two nodes cluster** (less than 3 nodes)
-```
+
+```bash
 wget https://raw.githubusercontent.com/longhorn/longhorn/v1.5.3/deploy/longhorn.yaml
 ```
 
 edit `longhorn.yaml` and modify `numberOfReplicas: <number of nodes>` (i.e 1 or 2)
 
-```
+```bash
 kubectl apply -f longhorn.yaml
 ```
 
 **Multi node cluster** (more than 2 nodes)
-```
+
+```bash
 kubectl apply -f https://raw.githubusercontent.com/longhorn/longhorn/v1.5.3/deploy/longhorn.yaml
 ```
 
 Check environnment
 ------------------
-```
+
+```bash
 curl -sSfL https://raw.githubusercontent.com/longhorn/longhorn/v1.5.3/scripts/environment_check.sh | bash
 
 ```
 
 On master Node:
-```
+```bash
 cp /var/lib/rancher/k3s/server/manifests/local-storage.yaml /var/lib/rancher/k3s/server/manifests/custom-local-storage.yaml
 
 sed -i -e "s/storageclass.kubernetes.io\/is-default-class: \"true\"/storageclass.kubernetes.io\/is-default-class: \"false\"/g" /var/lib/rancher/k3s/server/manifests/custom-local-storage.yaml
 ```
 
 
-```
+```bash
 kubectl port-forward -n longhorn-system svc/longhorn-frontend 8080:80 &
 ```
 
+## What is your hostname ?
+
+Single node: easy
+Multi-node: todo
+
+References to look at:
+* loadbalancer [metallb](https://metallb.universe.tf/)
+* [external dns ](https://github.com/kubernetes-sigs/external-dns)
+
+Few tutorials:
+* https://particule.io/en/blog/k8s-no-cloud/
+* https://datavirke.dk/posts/bare-metal-kubernetes-part-4-ingress-dns-certificates/
+
 ## Deploy diracx
 
-Clone diracx repositories
 -------------------------
-```
+```bash
+# Clone diracx repositories
+
 git clone https://github.com/DIRACGrid/diracx-charts.git
-```
 
+# Update the config with your hostname
+sed -i 's/<your_hostname>/thenameyouareacutally.using.com/g' ./diracx-charts/k3s/examples/*
 
-Deploy via provided helm charts
--------------------------------
-```
+# Deploy via provided helm charts
+
 helm install --timeout 3600s diracx ./diracx-charts/diracx/ -f ./diracx-charts/k3s/examples/my.values.yaml --debug
 ```
-Note: edit ./diracx-charts/k3s/examples/my.values.yaml to fit with your cluster configuration (k3s server hostname)
+
+## Configure DiracX
+
+We need to configure DiracX. It could be done with `dirac` CLI tool if you have it available, but here we do it by editing the Configuration repository directly.
+
+```bash
+# Login to the diracx pod
+kubectl exec -it deployments/diracx -- bash
+
+# install an editor
+micromamba install -c conda-forge vim
+
+# Edit the content of the config file
+# and replcate it with ./diracx-charts/k3s/examples/cs.yaml
+cd /cs_store/initialRepo/
+vim default.yml
+
+# Commit
+git config --global user.email "inspector@gadget.com"
+git config --global user.name "Bond, James Bond"
+git add default.yml
+git commit -m 'Initial config'
+```
+
 
 ## Uninstall k3s on main server
 https://docs.k3s.io/installation/uninstall
 
 On master node:
-```
+```bash
 /usr/local/bin/k3s-uninstall.sh
 ```
 
 On agent nodes
-```
+```bash
 /usr/local/bin/k3s-agent-uninstall.sh
 ```
 
@@ -234,11 +275,11 @@ On agent nodes
 This is due to `glibc` limitation on the number of entry in `/etc/resolv.conf`. Do not have more than 3.
 
 
-###
+### `Longorn-ui` failure
 
 `longhorn-ui` fails with
 
-```
+```bash
 host not found in upstream "longhorn-backend" in /etc/nginx/nginx.conf:32
 nginx: [emerg] host not found in upstream "longhorn-backend" in /etc/nginx/nginx.conf:32
 ```
