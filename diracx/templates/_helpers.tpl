@@ -70,102 +70,102 @@ Create the name of the service account to use
 {{- end }}
 
 {{/*
-Return the fullname template for the init-cs job.
+Return the fullname template for the initCs job.
 */}}
-{{- define "init-cs.fullname" -}}
+{{- define "initCs.fullname" -}}
 {{- printf "%s-init-cs" .Release.Name -}}
 {{- end -}}
 
 {{/*
-Create a default fully qualified job name for init-cs.
+Create a default fully qualified job name for initCs.
 Due to the job only being allowed to run once, we add the chart revision so helm
 upgrades don't cause errors trying to create the already ran job.
 Due to the helm delete not cleaning up these jobs, we add a random value to
 reduce collisions.
 */}}
-{{- define "init-cs.jobname" -}}
-{{- $name := include "init-cs.fullname" . | trunc 55 | trimSuffix "-" -}}
+{{- define "initCs.jobname" -}}
+{{- $name := include "initCs.fullname" . | trunc 55 | trimSuffix "-" -}}
 {{- $rand := randAlphaNum 3 | lower }}
 {{- printf "%s-%d-%s" $name .Release.Revision $rand | trunc 63 | trimSuffix "-" -}}
 {{- end -}}
 
 {{/*
-Return the fullname template for the init-secrets job.
+Return the fullname template for the initSecrets job.
 */}}
-{{- define "init-secrets.fullname" -}}
+{{- define "initSecrets.fullname" -}}
 {{- printf "%s-init-secrets" .Release.Name -}}
 {{- end -}}
 
 {{/*
 Return the name template for shared-secrets job.
 */}}
-{{- define "init-secrets.name" -}}
-{{- $sharedSecretValues := index .Values "init-secrets" -}}
+{{- define "initSecrets.name" -}}
+{{- $sharedSecretValues := index .Values "initSecrets" -}}
 {{- default "init-secrets" $sharedSecretValues.nameOverride | trunc 63 | trimSuffix "-" -}}
 {{- end -}}
 
 {{/*
-Create a default fully qualified job name for init-secrets.
+Create a default fully qualified job name for initSecrets.
 Due to the job only being allowed to run once, we add the chart revision so helm
 upgrades don't cause errors trying to create the already ran job.
 Due to the helm delete not cleaning up these jobs, we add a random value to
 reduce collisions.
 */}}
-{{- define "init-secrets.jobname" -}}
-{{- $name := include "init-secrets.fullname" . | trunc 55 | trimSuffix "-" -}}
+{{- define "initSecrets.jobname" -}}
+{{- $name := include "initSecrets.fullname" . | trunc 55 | trimSuffix "-" -}}
 {{- $rand := randAlphaNum 3 | lower }}
 {{- printf "%s-%d-%s" $name .Release.Revision $rand | trunc 63 | trimSuffix "-" -}}
 {{- end -}}
 
 {{/*
-Create the name of the service account to use for init-secrets job
+Create the name of the service account to use for initSecrets job
 */}}
-{{- define "init-secrets.serviceAccountName" -}}
-{{- $initSecretsValues := index .Values "init-secrets" -}}
+{{- define "initSecrets.serviceAccountName" -}}
+{{- $initSecretsValues := index .Values "initSecrets" -}}
 {{- if $initSecretsValues.serviceAccount.create -}}
-    {{ default (include "init-secrets.fullname" .) $initSecretsValues.serviceAccount.name }}
+    {{ default (include "initSecrets.fullname" .) $initSecretsValues.serviceAccount.name }}
 {{- else -}}
     {{ coalesce $initSecretsValues.serviceAccount.name .Values.global.serviceAccount.name "default" }}
 {{- end -}}
 {{- end -}}
 
 {{/*
-Return the fullname template for the init-sql job.
+Return the fullname template for the initSql job.
 */}}
-{{- define "init-sql.fullname" -}}
+{{- define "initSql.fullname" -}}
 {{- printf "%s-init-sql" .Release.Name -}}
 {{- end -}}
 
 {{/*
-Create a default fully qualified job name for init-sql.
+Create a default fully qualified job name for initSql.
 Due to the job only being allowed to run once, we add the chart revision so helm
 upgrades don't cause errors trying to create the already ran job.
 Due to the helm delete not cleaning up these jobs, we add a random value to
 reduce collisions.
 */}}
-{{- define "init-sql.jobname" -}}
-{{- $name := include "init-sql.fullname" . | trunc 55 | trimSuffix "-" -}}
+{{- define "initSql.jobname" -}}
+{{- $name := include "initSql.fullname" . | trunc 55 | trimSuffix "-" -}}
 {{- $rand := randAlphaNum 3 | lower }}
 {{- printf "%s-%d-%s" $name .Release.Revision $rand | trunc 63 | trimSuffix "-" -}}
 {{- end -}}
 
 
 {{/*
-Return the fullname template for the init-os job.
+Return the fullname template for the initOs job.
 */}}
-{{- define "init-os.fullname" -}}
+{{- define "initOs.fullname" -}}
 {{- printf "%s-init-os" .Release.Name -}}
 {{- end -}}
 
 {{/*
-Create a default fully qualified job name for init-os.
+Create a default fully qualified job name for initOs.
 Due to the job only being allowed to run once, we add the chart revision so helm
 upgrades don't cause errors trying to create the already ran job.
 Due to the helm delete not cleaning up these jobs, we add a random value to
 reduce collisions.
 */}}
-{{- define "init-os.jobname" -}}
-{{- $name := include "init-os.fullname" . | trunc 55 | trimSuffix "-" -}}
+{{- define "initOs.jobname" -}}
+{{- $name := include "initOs.fullname" . | trunc 55 | trimSuffix "-" -}}
 {{- $rand := randAlphaNum 3 | lower }}
 {{- printf "%s-%d-%s" $name .Release.Revision $rand | trunc 63 | trimSuffix "-" -}}
 {{- end -}}

@@ -61,11 +61,11 @@ securityContext:
 
 #################
 
-init-cs:
+initCs:
   # Automatically initialize the repository in the CS volume
   enabled: true
 
-init-secrets:
+initSecrets:
   enabled: true
   rbac:
     create: true
@@ -74,7 +74,7 @@ init-secrets:
     create: true
     name: # Specify a pre-existing ServiceAccount name
 
-init-sql:
+initSql:
   # Should DiracX include an init container which manages the SQL DB schema?
   enabled: true
   env: {}

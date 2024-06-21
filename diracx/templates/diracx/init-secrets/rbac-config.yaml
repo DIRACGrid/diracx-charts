@@ -1,10 +1,9 @@
-{{- $initSecretsValues := index .Values "init-secrets" }}
-{{- if and $initSecretsValues.enabled $initSecretsValues.rbac.create -}}
-{{-   if $initSecretsValues.serviceAccount.create -}}
+{{- if and .Values.initSecrets.enabled .Values.initSecrets.rbac.create -}}
+{{-   if .Values.initSecrets.serviceAccount.create -}}
 apiVersion: v1
 kind: ServiceAccount
 metadata:
-  name: {{ template "init-secrets.serviceAccountName" . }}
+  name: {{ template "initSecrets.serviceAccountName" . }}
   namespace: {{ .Release.Namespace }}
   annotations:
     "helm.sh/hook": pre-install,pre-upgrade
@@ -15,11 +14,11 @@ metadata:
 kind: Role
 apiVersion: rbac.authorization.k8s.io/v1
 metadata:
-  name: {{ template "init-secrets.fullname" . }}
+  name: {{ template "initSecrets.fullname" . }}
   namespace: {{ .Release.Namespace }}
   labels:
-    app: {{ template "init-secrets.name" . }}
-    chart: init-secrets-{{ .Chart.Version | replace "+" "_" }}
+    app: {{ template "initSecrets.name" . }}
+    chart: initSecrets-{{ .Chart.Version | replace "+" "_" }}
     release: {{ .Release.Name }}
     heritage: {{ .Release.Service }}
   annotations:
@@ -34,11 +33,11 @@ rules:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
-  name: {{ template "init-secrets.fullname" . }}
+  name: {{ template "initSecrets.fullname" . }}
   namespace: {{ .Release.Namespace }}
   labels:
-    app: {{ template "init-secrets.name" . }}
-    chart: init-secrets-{{ .Chart.Version | replace "+" "_" }}
+    app: {{ template "initSecrets.name" . }}
+    chart: initSecrets-{{ .Chart.Version | replace "+" "_" }}
     release: {{ .Release.Name }}
     heritage: {{ .Release.Service }}
   annotations:
@@ -48,9 +47,9 @@ metadata:
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: Role
-  name: {{ template "init-secrets.fullname" . }}
+  name: {{ template "initSecrets.fullname" . }}
 subjects:
   - kind: ServiceAccount
-    name: {{ template "init-secrets.serviceAccountName" . }}
+    name: {{ template "initSecrets.serviceAccountName" . }}
     namespace: {{ .Release.Namespace }}
 {{- end}}

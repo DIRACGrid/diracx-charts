@@ -1,5 +1,4 @@
-{{- $initSQLValues := index .Values "init-sql" -}}
-{{- if $initSQLValues.enabled }}
+{{- if .Values.initSql.enabled }}
 
 {{/* Define common volume mounts for reusability */}}
 {{- $commonVolumeMounts := list }}
@@ -22,7 +21,7 @@
 apiVersion: batch/v1
 kind: Job
 metadata:
-  name: {{ template "init-sql.jobname" . }}
+  name: {{ template "initSql.jobname" . }}
   namespace: {{ .Release.Namespace }}
   annotations:
     "helm.sh/hook": post-install,pre-upgrade
@@ -32,7 +31,7 @@ spec:
   template:
     metadata:
       annotations:
-      {{- range $key, $value := $initSQLValues.annotations }}
+      {{- range $key, $value := .Values.initSql.annotations }}
         {{ $key }}: {{ $value | quote }}
       {{- end }}
     spec:
@@ -63,11 +62,11 @@ spec:
                   key: DIRACX_DB_URL_{{ $dbName | upper }}
           {{- end }}
           resources:
-            {{- toYaml $initSQLValues.resources | nindent 12 }}
+            {{- toYaml .Values.initSql.resources | nindent 12 }}
       volumes:
       - name: scripts
         configMap:
-          name: {{ template "init-sql.fullname" . }}
+          name: {{ template "initSql.fullname" . }}
       {{- if and .Values.developer.enabled .Values.developer.mountedPythonModulesToInstall }}
       - name: diracx-code-mount
         persistentVolumeClaim:

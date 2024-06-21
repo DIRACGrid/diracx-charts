@@ -1,9 +1,8 @@
-{{- $initSQLValues := index .Values "init-sql" "enabled" -}}
-{{- if $initSQLValues -}}
+{{- if .Values.initSql.enabled -}}
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: {{ template "init-sql.fullname" . }}
+  name: {{ template "initSql.fullname" . }}
   namespace: {{ .Release.Namespace }}
   annotations:
     "helm.sh/hook": post-install,pre-upgrade
