@@ -1,5 +1,4 @@
-{{- $initCSValues := index .Values "init-cs" -}}
-{{- if $initCSValues.enabled }}
+{{- if .Values.initCs.enabled }}
 
 {{/* Define common volume mounts for reusability */}}
 {{- $commonVolumeMounts := list }}
@@ -23,7 +22,7 @@
 apiVersion: batch/v1
 kind: Job
 metadata:
-  name: {{ template "init-cs.jobname" . }}
+  name: {{ template "initCs.jobname" . }}
   namespace: {{ .Release.Namespace }}
   annotations:
     "helm.sh/hook": pre-install
@@ -33,7 +32,7 @@ spec:
   template:
     metadata:
       annotations:
-      {{- range $key, $value := $initCSValues.annotations }}
+      {{- range $key, $value := .Values.initCs.annotations }}
         {{ $key }}: {{ $value | quote }}
       {{- end }}
     spec:
@@ -49,11 +48,11 @@ spec:
             - name: scripts
               mountPath: /scripts
           resources:
-            {{- toYaml $initCSValues.resources | nindent 12 }}
+            {{- toYaml .Values.initCs.resources | nindent 12 }}
       volumes:
       - name: scripts
         configMap:
-          name: {{ template "init-cs.fullname" . }}
+          name: {{ template "initCs.fullname" . }}
       - name: cs-store-mount
         persistentVolumeClaim:
           claimName: pvc-cs-store

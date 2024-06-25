@@ -11,7 +11,7 @@ spec:
     # The ACME server URL
     server: {{ .Values.acme.server | quote }}
     # Email address used for ACME registration
-    email: {{ required "You must provide an email to associate with your TLS certificates. Please set certmanager-issuer.email" .Values.acme.email | quote }}
+    email: {{ required "You must provide an email to associate with your TLS certificates. Please set cert-manager-issuer.email" .Values.acme.email | quote }}
     # Name of a secret used to store the ACME account private key
     privateKeySecretRef:
       name: {{ .Release.Name }}-acme-key
@@ -20,7 +20,7 @@ spec:
     - selector: {}
       http01:
         ingress:
-          {{ include "cert-manager-issuer.http01.ingress.class.field" $ingressClassName -}}
+          {{ include "certManagerIssuer.http01.ingress.class.field" $ingressClassName -}}
 {{- end }}
 ---
 {{- if index .Values "self-signed" "enabled" }}

@@ -1,7 +1,7 @@
 apiVersion: batch/v1
 kind: Job
 metadata:
-  name: {{ template "cert-manager-issuer.jobname" . }}
+  name: {{ template "certManagerIssuer.jobname" . }}
   namespace: {{ $.Release.Namespace }}
 spec:
   ttlSecondsAfterFinished: {{ .Values.global.batchJobTTL }}

@@ -22,7 +22,7 @@
 apiVersion: batch/v1
 kind: Job
 metadata:
-  name: {{ template "init-os.jobname" . }}
+  name: {{ template "initOs.jobname" . }}
   namespace: {{ .Release.Namespace }}
   annotations:
     "helm.sh/hook": post-install,pre-upgrade
@@ -67,7 +67,7 @@ spec:
       volumes:
       - name: scripts
         configMap:
-          name: {{ template "init-os.fullname" . }}
+          name: {{ template "initOs.fullname" . }}
       {{- if and .Values.developer.enabled .Values.developer.mountedPythonModulesToInstall }}
       - name: diracx-code-mount
         persistentVolumeClaim:

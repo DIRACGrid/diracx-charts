@@ -1,9 +1,8 @@
-{{- $initCSValues := index .Values "init-cs" "enabled" -}}
-{{- if $initCSValues -}}
+{{- if .Values.initCs.enabled -}}
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: {{ template "init-cs.fullname" . }}
+  name: {{ template "initCs.fullname" . }}
   namespace: {{ .Release.Namespace }}
   annotations:
     "helm.sh/hook": pre-install

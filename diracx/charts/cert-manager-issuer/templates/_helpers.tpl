@@ -2,7 +2,7 @@
 {{/*
 Expand the name of the chart.
 */}}
-{{- define "cert-manager-issuer.name" -}}
+{{- define "certManagerIssuer.name" -}}
 {{- default .Chart.Name .Values.nameOverride | trunc 63 | trimSuffix "-" -}}
 {{- end -}}
 
@@ -10,7 +10,7 @@ Expand the name of the chart.
 Create a default fully qualified app name.
 We truncate at 63 chars because some Kubernetes name fields are limited to this (by the DNS naming spec).
 */}}
-{{- define "cert-manager-issuer.fullname" -}}
+{{- define "certManagerIssuer.fullname" -}}
 {{- $name := default .Chart.Name .Values.nameOverride -}}
 {{- printf "%s-%s" .Release.Name $name | trunc 63 | trimSuffix "-" -}}
 {{- end -}}
@@ -22,7 +22,7 @@ upgrades don't cause errors trying to create the already ran job.
 Due to the helm delete not cleaning up these jobs, we add a random value to
 reduce collision
 */}}
-{{- define "cert-manager-issuer.jobname" -}}
+{{- define "certManagerIssuer.jobname" -}}
 {{- $name := printf "%s-issuer" .Release.Name | trunc 55 | trimSuffix "-" -}}
 {{- printf "%s-%d" $name .Release.Revision | trunc 63 | trimSuffix "-" -}}
 {{- end -}}
@@ -32,7 +32,7 @@ Returns the http01 solver's ingress class field. Takes the IngressClass as param
 If the IngressClass is "none", the field is not set.
   See: https://cert-manager.io/docs/configuration/acme/http01/#class
 */}}
-{{- define "cert-manager-issuer.http01.ingress.class.field" -}}
+{{- define "certManagerIssuer.http01.ingress.class.field" -}}
 {{- $ingressClass := . | default "" -}}
 {{- if ne "none" $ingressClass -}}
 class: {{ $ingressClass }}
