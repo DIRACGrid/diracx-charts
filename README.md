@@ -308,7 +308,7 @@ Note that this configuration is trivial and does not follow production recommand
 | global.images.services | string | `"ghcr.io/diracgrid/diracx/services"` |  |
 | global.images.tag | string | `"dev"` |  |
 | global.images.web.repository | string | `"ghcr.io/diracgrid/diracx-web/static"` |  |
-| global.images.web.tag | string | `"latest"` |  |
+| global.images.web.tag | string | `"dev"` |  |
 | global.storageClassName | string | `"standard"` |  |
 | grafana.datasources."datasources.yaml".apiVersion | int | `1` |  |
 | grafana.datasources."datasources.yaml".datasources[0].name | string | `"Jaeger"` |  |
