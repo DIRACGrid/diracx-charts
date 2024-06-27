@@ -349,6 +349,18 @@ mysql:
     createDatabase: false
   initdbScriptsConfigMap: mysql-init-diracx-dbs
 
+  # if mysql pod is failing and restarting due to mysql update
+  # it can be that the prob failure treshold is too low
+  # increasing this number can help:
+  #
+  # startupProbe:
+  #   enabled: true
+  #   initialDelaySeconds: 15
+  #   periodSeconds: 10
+  #   timeoutSeconds: 1
+  #   failureThreshold: 30
+  #   successThreshold: 1
+
 ##########################
 
 rabbitmq:
