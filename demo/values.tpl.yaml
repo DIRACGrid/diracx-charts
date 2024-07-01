@@ -35,6 +35,7 @@ diracx:
   osDbs:
     dbs:
       JobParametersDB:
+      PilotLogsDB:
 
 minio:
   environment:
