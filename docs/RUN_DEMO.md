@@ -21,7 +21,7 @@ This volume could grow very large, do not forget to clean it up regularely, as s
 
 ## DiracX configuration
 
-The configuration yaml used by the ``diracx`` service is a mounted directory: ``diracx-charts/.demo/cs-mount``.  This means that if you want to change the configuration of diracx, you can just edit and ``git commit`` this file.
+The configuration yaml used by the ``diracx`` service is a mounted directory: ``diracx-charts/.demo/cs-mount``.  This means that if you want to change the configuration of diracx, you can just edit ``diracx-charts/.demo/cs-mount/initRepo/default.yml`` and ``git commit`` this file. Note that the ``diracx-charts/.demo/cs-mount`` is a git repository in itself, and that's where you should go and commit. Do not attempt to commit anything under ``diracx-charts/.demo/`` in the ``diracx-charts`` repo (it is in the ``.gitignore``)
 
 ## Coverage volume
 
