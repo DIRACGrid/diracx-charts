@@ -25,6 +25,8 @@ diracx:
     DIRACX_OTEL_ENABLED: "{{ open_telemetry }}"
     DIRACX_OTEL_GRPC_ENDPOINT: "diracx-demo-opentelemetry-collector:4317"
     DIRACX_OTEL_GRPC_INSECURE: "true"
+    DIRACX_SERVICE_AUTH_ACCESS_TOKEN_EXPIRE_MINUTES: "120"
+    DIRACX_SERVICE_AUTH_REFRESH_TOKEN_EXPIRE_MINUTES: "360"
   sqlDbs:
     dbs:
       AuthDB:
