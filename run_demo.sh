@@ -97,7 +97,7 @@ function element_not_in_array() {
   return $found
 }
 
-usage="${0##*/} [-h|--help] [--exit-when-done] [--offline] [--enable-coverage] [--no-mount-containerd] [--set-value key=value] [--] [source directories]"
+usage="${0##*/} [-h|--help] [--exit-when-done] [--offline] [--enable-coverage] [--no-mount-containerd] [--set-value key=value] [--ci-values=values.yaml] [--] [source directories]"
 usage+="\n\n"
 usage+="  -h|--help: Print this help message and exit\n"
 usage+="  --exit-when-done: Exit after the demo has been started (it will be left running in the background)\n"
@@ -113,6 +113,7 @@ usage+="  --enable-open-telemetry: lauches OpenTelemetry collection.\n"
 usage+="                           WARNING: experimental and resource hungry.\n"
 usage+="  --set-value: Set a value in the Helm values file. This can be used to override the default values.\n"
 usage+="               For example, to enable coverage reporting pass: --set-value developer.enableCoverage=true\n"
+usage+="  --ci-values: Path to a values.yaml file which contains diracx dev settings only enabled for CI\n"
 usage+="  source directories: A list of directories containing Python packages to mount in the demo cluster.\n"
 
 # Parse command-line switches
@@ -123,93 +124,110 @@ declare -a helm_arguments=()
 enable_coverage=0
 editable_python=1
 open_telemetry=0
+ci_values_file=""
+
 while [ -n "${1:-}" ]; do case $1 in
-	# Print a brief usage summary and exit
-	-h|--help|-\?)
-		printf 'Usage: %b\n' "$usage"
-		exit ;;
+  # Print a brief usage summary and exit
+  -h|--help|-\?)
+    printf 'Usage: %b\n' "$usage"
+    exit ;;
 
-	# # Unbundle short options
-	# -[niladic-short-opts]?*)
-	# 	tail="${1#??}"
-	# 	head=${1%"$tail"}
-	# 	shift
-	# 	set -- "$head" "-$tail" "$@"
-	# 	continue ;;
+  # # Unbundle short options
+  # -[niladic-short-opts]?*)
+  # 	tail="${1#??}"
+  # 	head=${1%"$tail"}
+  # 	shift
+  # 	set -- "$head" "-$tail" "$@"
+  # 	continue ;;
 
-	# # Expand parametric values
-	# -[monadic-short-opts]?*|--[!=]*=*)
-	# 	case $1 in
-	# 		--*) tail=${1#*=}; head=${1%%=*} ;;
-	# 		*)   tail=${1#??}; head=${1%"$tail"} ;;
-	# 	esac
-	# 	shift
-	# 	set -- "$head" "$tail" "$@"
-	# 	continue ;;
+  # # Expand parametric values
+  # -[monadic-short-opts]?*|--[!=]*=*)
+  # 	case $1 in
+  # 		--*) tail=${1#*=}; head=${1%%=*} ;;
+  # 		*)   tail=${1#??}; head=${1%"$tail"} ;;
+  # 	esac
+  # 	shift
+  # 	set -- "$head" "$tail" "$@"
+  # 	continue ;;
 
-	# Add new switch checks here
-	--exit-when-done)
+  # Add new switch checks here
+  --exit-when-done)
     exit_when_done=1
-		shift
-		continue ;;
+    shift
+    continue ;;
 
-	--enable-coverage)
+  --enable-coverage)
     helm_arguments+=("--set")
     helm_arguments+=("developer.enableCoverage=true")
     enable_coverage=1
-		shift
-		continue ;;
+    shift
+    continue ;;
 
   --no-editable-python)
     editable_python=0
     shift
     continue ;;
 
-	--no-mount-containerd)
+  --no-mount-containerd)
     mount_containerd=0
-		shift
-		continue ;;
+    shift
+    continue ;;
 
-	--offline)
+  --offline)
     mount_containerd=1
     offline_mode=1
     helm_arguments+=("--set" "global.imagePullPolicy=IfNotPresent")
     helm_arguments+=("--set" "developer.offline=true")
-		shift
-		continue ;;
+    shift
+    continue ;;
 
   --enable-open-telemetry)
     open_telemetry=1
     shift
-		continue ;;
+    continue ;;
 
-	--set-value)
-		shift
+  --set-value)
+    shift
     if [[ -z "${1:-}" ]]; then
       printf "%b Error: --set-value requires an argument\n" ${SKULL_EMOJI}
       exit 1
     fi
     helm_arguments+=("--set")
     helm_arguments+=("${1}")
-		shift
-		continue ;;
+    shift
+    continue ;;
 
-	# Double-dash: Terminate option parsing
-	--)
-		shift
-		break ;;
+  --ci-values)
+    shift
+    if [[ -z "${1:-}" ]]; then
+      printf "%b Error: --ci-values requires an argument\n" ${SKULL_EMOJI}
+      exit 1
+    fi
+    ci_values_file=$(realpath "${1}")
+    if [[ ! -f "${ci_values_file}" ]]; then
+      printf "%b Error: --ci-values does not point to a file\n" ${SKULL_EMOJI}
+      exit 1;
+    fi
+    shift
+    continue ;;
 
-	# Invalid option: abort
-	--*|-?*)
-		>&2 printf '%b %s: Invalid option: "%s"\n' ${SKULL_EMOJI} "${0##*/}" "$1"
-		>&2 printf 'Usage: %b\n' "$usage"
-		exit 1 ;;
+  # Double-dash: Terminate option parsing
+  --)
+    shift
+    break ;;
 
-	# Argument not prefixed with a dash
-	*) break ;;
+  # Invalid option: abort
+  --*|-?*)
+    >&2 printf '%b %s: Invalid option: "%s"\n' ${SKULL_EMOJI} "${0##*/}" "$1"
+    >&2 printf 'Usage: %b\n' "$usage"
+    exit 1 ;;
+
+  # Argument not prefixed with a dash
+  *) break ;;
 
 esac; shift
 done
+
 
 # Remaining arguments are positional parameters that are used to specify which
 # source directories to mount in the demo cluster
@@ -469,6 +487,9 @@ printf "%b Waiting for ingress controller to be created...\n" ${UNICORN_EMOJI}
 # Install the DiracX chart
 printf "%b Installing DiracX...\n" ${UNICORN_EMOJI}
 helm_arguments+=("--values" "${demo_dir}/values.yaml")
+if [[ -n "${ci_values_file}" ]]; then
+  helm_arguments+=("--values" "${ci_values_file}")
+fi
 if ! "${demo_dir}/helm" install --debug diracx-demo "${script_dir}/diracx" "${helm_arguments[@]}"; then
   printf "%b Error using helm DiracX\n" ${WARN_EMOJI}
   echo "Failed to run \"helm install\"" >> "${demo_dir}/.failed"

@@ -1,0 +1,4 @@
+# Extra settings that are added only for the CI jobs
+diracx:
+  settings:
+    DIRACX_DEV_CRASH_ON_MISSED_ACCESS_POLICY: "true"
