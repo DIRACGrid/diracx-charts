@@ -52,6 +52,11 @@ dependencies:
   repository: https://charts.bitnami.com/bitnami/
   condition: mysql.enabled
 
+- name: postgresqlsql
+  version: 15.5.27
+  repository: https://charts.bitnami.com/bitnami/
+  condition: postgresql.enabled
+
 
 - name: cert-manager
   version: 1.13.1

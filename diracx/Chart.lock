@@ -17,6 +17,9 @@ dependencies:
 - name: mysql
   repository: https://charts.bitnami.com/bitnami/
   version: 9.11.0
+- name: postgresql
+  repository: https://charts.bitnami.com/bitnami/
+  version: 15.5.27
 - name: cert-manager
   repository: https://charts.jetstack.io
   version: v1.13.1
