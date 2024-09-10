@@ -341,8 +341,10 @@ indigoiam:
 
 ##########################
 
+# ONLY ONE CAN BE ENABLED
+
 mysql:
-  enabled: true
+  enabled: false
   auth:
     existingSecret: mysql-secret
     username: sqldiracx
@@ -360,6 +362,21 @@ mysql:
   #   timeoutSeconds: 1
   #   failureThreshold: 30
   #   successThreshold: 1
+
+# postgresPassword
+# username: ""
+# password: ""
+postgresql:
+  enabled: true
+  auth:
+    existingSecret: postgresql-secret
+    username: sqldiracx
+    createDatabase: false
+  
+  primary:
+    initdb:
+      scriptsConfigMap: postgresql-init-diracx-dbs
+
 
 ##########################
 

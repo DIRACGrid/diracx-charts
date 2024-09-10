@@ -90,6 +90,11 @@ spec:
           image: busybox:latest
           imagePullPolicy: IfNotPresent
           command: ['sh', '-c', 'until nc -vz {{ .Release.Name }}-mysql 3306; do echo "Waiting for mysql..."; sleep 3; done;']
+        {{- else if .Values.postgresql.enabled }}
+        - name: wait-for-postgresql
+          image: busybox:latest
+          imagePullPolicy: IfNotPresent
+          command: ['sh', '-c', 'until nc -vz {{ .Release.Name }}-postgresql 5432; do echo "Waiting for postgresql..."; sleep 3; done;']
         {{- end }}
         {{- if .Values.opensearch.enabled }}
         - name: wait-for-opensearch

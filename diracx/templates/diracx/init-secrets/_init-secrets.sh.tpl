@@ -5,6 +5,7 @@ IFS=$'\n\t'
 
 namespace={{ .Release.Namespace }}
 release={{ .Release.Name }}
+connStart=""
 
 pushd $(mktemp -d)
 
@@ -48,6 +49,23 @@ function generate_secret_if_needed(){
   fi
 }
 
+# Args database_instance
+function set_sql_connection_driver(){
+  case $1 in
+    "MySQL")
+      connStart="mysql+aiomysql"
+      ;;
+    "PostgreSQL")
+      connStart="postgresql+asyncpg"
+      ;;
+    *)
+      # Throw some kind of error
+      echo "SQL Database \"" $1 "\" unknown" 1>&2
+      exit 1
+      ;;
+  esac
+}
+
 # Generate the token signing key
 ssh-keygen -P '' -trsa -b4096 -mPEM -f"$PWD/rsa256.key"
 generate_secret_if_needed diracx-token-signing-key --from-file "$PWD/rsa256.key"
@@ -61,70 +79,103 @@ generate_secret_if_needed {{ .Values.rabbitmq.auth.existingPasswordSecret }} --f
 generate_secret_if_needed {{ .Values.rabbitmq.auth.existingErlangSecret }} --from-literal=rabbitmq-erlang-cookie=$(gen_random 'a-zA-Z0-9' 32)
 {{- end }}
 
+{{- $externalDB := false }}
+
 # If we deploy MySQL ourselves
 {{- if .Values.mysql.enabled }}
 
-# Make sure that there are no default connection settings
-{{ if .Values.diracx.sqlDbs.default }}
-{{ fail "There should be no default connection settings if running mysql from this Chart" }}
-{{ end }}
+  # Make sure that there are no default connection settings
+  {{ if .Values.diracx.sqlDbs.default }}
+    {{ fail "There should be no default connection settings if running mysql from this Chart" }}
+  {{ end }}
 
-# Generate the secrets for mysql
-generate_secret_if_needed {{ .Values.mysql.auth.existingSecret }} --from-literal=mysql-root-password=$(gen_random 'a-zA-Z0-9' 32)
-generate_secret_if_needed {{ .Values.mysql.auth.existingSecret }} --from-literal=mysql-replication-password=$(gen_random 'a-zA-Z0-9' 32)
-generate_secret_if_needed {{ .Values.mysql.auth.existingSecret }} --from-literal=mysql-password=$(gen_random 'a-zA-Z0-9' 32)
+  # Get the start of the connection string of MySQL (db+driver)
+  set_sql_connection_driver "MySQL"
 
-# Make secrets for the sqlalchemy connection urls
-mysql_password=$(kubectl get secret {{ .Values.mysql.auth.existingSecret }} -ojsonpath="{.data.mysql-password}" | base64 -d)
-mysql_root_password=$(kubectl get secret {{ .Values.mysql.auth.existingSecret }} -ojsonpath="{.data.mysql-root-password}" | base64 -d)
+  # Generate the secrets for MySQL
+  generate_secret_if_needed {{ .Values.mysql.auth.existingSecret }} --from-literal=mysql-root-password='password12345' #$(gen_random 'a-zA-Z0-9' 32)
+  generate_secret_if_needed {{ .Values.mysql.auth.existingSecret }} --from-literal=mysql-replication-password='password12345' #$(gen_random 'a-zA-Z0-9' 32)
+  generate_secret_if_needed {{ .Values.mysql.auth.existingSecret }} --from-literal=mysql-password='password12345' #$(gen_random 'a-zA-Z0-9' 32)
 
-{{- range $dbName,$dbSettings := .Values.diracx.sqlDbs.dbs }}
+  # Set the values for the sqlalchemy connection urls
+  user={{ $.Values.mysql.auth.username }}
+  root_user="root"
+  password=$(kubectl get secret {{ .Values.mysql.auth.existingSecret }} -ojsonpath="{.data.mysql-password}" | base64 -d)
+  root_password=$(kubectl get secret {{ .Values.mysql.auth.existingSecret }} -ojsonpath="{.data.mysql-root-password}" | base64 -d)
+  host={{ $.Release.Name }}-mysql:3306
 
+# If we deploy PostgreSQL ourselves
+{{- else if .Values.postgresql.enabled }}
 
-# Make sure there are no connection settings
-{{ if $dbSettings }}
-{{ fail "There should be no connection settings if running mysql from this Chart" }}
-{{ end }}
+  # Make sure that there are no default connection settings
+  {{ if .Values.diracx.sqlDbs.default }}
+    {{ fail "There should be no default connection settings if running PostgreSQL from this Chart" }}
+  {{ end }}
 
-generate_secret_if_needed diracx-sql-connection-urls \
-  --from-literal=DIRACX_DB_URL_{{ $dbName | upper }}="mysql+aiomysql://{{ $.Values.mysql.auth.username }}:${mysql_password}@{{ $.Release.Name }}-mysql:3306/{{ $dbName }}"
-generate_secret_if_needed diracx-sql-root-connection-urls \
-  --from-literal=DIRACX_DB_URL_{{ $dbName | upper }}="mysql+aiomysql://root:${mysql_root_password}@{{ $.Release.Name }}-mysql:3306/{{ $dbName }}"
-{{- end }}
+  # Get the start of the connection string of PostgreSQL (db+driver)
+  set_sql_connection_driver "PostgreSQL"
 
-# If we use an external MySQL instance
+  # Generate the secrets for PostgreSQL
+  generate_secret_if_needed {{ .Values.postgresql.auth.existingSecret }} --from-literal=postgres-password='password12345' # $(gen_random 'a-zA-Z0-9' 32)
+  #generate_secret_if_needed {{ .Values.postgresql.auth.existingSecret }} --from-literal=postgresql-replication-password=$(gen_random 'a-zA-Z0-9' 32)
+  generate_secret_if_needed {{ .Values.postgresql.auth.existingSecret }} --from-literal=password='password12345' # $(gen_random 'a-zA-Z0-9' 32)
+
+  # Set the values for the sqlalchemy connection urls
+  user={{ $.Values.postgresql.auth.username }}
+  root_user="postgres"
+  password=$(kubectl get secret {{ .Values.postgresql.auth.existingSecret }} -ojsonpath="{.data.password}" | base64 -d)
+  root_password=$(kubectl get secret {{ .Values.postgresql.auth.existingSecret }} -ojsonpath="{.data.postgres-password}" | base64 -d)
+  host={{ $.Release.Name }}-postgresql:5432
+
+# If we use an external DB
 {{- else }}
 
+  {{- $externalDB = true }}
 
-{{- $default_db_host := $.Values.diracx.sqlDbs.default.host }}
-{{- $default_db_root_user := $.Values.diracx.sqlDbs.default.rootUser }}
-{{- $default_db_root_password := $.Values.diracx.sqlDbs.default.rootPassword }}
-{{- $default_db_user := $.Values.diracx.sqlDbs.default.user }}
-{{- $default_db_password := $.Values.diracx.sqlDbs.default.password }}
+  set_sql_connection_driver {{ .Values.diracx.sqlDbs.default.type }}
 
-{{- range $dbName, $db_settings := .Values.diracx.sqlDbs.dbs }}
-
-
-{{- if kindIs "map" $db_settings }}
-{{- $db_host :=  $db_settings.host | default $default_db_host  }}
-{{- $db_root_user :=  $db_settings.rootUser | default $default_db_root_user  }}
-{{- $db_root_password :=  $db_settings.rootPassword | default $default_db_root_password  }}
-{{- $db_user := $db_settings.user | default $default_db_user }}
-{{- $db_password :=  $db_settings.password | default $default_db_password  }}
-{{- $db_internal_name :=  $db_settings.internalName | default $dbName  }}
-
-generate_secret_if_needed diracx-sql-connection-urls \
-  --from-literal=DIRACX_DB_URL_{{ $dbName | upper }}="mysql+aiomysql://{{ $db_user }}:{{ $db_password }}@{{ $db_host }}/{{ $db_internal_name }}"
-generate_secret_if_needed diracx-sql-root-connection-urls \
-  --from-literal=DIRACX_DB_URL_{{ $dbName | upper }}="mysql+aiomysql://{{ $db_root_user }}:{{ $db_root_password }}@{{ $db_host }}/{{ $db_internal_name }}"
-{{- else }}
-generate_secret_if_needed diracx-sql-connection-urls \
-  --from-literal=DIRACX_DB_URL_{{ $dbName | upper }}="mysql+aiomysql://{{ $default_db_user }}:{{ $default_db_password }}@{{ $default_db_host }}/{{ $dbName }}"
-generate_secret_if_needed diracx-sql-root-connection-urls \
-  --from-literal=DIRACX_DB_URL_{{ $dbName | upper }}="mysql+aiomysql://{{ $default_db_root_user }}:{{ $default_db_root_password }}@{{ $default_db_host }}/{{ $dbName }}"
-{{- end }}
+  # Set the default values
+  user={{ $.Values.diracx.sqlDbs.default.user }}
+  root_user={{ $.Values.diracx.sqlDbs.default.rootUser }}
+  password={{ $.Values.diracx.sqlDbs.default.password }}
+  root_password={{ $.Values.diracx.sqlDbs.default.rootPassword }}
+  host={{ $.Values.diracx.sqlDbs.default.host }}
 
 {{- end }}
+
+# Configure the Connections
+{{- range $dbName, $dbSettings := .Values.diracx.sqlDbs.dbs }}
+  # If is not an external db and has settings
+  {{ if and (not $externalDB) $dbSettings }}
+    {{ fail "There should be no connection settings if running a local database from this Chart" }}
+  {{ end }}
+  
+  db_connStart=$connStart   # Configurable at database level?
+
+  {{- if kindIs "map" $dbSettings }}
+    db_user={{ $dbSettings.user | default $.Values.diracx.sqlDbs.default.user }}
+    db_root_user={{ $dbSettings.rootUser | default $.Values.diracx.sqlDbs.default.rootUser }}
+    db_password={{ $dbSettings.password | default $.Values.diracx.sqlDbs.default.password }}
+    db_root_password={{ $dbSettings.rootPassword | default $.Values.diracx.sqlDbs.default.rootPassword }}
+    db_host={{ $dbSettings.host | default $.Values.diracx.sqlDbs.default.host }}
+    db_name={{ $dbSettings.internalName | default $dbName }}
+  {{- else }}
+    db_user=$user
+    db_root_user=$root_user
+    db_password=$password
+    db_root_password=$root_password
+    db_host=$host
+    db_name={{ $dbName }}
+  {{- end }}
+
+  # User connection string
+  generate_secret_if_needed diracx-sql-connection-urls \
+    --from-literal=DIRACX_DB_URL_{{ $dbName | upper }}="${db_connStart}://${db_user}:${db_password}@${db_host}/${db_name}"
+  
+  # Root connection string
+  generate_secret_if_needed diracx-sql-root-connection-urls \
+    --from-literal=DIRACX_DB_URL_{{ $dbName | upper }}="${db_connStart}://${db_root_user}:${db_root_password}@${db_host}/${db_name}"
+
 {{- end }}
 
 
