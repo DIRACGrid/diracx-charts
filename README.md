@@ -221,6 +221,7 @@ Note that this configuration is trivial and does not follow production recommand
 |------------|------|---------|
 |  | cert-manager-issuer | *.*.* |
 | https://charts.bitnami.com/bitnami/ | mysql | 9.11.0 |
+| https://charts.bitnami.com/bitnami/ | postgresql | 15.5.27 |
 | https://charts.bitnami.com/bitnami/ | rabbitmq | 12.0.10 |
 | https://charts.dexidp.io/ | dex | 0.14.2 |
 | https://charts.jetstack.io | cert-manager | 1.13.1 |
@@ -379,7 +380,7 @@ Note that this configuration is trivial and does not follow production recommand
 | mysql.auth.createDatabase | bool | `false` |  |
 | mysql.auth.existingSecret | string | `"mysql-secret"` |  |
 | mysql.auth.username | string | `"sqldiracx"` |  |
-| mysql.enabled | bool | `true` |  |
+| mysql.enabled | bool | `false` |  |
 | mysql.initdbScriptsConfigMap | string | `"mysql-init-diracx-dbs"` |  |
 | nameOverride | string | `""` | type=kubernetes.io/dockerconfigjson imagePullSecrets:   - name: regcred |
 | nodeSelector | object | `{}` |  |
@@ -426,6 +427,12 @@ Note that this configuration is trivial and does not follow production recommand
 | opentelemetry-collector.presets.logsCollection.enabled | bool | `false` |  |
 | podAnnotations | object | `{}` |  |
 | podSecurityContext | object | `{}` |  |
+| postgresql.auth.createDatabase | bool | `false` |  |
+| postgresql.auth.existingSecret | string | `"postgresql-secret"` |  |
+| postgresql.auth.username | string | `"sqldiracx"` |  |
+| postgresql.enabled | bool | `true` |  |
+| postgresql.primary.initdb.scriptsConfigMap | string | `"postgresql-init-diracx-dbs"` |  |
+| postgresql.primary.initdb.user | string | `"postgres"` |  |
 | prometheus.alertmanager.enabled | bool | `false` |  |
 | prometheus.enabled | bool | `false` |  |
 | prometheus.kube-state-metrics.enabled | bool | `false` |  |
