@@ -93,9 +93,9 @@ generate_secret_if_needed {{ .Values.rabbitmq.auth.existingErlangSecret }} --fro
   set_sql_connection_driver "MySQL"
 
   # Generate the secrets for MySQL
-  generate_secret_if_needed {{ .Values.mysql.auth.existingSecret }} --from-literal=mysql-root-password='password12345' #$(gen_random 'a-zA-Z0-9' 32)
-  generate_secret_if_needed {{ .Values.mysql.auth.existingSecret }} --from-literal=mysql-replication-password='password12345' #$(gen_random 'a-zA-Z0-9' 32)
-  generate_secret_if_needed {{ .Values.mysql.auth.existingSecret }} --from-literal=mysql-password='password12345' #$(gen_random 'a-zA-Z0-9' 32)
+  generate_secret_if_needed {{ .Values.mysql.auth.existingSecret }} --from-literal=mysql-root-password=$(gen_random 'a-zA-Z0-9' 32)
+  generate_secret_if_needed {{ .Values.mysql.auth.existingSecret }} --from-literal=mysql-replication-password=$(gen_random 'a-zA-Z0-9' 32)
+  generate_secret_if_needed {{ .Values.mysql.auth.existingSecret }} --from-literal=mysql-password=$(gen_random 'a-zA-Z0-9' 32)
 
   # Set the values for the sqlalchemy connection urls
   user={{ $.Values.mysql.auth.username }}
@@ -116,9 +116,9 @@ generate_secret_if_needed {{ .Values.rabbitmq.auth.existingErlangSecret }} --fro
   set_sql_connection_driver "PostgreSQL"
 
   # Generate the secrets for PostgreSQL
-  generate_secret_if_needed {{ .Values.postgresql.auth.existingSecret }} --from-literal=postgres-password='password12345' # $(gen_random 'a-zA-Z0-9' 32)
+  generate_secret_if_needed {{ .Values.postgresql.auth.existingSecret }} --from-literal=postgres-password=$(gen_random 'a-zA-Z0-9' 32)
   #generate_secret_if_needed {{ .Values.postgresql.auth.existingSecret }} --from-literal=postgresql-replication-password=$(gen_random 'a-zA-Z0-9' 32)
-  generate_secret_if_needed {{ .Values.postgresql.auth.existingSecret }} --from-literal=password='password12345' # $(gen_random 'a-zA-Z0-9' 32)
+  generate_secret_if_needed {{ .Values.postgresql.auth.existingSecret }} --from-literal=password=$(gen_random 'a-zA-Z0-9' 32)
 
   # Set the values for the sqlalchemy connection urls
   user={{ $.Values.postgresql.auth.username }}
@@ -127,7 +127,7 @@ generate_secret_if_needed {{ .Values.rabbitmq.auth.existingErlangSecret }} --fro
   root_password=$(kubectl get secret {{ .Values.postgresql.auth.existingSecret }} -ojsonpath="{.data.postgres-password}" | base64 -d)
   host={{ $.Release.Name }}-postgresql:5432
 
-# If we use an external DB
+# If we use an external DB instance
 {{- else }}
 
   {{- $externalDB = true }}
