@@ -375,6 +375,7 @@ postgresql:
   
   primary:
     initdb:
+      user: postgres
       scriptsConfigMap: postgresql-init-diracx-dbs
 
 

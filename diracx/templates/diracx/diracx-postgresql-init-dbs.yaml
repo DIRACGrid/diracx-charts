@@ -12,14 +12,16 @@ data:
       WHERE datname = '{{ $dbName }}'
     );\gexec
 
-    REVOKE CONNECT ON DATABASE your_database FROM PUBLIC;
+    \c "{{ $dbName }}";
+
+    ALTER DEFAULT PRIVILEGES 
+    FOR USER postgres
+    IN SCHEMA public
+    GRANT SELECT, INSERT, UPDATE, DELETE 
+    ON TABLES 
+    TO "{{ $.Values.postgresql.auth.username }}";
 
     GRANT CONNECT, TEMPORARY
     ON DATABASE "{{ $dbName }}" 
     TO "{{ $.Values.postgresql.auth.username }}";
-
-    ALTER DEFAULT PRIVILEGES 
-    FOR USER "{{ $.Values.postgresql.auth.username }}"
-    IN SCHEMA public
-    GRANT SELECT, INSERT, UPDATE, DELETE ON TABLES TO "{{ $.Values.postgresql.auth.username }}";
 {{- end }}
