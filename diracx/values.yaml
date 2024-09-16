@@ -177,6 +177,9 @@ diracxWeb:
 
 opensearch:
   enabled: true
+  service:
+    type: NodePort
+    port: 9200
   opensearchJavaOpts: "-Xms256m -Xmx256m"
   # replicas: 1
   singleNode: true
@@ -343,6 +346,9 @@ indigoiam:
 
 mysql:
   enabled: true
+  service:
+    type: NodePort
+    port: 3306
   auth:
     existingSecret: mysql-secret
     username: sqldiracx

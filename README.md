@@ -381,6 +381,8 @@ Note that this configuration is trivial and does not follow production recommand
 | mysql.auth.username | string | `"sqldiracx"` |  |
 | mysql.enabled | bool | `true` |  |
 | mysql.initdbScriptsConfigMap | string | `"mysql-init-diracx-dbs"` |  |
+| mysql.service.port | int | `3306` |  |
+| mysql.service.type | string | `"NodePort"` |  |
 | nameOverride | string | `""` | type=kubernetes.io/dockerconfigjson imagePullSecrets:   - name: regcred |
 | nodeSelector | object | `{}` |  |
 | opensearch.config | object | `{}` |  |
@@ -388,6 +390,8 @@ Note that this configuration is trivial and does not follow production recommand
 | opensearch.opensearchJavaOpts | string | `"-Xms256m -Xmx256m"` |  |
 | opensearch.resources.requests.cpu | string | `"100m"` |  |
 | opensearch.resources.requests.memory | string | `"100Mi"` |  |
+| opensearch.service.port | int | `9200` |  |
+| opensearch.service.type | string | `"NodePort"` |  |
 | opensearch.singleNode | bool | `true` |  |
 | opentelemetry-collector.config.exporters.elasticsearch/log.endpoints[0] | string | `"https://elastic:elastic@elasticsearch-master:9200"` |  |
 | opentelemetry-collector.config.exporters.elasticsearch/log.logs_index | string | `"diracx_otel_logs_index"` |  |
