@@ -169,7 +169,14 @@ kubectl apply -f https://raw.githubusercontent.com/longhorn/longhorn/v1.5.3/depl
 wget https://raw.githubusercontent.com/longhorn/longhorn/v1.5.3/deploy/longhorn.yaml
 ```
 
-edit `longhorn.yaml` and modify `numberOfReplicas: <number of nodes>` (i.e 1 or 2)
+edit `longhorn.yaml` and 
+- modify `numberOfReplicas: <number of nodes>` (i.e 1 or 2)
+- OPTIONAL: look for the `longhorn-default-setting` section. At this point, depending on the configuration you applied on your (Virtual) machine(s), modify its `data` part as following:
+```
+  data:
+  default-setting.yaml: |-
+    default-data-path: /mnt/longhorn  # reflect what is the config you'd like to apply. Without, the default is /var/lib/longhorn
+```
 
 ```bash
 kubectl apply -f longhorn.yaml
