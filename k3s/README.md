@@ -204,9 +204,13 @@ sed -i -e "s/storageclass.kubernetes.io\/is-default-class: \"true\"/storageclass
 ```
 
 
+Now, on your client, start the longhorn UI with
 ```bash
 kubectl port-forward -n longhorn-system svc/longhorn-frontend 8080:80 &
 ```
+
+and then visualize it by visiting http://localhost:8080
+
 
 ## What is your hostname ?
 
