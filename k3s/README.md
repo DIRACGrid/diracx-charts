@@ -170,7 +170,7 @@ wget https://raw.githubusercontent.com/longhorn/longhorn/v1.5.3/deploy/longhorn.
 ```
 
 edit `longhorn.yaml` and 
-- modify `numberOfReplicas: <number of nodes>` (i.e 1 or 2 or 3)
+- modify `numberOfReplicas: <number of nodes>` (i.e 1 or 2)
 - Look for the `longhorn-default-setting` section. At this point, depending on the configuration you applied on your (Virtual) machines, modify its `data` part as following:
 ```
   data:
