@@ -169,7 +169,7 @@ kubectl apply -f https://raw.githubusercontent.com/longhorn/longhorn/v1.5.3/depl
 wget https://raw.githubusercontent.com/longhorn/longhorn/v1.5.3/deploy/longhorn.yaml
 ```
 
-edit `longhorn.yaml` and 
+edit `longhorn.yaml` and
 - modify `numberOfReplicas: <number of nodes>` (i.e 1 or 2)
 - OPTIONAL: look for the `longhorn-default-setting` section. At this point, depending on the configuration you applied on your (Virtual) machine(s), modify its `data` part as following:
 ```
@@ -227,7 +227,6 @@ Few tutorials:
 
 ## Deploy diracx
 
--------------------------
 ```bash
 # Clone diracx repositories
 
@@ -263,6 +262,12 @@ git config --global user.name "Bond, James Bond"
 git add default.yml
 git commit -m 'Initial config'
 ```
+
+## Post-install tips
+
+In case you would like to make us of the services installed (e.g. MySQL or OpenSearch) from outisde the kubernetes cluster, there are different solutions and configurations to make. LoadBalancer, NodePort, or Ingress are the options. One of these would need to be set out.
+
+Similar considerations apply for the use of certificates. See https://github.com/DIRACGrid/diracx-charts/issues/107
 
 
 ## Uninstall k3s on main server
