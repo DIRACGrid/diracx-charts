@@ -427,7 +427,6 @@ Note that this configuration is trivial and does not follow production recommand
 | opentelemetry-collector.presets.logsCollection.enabled | bool | `false` |  |
 | podAnnotations | object | `{}` |  |
 | podSecurityContext | object | `{}` |  |
-| postgresql.auth.createDatabase | bool | `false` |  |
 | postgresql.auth.existingSecret | string | `"postgresql-secret"` |  |
 | postgresql.auth.username | string | `"sqldiracx"` |  |
 | postgresql.enabled | bool | `true` |  |

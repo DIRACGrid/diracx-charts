@@ -363,16 +363,11 @@ mysql:
   #   failureThreshold: 30
   #   successThreshold: 1
 
-# postgresPassword
-# username: ""
-# password: ""
 postgresql:
   enabled: true
   auth:
     existingSecret: postgresql-secret
     username: sqldiracx
-    createDatabase: false
-  
   primary:
     initdb:
       user: postgres
