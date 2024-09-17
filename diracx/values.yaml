@@ -344,7 +344,7 @@ indigoiam:
 # ONLY ONE CAN BE ENABLED
 
 mysql:
-  enabled: false
+  enabled: true
   auth:
     existingSecret: mysql-secret
     username: sqldiracx
@@ -364,7 +364,7 @@ mysql:
   #   successThreshold: 1
 
 postgresql:
-  enabled: true
+  enabled: false
   auth:
     existingSecret: postgresql-secret
     username: sqldiracx

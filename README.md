@@ -380,7 +380,7 @@ Note that this configuration is trivial and does not follow production recommand
 | mysql.auth.createDatabase | bool | `false` |  |
 | mysql.auth.existingSecret | string | `"mysql-secret"` |  |
 | mysql.auth.username | string | `"sqldiracx"` |  |
-| mysql.enabled | bool | `false` |  |
+| mysql.enabled | bool | `true` |  |
 | mysql.initdbScriptsConfigMap | string | `"mysql-init-diracx-dbs"` |  |
 | nameOverride | string | `""` | type=kubernetes.io/dockerconfigjson imagePullSecrets:   - name: regcred |
 | nodeSelector | object | `{}` |  |
@@ -429,7 +429,7 @@ Note that this configuration is trivial and does not follow production recommand
 | podSecurityContext | object | `{}` |  |
 | postgresql.auth.existingSecret | string | `"postgresql-secret"` |  |
 | postgresql.auth.username | string | `"sqldiracx"` |  |
-| postgresql.enabled | bool | `true` |  |
+| postgresql.enabled | bool | `false` |  |
 | postgresql.primary.initdb.scriptsConfigMap | string | `"postgresql-init-diracx-dbs"` |  |
 | postgresql.primary.initdb.user | string | `"postgres"` |  |
 | prometheus.alertmanager.enabled | bool | `false` |  |

@@ -97,7 +97,7 @@ function element_not_in_array() {
   return $found
 }
 
-usage="${0##*/} [-h|--help] [--exit-when-done] [--offline] [--enable-coverage] [--no-mount-containerd] [--set-value key=value] [--ci-values=values.yaml] [--] [source directories]"
+usage="${0##*/} [-h|--help] [--exit-when-done] [--offline] [--enable-coverage] [--no-mount-containerd] [--postgres] [--set-value key=value] [--ci-values=values.yaml] [--] [source directories]"
 usage+="\n\n"
 usage+="  -h|--help: Print this help message and exit\n"
 usage+="  --exit-when-done: Exit after the demo has been started (it will be left running in the background)\n"
@@ -111,6 +111,8 @@ usage+="                         This option avoids needing to pull container im
 usage+="                         WARNING: There is no garbage collection so the directory will grow without bound.\n"
 usage+="  --enable-open-telemetry: lauches OpenTelemetry collection.\n"
 usage+="                           WARNING: experimental and resource hungry.\n"
+usage+="  --postgres: Runs the demo using a the PostgreSQL database.\n"
+usage+="              If not specified, it will default to MySQL.\n"
 usage+="  --set-value: Set a value in the Helm values file. This can be used to override the default values.\n"
 usage+="               For example, to enable coverage reporting pass: --set-value developer.enableCoverage=true\n"
 usage+="  --ci-values: Path to a values.yaml file which contains diracx dev settings only enabled for CI\n"
@@ -208,6 +210,12 @@ while [ -n "${1:-}" ]; do case $1 in
       printf "%b Error: --ci-values does not point to a file\n" ${SKULL_EMOJI}
       exit 1;
     fi
+    shift
+    continue ;;
+
+  --postgres)
+    helm_arguments+=("--set" "postgresql.enabled=true") 
+    helm_arguments+=("--set" "mysql.enabled=false")
     shift
     continue ;;
 

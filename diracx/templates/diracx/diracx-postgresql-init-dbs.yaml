@@ -12,7 +12,7 @@ data:
       WHERE datname = '{{ $dbName }}'
     );\gexec
 
-    \c "{{ $dbName }}";
+    \c "{{ $dbName }}"
 
     ALTER DEFAULT PRIVILEGES 
     FOR USER postgres
