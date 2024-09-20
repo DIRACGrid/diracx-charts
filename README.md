@@ -221,7 +221,7 @@ Note that this configuration is trivial and does not follow production recommand
 |------------|------|---------|
 |  | cert-manager-issuer | *.*.* |
 | https://charts.bitnami.com/bitnami/ | mysql | 9.11.0 |
-| https://charts.bitnami.com/bitnami/ | postgresql | 15.5.27 |
+| https://charts.bitnami.com/bitnami/ | postgresql | 11.7.6 |
 | https://charts.bitnami.com/bitnami/ | rabbitmq | 12.0.10 |
 | https://charts.dexidp.io/ | dex | 0.14.2 |
 | https://charts.jetstack.io | cert-manager | 1.13.1 |
