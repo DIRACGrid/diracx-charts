@@ -8,20 +8,20 @@ data:
 {{- range $dbName, $dbSettings := .Values.diracx.sqlDbs.dbs }}
     SELECT 'CREATE DATABASE "{{ $dbName }}"'
     WHERE NOT EXISTS (
-      SELECT FROM pg_database 
+      SELECT FROM pg_database
       WHERE datname = '{{ $dbName }}'
     );\gexec
 
-    \c "{{ $dbName }}"
+    \c "{{ $dbName }}";
 
-    ALTER DEFAULT PRIVILEGES 
+    ALTER DEFAULT PRIVILEGES
     FOR USER postgres
     IN SCHEMA public
-    GRANT SELECT, INSERT, UPDATE, DELETE 
-    ON TABLES 
+    GRANT SELECT, INSERT, UPDATE, DELETE
+    ON TABLES
     TO "{{ $.Values.postgresql.auth.username }}";
 
     GRANT CONNECT, TEMPORARY
-    ON DATABASE "{{ $dbName }}" 
+    ON DATABASE "{{ $dbName }}"
     TO "{{ $.Values.postgresql.auth.username }}";
 {{- end }}

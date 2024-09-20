@@ -82,7 +82,7 @@ spec:
       {{- end }}
       {{- end }}
       {{- end }}
-      {{- if or .Values.mysql.enabled .Values.opensearch.enabled .Values.minio.enabled }}
+      {{- if or .Values.mysql.enabled .Values.postgresql.enabled .Values.opensearch.enabled .Values.minio.enabled }}
       initContainers:
       {{- end }}
         {{- if .Values.mysql.enabled }}

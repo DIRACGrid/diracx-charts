@@ -432,6 +432,7 @@ Note that this configuration is trivial and does not follow production recommand
 | postgresql.enabled | bool | `false` |  |
 | postgresql.primary.initdb.scriptsConfigMap | string | `"postgresql-init-diracx-dbs"` |  |
 | postgresql.primary.initdb.user | string | `"postgres"` |  |
+| postgresql.primary.pgHbaConfiguration | string | `"local   all       all                   trust\nhost    all       all     localhost     trust\nhost    all       all     0.0.0.0/0     md5"` |  |
 | prometheus.alertmanager.enabled | bool | `false` |  |
 | prometheus.enabled | bool | `false` |  |
 | prometheus.kube-state-metrics.enabled | bool | `false` |  |

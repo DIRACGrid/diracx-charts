@@ -149,7 +149,7 @@ generate_secret_if_needed {{ .Values.rabbitmq.auth.existingErlangSecret }} --fro
   {{ if and (not $externalDB) $dbSettings }}
     {{ fail "There should be no connection settings if running a local database from this Chart" }}
   {{ end }}
-  
+
   db_connStart=$connStart   # Configurable at database level?
 
   {{- if kindIs "map" $dbSettings }}
@@ -171,7 +171,7 @@ generate_secret_if_needed {{ .Values.rabbitmq.auth.existingErlangSecret }} --fro
   # User connection string
   generate_secret_if_needed diracx-sql-connection-urls \
     --from-literal=DIRACX_DB_URL_{{ $dbName | upper }}="${db_connStart}://${db_user}:${db_password}@${db_host}/${db_name}"
-  
+
   # Root connection string
   generate_secret_if_needed diracx-sql-root-connection-urls \
     --from-literal=DIRACX_DB_URL_{{ $dbName | upper }}="${db_connStart}://${db_root_user}:${db_root_password}@${db_host}/${db_name}"

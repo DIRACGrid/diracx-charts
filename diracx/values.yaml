@@ -132,6 +132,7 @@ diracx:
     #     user: dirac
     #     password: password123
     #     host: sqlHost:123
+    #     type: MySQL
     # -- Which DiracX MySQL DBs are used?
     dbs:
   #    AuthDB:
@@ -369,6 +370,10 @@ postgresql:
     existingSecret: postgresql-secret
     username: sqldiracx
   primary:
+    pgHbaConfiguration: |-
+      local   all       all                   trust
+      host    all       all     localhost     trust
+      host    all       all     0.0.0.0/0     md5
     initdb:
       user: postgres
       scriptsConfigMap: postgresql-init-diracx-dbs

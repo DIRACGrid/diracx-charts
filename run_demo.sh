@@ -214,8 +214,10 @@ while [ -n "${1:-}" ]; do case $1 in
     continue ;;
 
   --postgres)
-    helm_arguments+=("--set" "postgresql.enabled=true") 
-    helm_arguments+=("--set" "mysql.enabled=false")
+    helm_arguments+=("--set")
+    helm_arguments+=("postgresql.enabled=true")
+    helm_arguments+=("--set")
+    helm_arguments+=("mysql.enabled=false")
     shift
     continue ;;
 
