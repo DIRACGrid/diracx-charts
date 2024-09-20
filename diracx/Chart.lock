@@ -19,7 +19,7 @@ dependencies:
   version: 9.11.0
 - name: postgresql
   repository: https://charts.bitnami.com/bitnami/
-  version: 15.5.27
+  version: 11.7.6
 - name: cert-manager
   repository: https://charts.jetstack.io
   version: v1.13.1
