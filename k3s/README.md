@@ -63,6 +63,16 @@ chmod 700 get_helm.sh
 ./get_helm.sh
 ```
 
+Install longhornctl (on laptop)
+---------------------------
+
+```bash
+curl -L https://github.com/longhorn/cli/releases/download/${LonghornVersion}/longhornctl-${OS}-${ARCH} -o longhornctl  # check https://github.com/longhorn/cli/releases
+chmod +x longhornctl
+mv ./longhornctl /usr/local/bin/longhornctl
+```
+
+
 Enable completion (optional but useful)
 ---------------------------------------
 
@@ -72,6 +82,9 @@ source <(kubectl completion bash)
 
 # helm
 source <(helm completion bash)
+
+# longhornctl
+source <(longhornctl completion bash)
 ```
 
 
@@ -160,7 +173,6 @@ Deploy longhorn in your cluster:
 kubectl apply -f https://raw.githubusercontent.com/longhorn/longhorn/v1.5.3/deploy/prerequisite/longhorn-iscsi-installation.yaml
 
 kubectl apply -f https://raw.githubusercontent.com/longhorn/longhorn/v1.5.3/deploy/prerequisite/longhorn-nfs-installation.yaml
-
 ```
 
 **Single or two nodes cluster** (less than 3 nodes)
@@ -181,6 +193,7 @@ edit `longhorn.yaml` and
 ```bash
 kubectl apply -f longhorn.yaml
 ```
+
 
 **Multi node cluster** (more than 2 nodes)
 
