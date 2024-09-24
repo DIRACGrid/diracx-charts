@@ -21,6 +21,13 @@ data:
     ON TABLES
     TO "{{ $.Values.postgresql.auth.username }}";
 
+    ALTER DEFAULT PRIVILEGES
+    FOR USER postgres
+    IN SCHEMA public
+    GRANT USAGE
+    ON SEQUENCES
+    TO "{{ $.Values.postgresql.auth.username }}";
+
     GRANT CONNECT, TEMPORARY
     ON DATABASE "{{ $dbName }}"
     TO "{{ $.Values.postgresql.auth.username }}";
