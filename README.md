@@ -299,7 +299,6 @@ Note that this configuration is trivial and does not follow production recommand
 | elasticsearch.secret.password | string | `"elastic"` |  |
 | elasticsearch.volumeClaimTemplate.accessModes[0] | string | `"ReadWriteOnce"` |  |
 | elasticsearch.volumeClaimTemplate.resources.requests.storage | string | `"100M"` |  |
-| elasticsearch.volumeClaimTemplate.storageClassName | string | `"standard"` |  |
 | fullnameOverride | string | `""` |  |
 | global.activeDeadlineSeconds | int | `900` | timeout for job deadlines |
 | global.batchJobTTL | int | `600` | How long should batch jobs be retained after completing? |
