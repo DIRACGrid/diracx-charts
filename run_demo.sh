@@ -97,23 +97,25 @@ function element_not_in_array() {
   return $found
 }
 
-usage="${0##*/} [-h|--help] [--exit-when-done] [--offline] [--enable-coverage] [--no-mount-containerd] [--set-value key=value] [--ci-values=values.yaml] [--] [source directories]"
+usage="${0##*/} [-h|--help] [--exit-when-done] [--offline] [--enable-coverage] [--no-mount-containerd] [--set-value key=value] [--ci-values=values.yaml] [--load-docker-image=<image_name:tag>] [--] [source directories]"
 usage+="\n\n"
 usage+="  -h|--help: Print this help message and exit\n"
+usage+="  --ci-values: Path to a values.yaml file which contains diracx dev settings only enabled for CI\n"
 usage+="  --exit-when-done: Exit after the demo has been started (it will be left running in the background)\n"
 usage+="  --enable-coverage: Enable coverage reporting (used by diracx CI)\n"
+usage+="  --enable-open-telemetry: lauches OpenTelemetry collection.\n"
+usage+="                           WARNING: experimental and resource hungry.\n"
+usage+="  --load-docker-image: Mount a local docker image into kind\n"
+usage+="                      WARNING: the ImagePullPolicy MUST not be Always for this to work\n"
 usage+="  --no-editable-python: Do not install Python source directories in editable mode\n"
-usage+="  --offline: Run in a mode which is suitable for fully offline use.\n"
-usage+="             WARNING: This may result in some weird behaviour, see the demo documentation for details.\n"
-usage+="             Implies: --mount-containerd\n"
 usage+="  --no-mount-containerd: Mount a directory on the host for the kind containerd storage.\n"
 usage+="                         This option avoids needing to pull container images every time the demo is started.\n"
 usage+="                         WARNING: There is no garbage collection so the directory will grow without bound.\n"
-usage+="  --enable-open-telemetry: lauches OpenTelemetry collection.\n"
-usage+="                           WARNING: experimental and resource hungry.\n"
+usage+="  --offline: Run in a mode which is suitable for fully offline use.\n"
+usage+="             WARNING: This may result in some weird behaviour, see the demo documentation for details.\n"
+usage+="             Implies: --mount-containerd\n"
 usage+="  --set-value: Set a value in the Helm values file. This can be used to override the default values.\n"
 usage+="               For example, to enable coverage reporting pass: --set-value developer.enableCoverage=true\n"
-usage+="  --ci-values: Path to a values.yaml file which contains diracx dev settings only enabled for CI\n"
 usage+="  source directories: A list of directories containing Python packages to mount in the demo cluster.\n"
 
 # Parse command-line switches
@@ -125,6 +127,7 @@ enable_coverage=0
 editable_python=1
 open_telemetry=0
 ci_values_file=""
+declare -a docker_images_to_load=()
 
 while [ -n "${1:-}" ]; do case $1 in
   # Print a brief usage summary and exit
@@ -194,6 +197,16 @@ while [ -n "${1:-}" ]; do case $1 in
     fi
     helm_arguments+=("--set")
     helm_arguments+=("${1}")
+    shift
+    continue ;;
+
+  --load-docker-image)
+    shift
+    if [[ -z "${1:-}" ]]; then
+      printf "%b Error: --load-docker-image requires an argument\n" ${SKULL_EMOJI}
+      exit 1
+    fi
+    docker_images_to_load+=("${1}")
     shift
     continue ;;
 
@@ -490,6 +503,22 @@ helm_arguments+=("--values" "${demo_dir}/values.yaml")
 if [[ -n "${ci_values_file}" ]]; then
   helm_arguments+=("--values" "${ci_values_file}")
 fi
+
+
+# Load images into kind
+
+if [ ${#docker_images_to_load[@]} -ne 0 ]; then
+printf "%b Loading docker images...\n" ${UNICORN_EMOJI}
+for img_name in "${docker_images_to_load[@]}"
+do
+  "${demo_dir}/kind" --name diracx-demo load docker-image "${img_name}"
+done
+
+
+fi;
+
+
+
 if ! "${demo_dir}/helm" install --debug diracx-demo "${script_dir}/diracx" "${helm_arguments[@]}"; then
   printf "%b Error using helm DiracX\n" ${WARN_EMOJI}
   echo "Failed to run \"helm install\"" >> "${demo_dir}/.failed"
