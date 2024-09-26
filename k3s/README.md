@@ -225,7 +225,7 @@ Few tutorials:
 sed -i 's/<your_hostname>/thenameyouareacutally.using.com/g' ./diracx-charts/k3s/examples/*
 ```
 
-Now, it is time to choose what to install, so go through `./diracx-charts/diracx/values.yaml` file and edit it accordingly. 
+Now, it is time to choose what to install, so go through `./diracx-charts/diracx/values.yaml` file and edit it accordingly.
 
 ```
 # Deploy time!
