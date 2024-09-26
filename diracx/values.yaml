@@ -11,7 +11,7 @@ global:
   # outdated reference to the "latest" tag.
   imagePullPolicy: Always
   # What storage class should we use for DiracX volumes
-  storageClassName: standard
+  storageClassName: standard  # Default value can be set here, or customized via Helm CLI
   # -- timeout for job deadlines
   activeDeadlineSeconds: 900
   images:
@@ -516,7 +516,6 @@ elasticsearch:
   # Request smaller persistent volumes.
   volumeClaimTemplate:
     accessModes: ["ReadWriteOnce"]
-    storageClassName: "standard"
     resources:
       requests:
         storage: 100M
