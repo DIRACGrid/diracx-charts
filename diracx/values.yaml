@@ -13,7 +13,7 @@ global:
   # What storage class should we use for DiracX volumes
   storageClassName: standard
   # -- timeout for job deadlines
-  activeDeadlineSeconds: 900
+  activeDeadlineSeconds: 3600
   images:
     tag: "dev"
     services: ghcr.io/diracgrid/diracx/services
@@ -351,15 +351,16 @@ mysql:
 
   # if mysql pod is failing and restarting due to mysql update
   # it can be that the prob failure treshold is too low
-  # increasing this number can help:
+  # increasing this number can help.
   #
-  # startupProbe:
-  #   enabled: true
-  #   initialDelaySeconds: 15
-  #   periodSeconds: 10
-  #   timeoutSeconds: 1
-  #   failureThreshold: 30
-  #   successThreshold: 1
+  # Also have a look at https://github.com/bitnami/charts/issues/7433#issuecomment-938748980
+  startupProbe:
+    enabled: true
+    initialDelaySeconds: 15
+    periodSeconds: 10
+    timeoutSeconds: 1
+    failureThreshold: 30
+    successThreshold: 1
 
 ##########################
 
