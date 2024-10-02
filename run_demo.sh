@@ -247,7 +247,7 @@ done
 declare -a pkg_dirs=()
 declare -a python_pkg_names=()
 node_pkg_name=""
-diracx_src_dir=""
+declare -a diracx_and_extensions_pkgs=()
 
 for src_dir in "$@"; do
   if [ ${#pkg_dirs[@]} -gt 0 ] && ! element_not_in_array "$src_dir" "${pkg_dirs[@]}"; then
@@ -256,17 +256,29 @@ for src_dir in "$@"; do
   fi
   pkg_dirs+=("${src_dir}")
 
-  # DiracX itself
+
+  # Does that look like a namespace package with the structure we expect ?
+  # i.e. is it diracx itself or an extension ?
   if [ -f "${src_dir}/pyproject.toml" ]; then
-    if grep --quiet 'name = "diracx"' "${src_dir}/pyproject.toml"; then
-      if [ "${diracx_src_dir}" != "" ]; then
-        printf "%b Error: Source directory for DiracX was given twice!\n" "${SKULL_EMOJI}"
-        exit 1
+      # Name of the package
+      pkg_name="$(basename "${src_dir}")"
+
+      # Do we find subdirectories called the same way as the package
+      if [ -n "$(find "${src_dir}" -mindepth 3 -maxdepth 3 -type d  -path "*src/${pkg_name}")" ]; then
+      # And are there mulftiple pyprojects
+        if [ -n "$(find "${src_dir}" -mindepth 2 -maxdepth 2 -type f  -name "pyproject.toml")" ]; then
+          # Then let's add all these
+          while IFS= read -r  sub_pkg_dir
+          do
+            diracx_and_extensions_pkgs+=("$(basename "${src_dir}")/$(basename "${sub_pkg_dir}")");
+          done < <(find "${src_dir}" -mindepth 1 -maxdepth 1 -type d -name "${pkg_name}-*" )
+
+          continue;
+        fi;
       fi
-      diracx_src_dir="${src_dir}"
-      continue
-    fi
+
   fi
+
 
   # Python packages
   if [ -f "${src_dir}/pyproject.toml" ]; then
@@ -292,8 +304,9 @@ for src_dir in "$@"; do
   done < <(find "$src_dir" -mindepth 1 -maxdepth 1 -type f -name 'package.json')
 done
 
-if [ "${diracx_src_dir}" != "" ]; then
-  printf "%b Found DiracX directory: %s\n" ${UNICORN_EMOJI} "${diracx_src_dir}"
+
+if [ ${#diracx_and_extensions_pkgs[@]} -gt 0 ]; then
+  printf "%b Found Diracx/Extensions package directories for: %s\n" ${UNICORN_EMOJI} "${diracx_and_extensions_pkgs[*]}"
 fi
 if [ ${#python_pkg_names[@]} -gt 0 ]; then
   printf "%b Found Python package directories for: %s\n" ${UNICORN_EMOJI} "${python_pkg_names[*]}"
@@ -465,11 +478,12 @@ if [ ${#python_pkg_names[@]} -gt 0 ]; then
       json+="\"$pkg_name\","
   done
 fi
-if [ "${diracx_src_dir}" != "" ]; then
-  for pkg_name in "$(basename "${diracx_src_dir}")/diracx-"{cli,client,api,core,routers,db}; do
-      json+="\"$pkg_name\","
-  done
-fi
+
+for diracx_compatible_pkg in "${diracx_and_extensions_pkgs[@]}"; do
+  json+="\"$diracx_compatible_pkg\","
+
+done
+
 json="${json%,}]"
 sed "s#{{ mounted_python_modules }}#${json}#g" "${demo_dir}/values.yaml.bak" > "${demo_dir}/values.yaml"
 mv "${demo_dir}/values.yaml" "${demo_dir}/values.yaml.bak"
@@ -482,6 +496,7 @@ if grep '{{' "${demo_dir}/values.yaml"; then
   printf "%b Error generating template. Found {{ in the template result\n" ${SKULL_EMOJI}
   exit 1
 fi
+
 
 # Add an ingress to the cluster
 printf "%b Creating an ingress...\n" ${UNICORN_EMOJI}
