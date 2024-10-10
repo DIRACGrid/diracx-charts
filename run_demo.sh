@@ -97,23 +97,25 @@ function element_not_in_array() {
   return $found
 }
 
-usage="${0##*/} [-h|--help] [--exit-when-done] [--offline] [--enable-coverage] [--no-mount-containerd] [--set-value key=value] [--ci-values=values.yaml] [--] [source directories]"
+usage="${0##*/} [-h|--help] [--exit-when-done] [--offline] [--enable-coverage] [--no-mount-containerd] [--set-value key=value] [--ci-values=values.yaml] [--load-docker-image=<image_name:tag>] [--] [source directories]"
 usage+="\n\n"
 usage+="  -h|--help: Print this help message and exit\n"
+usage+="  --ci-values: Path to a values.yaml file which contains diracx dev settings only enabled for CI\n"
 usage+="  --exit-when-done: Exit after the demo has been started (it will be left running in the background)\n"
 usage+="  --enable-coverage: Enable coverage reporting (used by diracx CI)\n"
+usage+="  --enable-open-telemetry: lauches OpenTelemetry collection.\n"
+usage+="                           WARNING: experimental and resource hungry.\n"
+usage+="  --load-docker-image: Mount a local docker image into kind\n"
+usage+="                      WARNING: the ImagePullPolicy MUST not be Always for this to work\n"
 usage+="  --no-editable-python: Do not install Python source directories in editable mode\n"
-usage+="  --offline: Run in a mode which is suitable for fully offline use.\n"
-usage+="             WARNING: This may result in some weird behaviour, see the demo documentation for details.\n"
-usage+="             Implies: --mount-containerd\n"
 usage+="  --no-mount-containerd: Mount a directory on the host for the kind containerd storage.\n"
 usage+="                         This option avoids needing to pull container images every time the demo is started.\n"
 usage+="                         WARNING: There is no garbage collection so the directory will grow without bound.\n"
-usage+="  --enable-open-telemetry: lauches OpenTelemetry collection.\n"
-usage+="                           WARNING: experimental and resource hungry.\n"
+usage+="  --offline: Run in a mode which is suitable for fully offline use.\n"
+usage+="             WARNING: This may result in some weird behaviour, see the demo documentation for details.\n"
+usage+="             Implies: --mount-containerd\n"
 usage+="  --set-value: Set a value in the Helm values file. This can be used to override the default values.\n"
 usage+="               For example, to enable coverage reporting pass: --set-value developer.enableCoverage=true\n"
-usage+="  --ci-values: Path to a values.yaml file which contains diracx dev settings only enabled for CI\n"
 usage+="  source directories: A list of directories containing Python packages to mount in the demo cluster.\n"
 
 # Parse command-line switches
@@ -124,7 +126,8 @@ declare -a helm_arguments=()
 enable_coverage=0
 editable_python=1
 open_telemetry=0
-ci_values_file=""
+declare -a ci_values_files=()
+declare -a docker_images_to_load=()
 
 while [ -n "${1:-}" ]; do case $1 in
   # Print a brief usage summary and exit
@@ -197,6 +200,16 @@ while [ -n "${1:-}" ]; do case $1 in
     shift
     continue ;;
 
+  --load-docker-image)
+    shift
+    if [[ -z "${1:-}" ]]; then
+      printf "%b Error: --load-docker-image requires an argument\n" ${SKULL_EMOJI}
+      exit 1
+    fi
+    docker_images_to_load+=("${1}")
+    shift
+    continue ;;
+
   --ci-values)
     shift
     if [[ -z "${1:-}" ]]; then
@@ -208,6 +221,7 @@ while [ -n "${1:-}" ]; do case $1 in
       printf "%b Error: --ci-values does not point to a file\n" ${SKULL_EMOJI}
       exit 1;
     fi
+    ci_values_files+=("${ci_values_file}")
     shift
     continue ;;
 
@@ -234,7 +248,7 @@ done
 declare -a pkg_dirs=()
 declare -a python_pkg_names=()
 node_pkg_name=""
-diracx_src_dir=""
+declare -a diracx_and_extensions_pkgs=()
 
 for src_dir in "$@"; do
   if [ ${#pkg_dirs[@]} -gt 0 ] && ! element_not_in_array "$src_dir" "${pkg_dirs[@]}"; then
@@ -243,17 +257,29 @@ for src_dir in "$@"; do
   fi
   pkg_dirs+=("${src_dir}")
 
-  # DiracX itself
+
+  # Does that look like a namespace package with the structure we expect ?
+  # i.e. is it diracx itself or an extension ?
   if [ -f "${src_dir}/pyproject.toml" ]; then
-    if grep --quiet 'name = "diracx"' "${src_dir}/pyproject.toml"; then
-      if [ "${diracx_src_dir}" != "" ]; then
-        printf "%b Error: Source directory for DiracX was given twice!\n" "${SKULL_EMOJI}"
-        exit 1
+      # Name of the package
+      pkg_name="$(basename "${src_dir}")"
+
+      # Do we find subdirectories called the same way as the package
+      if [ -n "$(find "${src_dir}" -mindepth 3 -maxdepth 3 -type d  -path "*src/${pkg_name}")" ]; then
+      # And are there mulftiple pyprojects
+        if [ -n "$(find "${src_dir}" -mindepth 2 -maxdepth 2 -type f  -name "pyproject.toml")" ]; then
+          # Then let's add all these
+          while IFS= read -r  sub_pkg_dir
+          do
+            diracx_and_extensions_pkgs+=("$(basename "${src_dir}")/$(basename "${sub_pkg_dir}")");
+          done < <(find "${src_dir}" -mindepth 1 -maxdepth 1 -type d -name "${pkg_name}-*" )
+
+          continue;
+        fi;
       fi
-      diracx_src_dir="${src_dir}"
-      continue
-    fi
+
   fi
+
 
   # Python packages
   if [ -f "${src_dir}/pyproject.toml" ]; then
@@ -279,8 +305,9 @@ for src_dir in "$@"; do
   done < <(find "$src_dir" -mindepth 1 -maxdepth 1 -type f -name 'package.json')
 done
 
-if [ "${diracx_src_dir}" != "" ]; then
-  printf "%b Found DiracX directory: %s\n" ${UNICORN_EMOJI} "${diracx_src_dir}"
+
+if [ ${#diracx_and_extensions_pkgs[@]} -gt 0 ]; then
+  printf "%b Found Diracx/Extensions package directories for: %s\n" ${UNICORN_EMOJI} "${diracx_and_extensions_pkgs[*]}"
 fi
 if [ ${#python_pkg_names[@]} -gt 0 ]; then
   printf "%b Found Python package directories for: %s\n" ${UNICORN_EMOJI} "${python_pkg_names[*]}"
@@ -452,11 +479,12 @@ if [ ${#python_pkg_names[@]} -gt 0 ]; then
       json+="\"$pkg_name\","
   done
 fi
-if [ "${diracx_src_dir}" != "" ]; then
-  for pkg_name in "$(basename "${diracx_src_dir}")/diracx-"{cli,client,api,core,routers,db}; do
-      json+="\"$pkg_name\","
-  done
-fi
+
+for diracx_compatible_pkg in "${diracx_and_extensions_pkgs[@]}"; do
+  json+="\"$diracx_compatible_pkg\","
+
+done
+
 json="${json%,}]"
 sed "s#{{ mounted_python_modules }}#${json}#g" "${demo_dir}/values.yaml.bak" > "${demo_dir}/values.yaml"
 mv "${demo_dir}/values.yaml" "${demo_dir}/values.yaml.bak"
@@ -469,6 +497,7 @@ if grep '{{' "${demo_dir}/values.yaml"; then
   printf "%b Error generating template. Found {{ in the template result\n" ${SKULL_EMOJI}
   exit 1
 fi
+
 
 # Add an ingress to the cluster
 printf "%b Creating an ingress...\n" ${UNICORN_EMOJI}
@@ -487,9 +516,30 @@ printf "%b Waiting for ingress controller to be created...\n" ${UNICORN_EMOJI}
 # Install the DiracX chart
 printf "%b Installing DiracX...\n" ${UNICORN_EMOJI}
 helm_arguments+=("--values" "${demo_dir}/values.yaml")
-if [[ -n "${ci_values_file}" ]]; then
-  helm_arguments+=("--values" "${ci_values_file}")
+
+if [ ${#ci_values_files[@]} -ne 0 ]; then
+  printf "%b Adding extra values.yaml: ${ci_values_files[*]} \n" ${UNICORN_EMOJI}
+  for ci_values_file in "${ci_values_files[@]}"
+  do
+    helm_arguments+=("--values" "${ci_values_file}")
+  done
 fi
+
+
+# Load images into kind
+
+if [ ${#docker_images_to_load[@]} -ne 0 ]; then
+printf "%b Loading docker images...\n" ${UNICORN_EMOJI}
+for img_name in "${docker_images_to_load[@]}"
+do
+  "${demo_dir}/kind" --name diracx-demo load docker-image "${img_name}"
+done
+
+
+fi;
+
+
+
 if ! "${demo_dir}/helm" install --debug diracx-demo "${script_dir}/diracx" "${helm_arguments[@]}"; then
   printf "%b Error using helm DiracX\n" ${WARN_EMOJI}
   echo "Failed to run \"helm install\"" >> "${demo_dir}/.failed"
