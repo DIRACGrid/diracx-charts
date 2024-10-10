@@ -126,7 +126,7 @@ declare -a helm_arguments=()
 enable_coverage=0
 editable_python=1
 open_telemetry=0
-ci_values_file=""
+declare -a ci_values_files=()
 declare -a docker_images_to_load=()
 
 while [ -n "${1:-}" ]; do case $1 in
@@ -221,6 +221,7 @@ while [ -n "${1:-}" ]; do case $1 in
       printf "%b Error: --ci-values does not point to a file\n" ${SKULL_EMOJI}
       exit 1;
     fi
+    ci_values_files+=("${ci_values_file}")
     shift
     continue ;;
 
@@ -515,8 +516,13 @@ printf "%b Waiting for ingress controller to be created...\n" ${UNICORN_EMOJI}
 # Install the DiracX chart
 printf "%b Installing DiracX...\n" ${UNICORN_EMOJI}
 helm_arguments+=("--values" "${demo_dir}/values.yaml")
-if [[ -n "${ci_values_file}" ]]; then
-  helm_arguments+=("--values" "${ci_values_file}")
+
+if [ ${#ci_values_files[@]} -ne 0 ]; then
+  printf "%b Adding extra values.yaml: ${ci_values_files[*]} \n" ${UNICORN_EMOJI}
+  for ci_values_file in "${ci_values_files[@]}"
+  do
+    helm_arguments+=("--values" "${ci_values_file}")
+  done
 fi
 
 
