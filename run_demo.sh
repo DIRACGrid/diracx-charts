@@ -504,8 +504,12 @@ printf "%b Creating an ingress...\n" ${UNICORN_EMOJI}
 # TODO: This should move to the chart itself
 if [ ${offline_mode} -eq 0 ]; then
   curl -L https://raw.githubusercontent.com/kubernetes/ingress-nginx/main/deploy/static/provider/kind/deploy.yaml > "${tmp_dir}/kind-ingress-deploy.yaml"
-  mv "${tmp_dir}/kind-ingress-deploy.yaml" "${demo_dir}/kind-ingress-deploy.yaml"
+  # Disable the strict validation of the path
+  # https://github.com/kubernetes/ingress-nginx/issues/11176
+  # https://github.com/kubernetes/ingress-nginx/issues/10200
+  sed -E 's/^data: null/data:\n  strict-validate-path-type: "false"/g'  "${tmp_dir}/kind-ingress-deploy.yaml" > "${demo_dir}/kind-ingress-deploy.yaml"
 fi
+
 "${demo_dir}/kubectl" apply -f "${demo_dir}/kind-ingress-deploy.yaml"
 printf "%b Waiting for ingress controller to be created...\n" ${UNICORN_EMOJI}
 "${demo_dir}/kubectl" wait --namespace ingress-nginx \
