@@ -97,7 +97,7 @@ function element_not_in_array() {
   return $found
 }
 
-usage="${0##*/} [-h|--help] [--exit-when-done] [--offline] [--enable-coverage] [--no-mount-containerd] [--set-value key=value] [--ci-values=values.yaml] [--load-docker-image=<image_name:tag>] [--] [source directories]"
+usage="${0##*/} [-h|--help] [--exit-when-done] [--offline] [--postgres] [--enable-coverage] [--no-mount-containerd] [--set-value key=value] [--ci-values=values.yaml] [--load-docker-image=<image_name:tag>] [--] [source directories]"
 usage+="\n\n"
 usage+="  -h|--help: Print this help message and exit\n"
 usage+="  --ci-values: Path to a values.yaml file which contains diracx dev settings only enabled for CI\n"
@@ -114,6 +114,8 @@ usage+="                         WARNING: There is no garbage collection so the 
 usage+="  --offline: Run in a mode which is suitable for fully offline use.\n"
 usage+="             WARNING: This may result in some weird behaviour, see the demo documentation for details.\n"
 usage+="             Implies: --mount-containerd\n"
+usage+="  --postgres: Runs the demo using a the PostgreSQL database.\n"
+usage+="              If not specified, it will default to MySQL.\n"
 usage+="  --set-value: Set a value in the Helm values file. This can be used to override the default values.\n"
 usage+="               For example, to enable coverage reporting pass: --set-value developer.enableCoverage=true\n"
 usage+="  source directories: A list of directories containing Python packages to mount in the demo cluster.\n"
@@ -222,6 +224,14 @@ while [ -n "${1:-}" ]; do case $1 in
       exit 1;
     fi
     ci_values_files+=("${ci_values_file}")
+    shift
+    continue ;;
+
+  --postgres)
+    helm_arguments+=("--set")
+    helm_arguments+=("postgresql.enabled=true")
+    helm_arguments+=("--set")
+    helm_arguments+=("mysql.enabled=false")
     shift
     continue ;;
 
