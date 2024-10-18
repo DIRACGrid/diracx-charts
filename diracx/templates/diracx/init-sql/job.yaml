@@ -66,6 +66,7 @@ spec:
                   name: diracx-sql-root-connection-urls
                   key: DIRACX_DB_URL_{{ $dbName | upper }}
           {{- end }}
+          # The secrets are needed for the extension to appear
           resources:
             {{- toYaml .Values.initSql.resources | nindent 12 }}
       volumes:

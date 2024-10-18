@@ -2,6 +2,8 @@ global:
   # Override the imagePullPolicy to always so we can using latest image tags
   # without risking them being outdated.
   imagePullPolicy: Always
+  # Keep the job log for 1h for investigations
+  batchJobTTL: 3600
 
 developer:
   urls:
@@ -34,6 +36,7 @@ diracx:
       JobLoggingDB:
       SandboxMetadataDB:
       TaskQueueDB:
+      PilotAgentsDB:
   osDbs:
     dbs:
       JobParametersDB:

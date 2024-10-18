@@ -141,6 +141,7 @@ diracx:
   #    JobLoggingDB:
   #    SandboxMetadataDB:
   #    TaskQueueDB:
+  #    PilotAgentsDB
   #    ProxyDB:
   #      user: proxyUser
   #      password: hush
