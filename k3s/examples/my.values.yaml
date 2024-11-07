@@ -21,7 +21,7 @@ diracx:
   osDbs:
     dbs:
       JobParametersDB:
-
+      PilotLogsDB:
 ingress:
   enabled: true
   className: "traefik"

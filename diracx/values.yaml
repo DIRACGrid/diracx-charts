@@ -154,6 +154,7 @@ diracx:
     # -- Which DiracX OpenSearch DBs are used?
     dbs:
       # JobParametersDB:
+      # PilotLogsDB:
 
   # -- List of install specifications to pass to pip before launching each container
   pythonModulesToInstall: []
