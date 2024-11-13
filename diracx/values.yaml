@@ -96,8 +96,10 @@ developer:
   # -- Use pip install -e for mountedPythonModulesToInstall
   # This is used by the integration tests because editable install might behave differently
   editableMountedPythonModules: true
-  # -- List of node modules to install
+  # -- Node module to install
   mountedNodeModuleToInstall: null
+  # -- List of node workspace directories to manage in the diracx-web container (node_modules)
+  nodeWorkspacesDirectories: []
   # -- Image to use for the webapp if nodeModuleToInstall is set
   nodeImage: node:alpine
   # -- Enable collection of coverage reports (intended for CI usage only)
