@@ -34,14 +34,16 @@ spec:
         - name: diracx-web-code-mount
           persistentVolumeClaim:
             claimName: pvc-diracx-code
-        # These volumes override the node_modules and .next directories to
+        # These volumes override the node_modules directories to
         # start from a clean state
         - name: diracx-web-scratch-node-modules
           emptyDir:
             sizeLimit: 2Gi
-        - name: diracx-web-scratch-next
+        {{- range $module := .Values.developer.nodeWorkspacesDirectories }}
+        - name: 'diracx-web-scratch-node-modules-{{ replace "/" "-" $module -}}'
           emptyDir:
-            sizeLimit: 1Gi
+            sizeLimit: 2Gi
+        {{- end }}
         {{- else }}
         {{- if .Values.diracxWeb.branch }}
         # This volume is used to clone the specified diracx-web repository branch
@@ -91,8 +93,10 @@ spec:
               subPath: "{{ .Values.developer.mountedNodeModuleToInstall }}"
             - mountPath: "{{ $nodeMountedModulePath }}/node_modules"
               name: "diracx-web-scratch-node-modules"
-            - mountPath: "{{ $nodeMountedModulePath }}/.next"
-              name: "diracx-web-scratch-next"
+            {{- range $module := .Values.developer.nodeWorkspacesDirectories }}
+            - mountPath: "{{ $nodeMountedModulePath }}/{{ $module }}/node_modules"
+              name: 'diracx-web-scratch-node-modules-{{ replace "/" "-" $module -}}'
+            {{- end }}
           {{- else }}
           # Install the diracx-web repository, specific branch
           command: ["/bin/sh", "-c"]
@@ -136,7 +140,8 @@ spec:
           {{- if $nodeDevInstall }}
           # Start the node module in development mode
           image: {{ .Values.developer.nodeImage }}
-          command: ["npm", "run", "dev", "--prefix", "{{ $nodeMountedModulePath }}"]
+          command: ["npm", "run", "dev"]
+          workingDir: "{{ $nodeMountedModulePath }}"
           env:
             - name: NEXT_TELEMETRY_DISABLED
               value: "1"
@@ -148,8 +153,10 @@ spec:
               subPath: "{{ .Values.developer.mountedNodeModuleToInstall }}"
             - mountPath: "{{ $nodeMountedModulePath }}/node_modules"
               name: "diracx-web-scratch-node-modules"
-            - mountPath: "{{ $nodeMountedModulePath }}/.next"
-              name: "diracx-web-scratch-next"
+            {{- range $module := .Values.developer.nodeWorkspacesDirectories }}
+            - mountPath: "{{ $nodeMountedModulePath }}/{{ $module }}/node_modules"
+              name: 'diracx-web-scratch-node-modules-{{ replace "/" "-" $module -}}'
+            {{- end }}
           {{- else }}
           # Start the node module in production mode
           image: {{ .Values.global.images.web.repository }}:{{ .Values.global.images.web.tag }}

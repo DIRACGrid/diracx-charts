@@ -248,6 +248,7 @@ done
 declare -a pkg_dirs=()
 declare -a python_pkg_names=()
 node_pkg_name=""
+declare -a node_pkg_workspaces=()
 declare -a diracx_and_extensions_pkgs=()
 
 for src_dir in "$@"; do
@@ -313,9 +314,22 @@ if [ ${#python_pkg_names[@]} -gt 0 ]; then
   printf "%b Found Python package directories for: %s\n" ${UNICORN_EMOJI} "${python_pkg_names[*]}"
 fi
 if [ "${node_pkg_name}" != "" ]; then
-  printf "%b Found Node package directories for: %s\n" ${UNICORN_EMOJI} "${node_pkg_name}"
-  # Ensure node_modules and .next exist, else create them, as volumes will be mounted there
-  mkdir -p "${node_pkg_name}"/node_modules "${node_pkg_name}"/.next
+  printf "%b Found Node package directory for: %s\n" ${UNICORN_EMOJI} "${node_pkg_name}"
+
+  pkg_json="${node_pkg_name}/package.json"
+
+  # Check for workspaces in the package.json
+  if [ "$(jq -e ".workspaces | type== \"array\"" "$pkg_json")" == "true" ]; then
+    readarray -t node_pkg_workspaces < <(jq -r ".workspaces[]" "$pkg_json")
+    node_pkg_workspaces=("${node_pkg_workspaces[@]}")
+    printf "%b Found Node package workspaces for: %s\n" ${UNICORN_EMOJI} "$(IFS=' '; echo "${node_pkg_workspaces[*]}")"
+  fi
+
+  # Ensure node_modules exist, else create them, as volumes will be mounted there
+  mkdir -p "${node_pkg_name}"/node_modules
+  for workspace in "${node_pkg_workspaces[@]}"; do
+    mkdir -p "${node_pkg_name}/${workspace}"/node_modules
+  done
 fi
 
 trap "cleanup" EXIT
@@ -489,8 +503,20 @@ json="${json%,}]"
 sed "s#{{ mounted_python_modules }}#${json}#g" "${demo_dir}/values.yaml.bak" > "${demo_dir}/values.yaml"
 mv "${demo_dir}/values.yaml" "${demo_dir}/values.yaml.bak"
 
-# Add the node package
+# Add the node package and its workspaces
 sed "s/{{ node_module_to_mount }}/${node_pkg_name}/g" "${demo_dir}/values.yaml.bak" > "${demo_dir}/values.yaml"
+mv "${demo_dir}/values.yaml" "${demo_dir}/values.yaml.bak"
+
+json="["
+if [ ${#node_pkg_workspaces[@]} -gt 0 ]; then
+  for workspace in "${node_pkg_workspaces[@]}"; do
+    json+="\"$workspace\","
+  done
+fi
+json="${json%,}]"
+printf "%b Node workspaces json: %s\n" ${UNICORN_EMOJI} "${json}"
+sed "s#{{ node_module_workspaces }}#${json}#g" "${demo_dir}/values.yaml.bak" > "${demo_dir}/values.yaml"
+
 
 # Final check
 if grep '{{' "${demo_dir}/values.yaml"; then

@@ -16,6 +16,7 @@ developer:
   mountedPythonModulesToInstall: {{ mounted_python_modules }}
   editableMountedPythonModules: {{ editable_mounted_modules }}
   mountedNodeModuleToInstall: {{ node_module_to_mount }}
+  nodeWorkspacesDirectories: {{ node_module_workspaces }}
 
 diracx:
   hostname: {{ hostname }}
