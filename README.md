@@ -5,7 +5,7 @@ This helm chart is intended to be used in two ways:
  * Development: The ./run_demo.sh script allows the infrastructure to be ran locally with docker+kind
  * Production: TODO
 
-![Version: 0.1.0](https://img.shields.io/badge/Version-0.1.0-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 0.0.1a](https://img.shields.io/badge/AppVersion-0.0.1a-informational?style=flat-square)
+![Version: 0.1.0](https://img.shields.io/badge/Version-0.1.0-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 0.0.1a17](https://img.shields.io/badge/AppVersion-0.0.1a17-informational?style=flat-square)
 
 ![DiracX Chart tests](https://github.com/DIRACGrid/diracx-charts/actions/workflows/main.yml/badge.svg?branch=master)
 
@@ -302,7 +302,7 @@ Note that this configuration is trivial and does not follow production recommand
 | elasticsearch.volumeClaimTemplate.resources.requests.storage | string | `"100M"` |  |
 | elasticsearch.volumeClaimTemplate.storageClassName | string | `"standard"` |  |
 | fullnameOverride | string | `""` |  |
-| global.activeDeadlineSeconds | int | `900` | timeout for job deadlines |
+| global.activeDeadlineSeconds | int | `3600` | timeout for job deadlines |
 | global.batchJobTTL | int | `600` | How long should batch jobs be retained after completing? |
 | global.imagePullPolicy | string | `"Always"` |  |
 | global.images.client | string | `"ghcr.io/diracgrid/diracx/client"` |  |
@@ -382,6 +382,12 @@ Note that this configuration is trivial and does not follow production recommand
 | mysql.auth.username | string | `"sqldiracx"` |  |
 | mysql.enabled | bool | `true` |  |
 | mysql.initdbScriptsConfigMap | string | `"mysql-init-diracx-dbs"` |  |
+| mysql.startupProbe.enabled | bool | `true` |  |
+| mysql.startupProbe.failureThreshold | int | `30` |  |
+| mysql.startupProbe.initialDelaySeconds | int | `15` |  |
+| mysql.startupProbe.periodSeconds | int | `10` |  |
+| mysql.startupProbe.successThreshold | int | `1` |  |
+| mysql.startupProbe.timeoutSeconds | int | `1` |  |
 | nameOverride | string | `""` | type=kubernetes.io/dockerconfigjson imagePullSecrets:   - name: regcred |
 | nodeSelector | object | `{}` |  |
 | opensearch.config | object | `{}` |  |
