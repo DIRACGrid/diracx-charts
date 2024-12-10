@@ -90,7 +90,7 @@ spec:
           volumeMounts:
             - mountPath: "{{ $nodeMountedModulePath }}"
               name: "diracx-web-code-mount"
-              subPath: "{{ .Values.developer.mountedNodeModuleToInstall }}"
+              subPath: "{{ base .Values.developer.mountedNodeModuleToInstall }}"
             - mountPath: "{{ $nodeMountedModulePath }}/node_modules"
               name: "diracx-web-scratch-node-modules"
             {{- range $module := .Values.developer.nodeWorkspacesDirectories }}
@@ -150,7 +150,7 @@ spec:
           volumeMounts:
             - mountPath: "{{ $nodeMountedModulePath }}"
               name: "diracx-web-code-mount"
-              subPath: "{{ .Values.developer.mountedNodeModuleToInstall }}"
+              subPath: "{{ base .Values.developer.mountedNodeModuleToInstall }}"
             - mountPath: "{{ $nodeMountedModulePath }}/node_modules"
               name: "diracx-web-scratch-node-modules"
             {{- range $module := .Values.developer.nodeWorkspacesDirectories }}

@@ -247,7 +247,7 @@ done
 # source directories to mount in the demo cluster
 declare -a pkg_dirs=()
 declare -a python_pkg_names=()
-node_pkg_name=""
+node_pkg_path=""
 declare -a node_pkg_workspaces=()
 declare -a diracx_and_extensions_pkgs=()
 
@@ -267,7 +267,7 @@ for src_dir in "$@"; do
 
       # Do we find subdirectories called the same way as the package
       if [ -n "$(find "${src_dir}" -mindepth 3 -maxdepth 3 -type d  -path "*src/${pkg_name}")" ]; then
-      # And are there mulftiple pyprojects
+      # And are there multiple pyprojects
         if [ -n "$(find "${src_dir}" -mindepth 2 -maxdepth 2 -type f  -name "pyproject.toml")" ]; then
           # Then let's add all these
           while IFS= read -r  sub_pkg_dir
@@ -275,8 +275,8 @@ for src_dir in "$@"; do
             diracx_and_extensions_pkgs+=("$(basename "${src_dir}")/$(basename "${sub_pkg_dir}")");
           done < <(find "${src_dir}" -mindepth 1 -maxdepth 1 -type d -name "${pkg_name}-*" )
 
-          continue;
-        fi;
+          continue
+        fi
       fi
 
   fi
@@ -302,10 +302,9 @@ for src_dir in "$@"; do
 
   # Node packages: we keep a single package, the last one found
   while IFS='' read -r pkg_json; do
-    node_pkg_name="$(basename "$(dirname "${pkg_json}")")"
+    node_pkg_path=$src_dir
   done < <(find "$src_dir" -mindepth 1 -maxdepth 1 -type f -name 'package.json')
 done
-
 
 if [ ${#diracx_and_extensions_pkgs[@]} -gt 0 ]; then
   printf "%b Found Diracx/Extensions package directories for: %s\n" ${UNICORN_EMOJI} "${diracx_and_extensions_pkgs[*]}"
@@ -313,10 +312,10 @@ fi
 if [ ${#python_pkg_names[@]} -gt 0 ]; then
   printf "%b Found Python package directories for: %s\n" ${UNICORN_EMOJI} "${python_pkg_names[*]}"
 fi
-if [ "${node_pkg_name}" != "" ]; then
-  printf "%b Found Node package directory for: %s\n" ${UNICORN_EMOJI} "${node_pkg_name}"
+if [ "${node_pkg_path}" != "" ]; then
+  printf "%b Found Node package directory for: %s\n" ${UNICORN_EMOJI} "${node_pkg_path}"
 
-  pkg_json="${node_pkg_name}/package.json"
+  pkg_json="${node_pkg_path}/package.json"
 
   # Check for workspaces in the package.json
   if [ "$(jq -e ".workspaces | type== \"array\"" "$pkg_json")" == "true" ]; then
@@ -326,9 +325,9 @@ if [ "${node_pkg_name}" != "" ]; then
   fi
 
   # Ensure node_modules exist, else create them, as volumes will be mounted there
-  mkdir -p "${node_pkg_name}"/node_modules
+  mkdir -p "${node_pkg_path}"/node_modules
   for workspace in "${node_pkg_workspaces[@]}"; do
-    mkdir -p "${node_pkg_name}/${workspace}"/node_modules
+    mkdir -p "${node_pkg_path}/${workspace}"/node_modules
   done
 fi
 
@@ -504,7 +503,7 @@ sed "s#{{ mounted_python_modules }}#${json}#g" "${demo_dir}/values.yaml.bak" > "
 mv "${demo_dir}/values.yaml" "${demo_dir}/values.yaml.bak"
 
 # Add the node package and its workspaces
-sed "s/{{ node_module_to_mount }}/${node_pkg_name}/g" "${demo_dir}/values.yaml.bak" > "${demo_dir}/values.yaml"
+sed "s#{{ node_module_to_mount }}#${node_pkg_path}#g" "${demo_dir}/values.yaml.bak" > "${demo_dir}/values.yaml"
 mv "${demo_dir}/values.yaml" "${demo_dir}/values.yaml.bak"
 
 json="["
