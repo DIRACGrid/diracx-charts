@@ -6,6 +6,7 @@ global:
   batchJobTTL: 3600
 
 developer:
+  enabled: true
   urls:
     diracx: https://{{ hostname }}:8000
     minio: http://{{ hostname }}:32000

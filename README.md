@@ -243,7 +243,7 @@ Note that this configuration is trivial and does not follow production recommand
 | developer.autoReload | bool | `true` | Enable automatic reloading inside uvicorn when the sources change Used by the integration tests for running closer to prod setup |
 | developer.editableMountedPythonModules | bool | `true` | Use pip install -e for mountedPythonModulesToInstall This is used by the integration tests because editable install might behave differently |
 | developer.enableCoverage | bool | `false` | Enable collection of coverage reports (intended for CI usage only) |
-| developer.enabled | bool | `true` |  |
+| developer.enabled | bool | `false` |  |
 | developer.ipAlias | string | `nil` | The IP that the demo is running at |
 | developer.localCSPath | string | `"/local_cs_store"` | If set, mount the CS stored localy instead of initializing a default one |
 | developer.mountedNodeModuleToInstall | string | `nil` | Node module to install |
