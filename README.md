@@ -271,7 +271,7 @@ Note that this configuration is trivial and does not follow production recommand
 | dex.config.storage.type | string | `"sqlite3"` |  |
 | dex.config.web.http | int | `8000` |  |
 | dex.enabled | bool | `true` |  |
-| dex.image.tag | string | `"v2.37.0"` |  |
+| dex.image.tag | string | `"v2.41.1"` |  |
 | dex.ingress.enabled | bool | `false` |  |
 | dex.service.ports.http.nodePort | int | `32002` |  |
 | dex.service.ports.http.port | int | `8000` |  |
