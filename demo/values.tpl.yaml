@@ -6,6 +6,7 @@ global:
   batchJobTTL: 3600
 
 developer:
+  enabled: true
   urls:
     diracx: https://{{ hostname }}:8000
     minio: http://{{ hostname }}:32000
@@ -52,7 +53,7 @@ dex:
     issuer: http://{{ hostname }}:32002
 
     staticClients:
-      - id: d396912e-2f04-439b-8ae7-d8c585a34790
+      - id: {{ dex_client_uuid }}
         public: true
         name: "CLI app"
         redirectURIs:
@@ -61,8 +62,11 @@ dex:
 
     staticPasswords:
       - email: "admin@example.com"
+        # bcrypt hash of the string "password"
+        # htpasswd -bnBC 10 "" "password" | tr -d ':\n'
         hash: "$2a$10$2b2cU8CPhOTaGrs1HRQuAueS7JTT5ZHsHSzYiFPm1leZck7Mc8T4W"
         username: "admin"
+        userID: {{ dex_admin_uuid }}
 
 indigoiam:
   config:

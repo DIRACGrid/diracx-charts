@@ -83,7 +83,7 @@ initOs:
   enabled: true
 
 developer:
-  enabled: true
+  enabled: false
   # -- Make it possible to launch the demo without having an internet connection
   offline: false
   # -- URLs which can be used to access various components of the demo (diracx, minio, dex, etc).
@@ -283,7 +283,7 @@ dex:
   enabled: true
   https.enabled: false
   image:
-    tag: v2.37.0
+    tag: v2.41.1
 
   service:
     type: NodePort
@@ -297,12 +297,10 @@ dex:
 
   config:
     issuer: http://anything:32002
-
     storage:
       type: sqlite3
       config:
         file: /tmp/dex.db
-
     web:
       http: 8000
 
