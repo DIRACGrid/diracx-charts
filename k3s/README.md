@@ -227,7 +227,7 @@ sed -i 's/<your_hostname>/thenameyouareacutally.using.com/g' ./diracx-charts/k3s
 
 # Deploy via provided helm charts
 
-helm install --timeout 3600s diracx ./diracx-charts/diracx/ -f ./diracx-charts/k3s/examples/my.values.yaml --debug
+helm install --timeout 3600s diracx ./diracx-charts/diracx/ -f ./diracx-charts/k3s/examples/my.values.yaml --set global.environment=prod --debug
 ```
 
 ## Configure DiracX
