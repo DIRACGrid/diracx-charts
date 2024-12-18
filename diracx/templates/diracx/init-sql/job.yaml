@@ -36,13 +36,18 @@ spec:
       {{- end }}
     spec:
       restartPolicy: Never
-      {{- if .Values.mysql.enabled }}
       initContainers:
+      {{- if .Values.mysql.enabled }}
         - name: wait-for-mysql
           image: busybox:latest
           imagePullPolicy: IfNotPresent
           command: ['sh', '-c', 'until nc -vz {{ .Release.Name }}-mysql 3306; do echo "Waiting for mysql..."; sleep 3; done;']
-      {{ end }}
+      {{- else if .Values.postgresql.enabled }}
+        - name: wait-for-postgresql
+          image: busybox:latest
+          imagePullPolicy: IfNotPresent
+          command: ['sh', '-c', 'until nc -vz {{ .Release.Name }}-postgresql 5432; do echo "Waiting for postgresql..."; sleep 3; done;']
+      {{- end }}
       containers:
         - name: {{ .Chart.Name }}
           image: "{{ .Values.global.images.services }}:{{ .Values.global.images.tag | default .Chart.AppVersion }}"

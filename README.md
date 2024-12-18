@@ -221,6 +221,7 @@ Note that this configuration is trivial and does not follow production recommand
 |------------|------|---------|
 |  | cert-manager-issuer | *.*.* |
 | https://charts.bitnami.com/bitnami/ | mysql | 9.11.0 |
+| https://charts.bitnami.com/bitnami/ | postgresql | 11.7.6 |
 | https://charts.bitnami.com/bitnami/ | rabbitmq | 12.0.10 |
 | https://charts.dexidp.io/ | dex | 0.14.2 |
 | https://charts.jetstack.io | cert-manager | 1.13.1 |
@@ -427,6 +428,12 @@ Note that this configuration is trivial and does not follow production recommand
 | opentelemetry-collector.presets.logsCollection.enabled | bool | `false` |  |
 | podAnnotations | object | `{}` |  |
 | podSecurityContext | object | `{}` |  |
+| postgresql.auth.existingSecret | string | `"postgresql-secret"` |  |
+| postgresql.auth.username | string | `"sqldiracx"` |  |
+| postgresql.enabled | bool | `false` |  |
+| postgresql.primary.initdb.scriptsConfigMap | string | `"postgresql-init-diracx-dbs"` |  |
+| postgresql.primary.initdb.user | string | `"postgres"` |  |
+| postgresql.primary.pgHbaConfiguration | string | `"local   all       all                   trust\nhost    all       all     localhost     trust\nhost    all       all     0.0.0.0/0     md5"` |  |
 | prometheus.alertmanager.enabled | bool | `false` |  |
 | prometheus.enabled | bool | `false` |  |
 | prometheus.kube-state-metrics.enabled | bool | `false` |  |
