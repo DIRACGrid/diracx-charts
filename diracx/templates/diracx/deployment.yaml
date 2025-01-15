@@ -87,19 +87,19 @@ spec:
       {{- end }}
         {{- if .Values.mysql.enabled }}
         - name: wait-for-mysql
-          image: busybox:latest
+          image: {{ .Values.global.images.busybox.repository }}:{{ .Values.global.images.busybox.tag }}
           imagePullPolicy: IfNotPresent
           command: ['sh', '-c', 'until nc -vz {{ .Release.Name }}-mysql 3306; do echo "Waiting for mysql..."; sleep 3; done;']
         {{- end }}
         {{- if .Values.opensearch.enabled }}
         - name: wait-for-opensearch
-          image: busybox:latest
+          image: {{ .Values.global.images.busybox.repository }}:{{ .Values.global.images.busybox.tag }}
           imagePullPolicy: IfNotPresent
           command: ['sh', '-c', 'until nc -vz  opensearch-cluster-master 9200; do echo "Waiting for opensearch..."; sleep 3; done;']
         {{- end }}
         {{- if .Values.minio.enabled }}
         - name: wait-for-minio
-          image: busybox:latest
+          image: {{ .Values.global.images.busybox.repository }}:{{ .Values.global.images.busybox.tag }}
           imagePullPolicy: IfNotPresent
           command: ['sh', '-c', 'until echo -e "HEAD /minio/health/live HTTP/1.1\nHost: {{ .Release.Name }}-minio\nConnection: close\n" | nc {{ .Release.Name }}-minio:9000 | grep "HTTP/1.1 200 OK"; do echo "Waiting for minio..."; sleep 3; done;']
         {{- end }}
