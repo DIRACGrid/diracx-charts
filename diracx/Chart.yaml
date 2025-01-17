@@ -30,7 +30,8 @@ dependencies:
 - name: elasticsearch
   version: 8.5.1
   repository:  https://helm.elastic.co
-  # condition: elasticsearch.enabled
+  # TODO: why was this commented?
+  condition: elasticsearch.enabled
 
 - name: dex
   version: 0.14.2
