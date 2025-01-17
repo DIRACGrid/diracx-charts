@@ -633,3 +633,13 @@ nodeSelector: {}
 tolerations: []
 
 affinity: {}
+
+  
+#######################################################
+#
+# Rucio
+#
+#######################################################
+
+# TODO: do, this will much benefit from integrated rucio
+
