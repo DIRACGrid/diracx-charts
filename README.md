@@ -305,6 +305,8 @@ Note that this configuration is trivial and does not follow production recommand
 | global.activeDeadlineSeconds | int | `900` | timeout for job deadlines |
 | global.batchJobTTL | int | `600` | How long should batch jobs be retained after completing? |
 | global.imagePullPolicy | string | `"Always"` |  |
+| global.images.busybox.repository | string | `"busybox"` |  |
+| global.images.busybox.tag | string | `"latest"` |  |
 | global.images.client | string | `"ghcr.io/diracgrid/diracx/client"` |  |
 | global.images.services | string | `"ghcr.io/diracgrid/diracx/services"` |  |
 | global.images.tag | string | `"dev"` |  |
