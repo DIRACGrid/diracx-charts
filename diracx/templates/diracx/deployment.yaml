@@ -35,9 +35,11 @@ spec:
       securityContext:
         {{- toYaml .Values.podSecurityContext | nindent 8 }}
       volumes:
+        {{- if .Values.developer.enabled }}
         - name: cs-store-mount
           persistentVolumeClaim:
             claimName: pvc-cs-store
+        {{- end }}
         {{- if and .Values.developer.enabled .Values.developer.mountedPythonModulesToInstall }}
         - name: diracx-code-mount
           persistentVolumeClaim:
@@ -65,7 +67,9 @@ spec:
 
       {{/* Define common volume mounts for reusability */}}
       {{- $commonVolumeMounts := list }}
+      {{- if .Values.developer.enabled }}
       {{- $commonVolumeMounts = append $commonVolumeMounts (dict "mountPath" "/cs_store" "name" "cs-store-mount" "readOnly" false) }}
+      {{- end }}
       {{- $commonVolumeMounts = append $commonVolumeMounts (dict "mountPath" "/signing-key" "name" "signing-key-mount" "readOnly" false) }}
       {{- $commonVolumeMounts = append $commonVolumeMounts (dict "mountPath" "/entrypoint.sh" "name" "container-entrypoint" "subPath" "entrypoint.sh") }}
       {{- if and .Values.developer.enabled .Values.developer.enableCoverage }}

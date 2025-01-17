@@ -1,4 +1,4 @@
-{{- if .Values.initCs.enabled }}
+{{- if .Values.developer.enabled }}
 
 {{/* Define common volume mounts for reusability */}}
 {{- $commonVolumeMounts := list }}
@@ -30,11 +30,6 @@ spec:
   ttlSecondsAfterFinished: {{ .Values.global.batchJobTTL }}
   activeDeadlineSeconds: {{ .Values.global.activeDeadlineSeconds }}
   template:
-    metadata:
-      annotations:
-      {{- range $key, $value := .Values.initCs.annotations }}
-        {{ $key }}: {{ $value | quote }}
-      {{- end }}
     spec:
       restartPolicy: Never
       containers:
@@ -47,8 +42,6 @@ spec:
             {{ toYaml $commonVolumeMounts | nindent 12 }}
             - name: scripts
               mountPath: /scripts
-          resources:
-            {{- toYaml .Values.initCs.resources | nindent 12 }}
       volumes:
       - name: scripts
         configMap:
