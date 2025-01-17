@@ -349,7 +349,6 @@ Note that this configuration is trivial and does not follow production recommand
 | ingress.className | string | `"nginx"` |  |
 | ingress.enabled | bool | `true` |  |
 | ingress.tlsSecretName | string | `"myingress-cert"` |  |
-| initCs.enabled | bool | `true` |  |
 | initOs.enabled | bool | `true` |  |
 | initSecrets.enabled | bool | `true` |  |
 | initSecrets.rbac.create | bool | `true` |  |

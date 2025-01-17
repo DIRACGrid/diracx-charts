@@ -28,9 +28,11 @@ spec:
       securityContext:
         {{- toYaml .Values.podSecurityContext | nindent 8 }}
       volumes:
+        {{- if .Values.developer.enabled }}
         - name: cs-store-mount
           persistentVolumeClaim:
             claimName: pvc-cs-store
+        {{- end }}
         {{- if .Values.developer.mountedPythonModulesToInstall }}
         - name: diracx-code-mount
           persistentVolumeClaim:

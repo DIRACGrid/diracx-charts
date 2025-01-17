@@ -61,10 +61,6 @@ securityContext:
 
 #################
 
-initCs:
-  # Automatically initialize the repository in the CS volume
-  enabled: true
-
 initSecrets:
   enabled: true
   rbac:
