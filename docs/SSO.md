@@ -18,7 +18,7 @@ Then submit.
 
 ## Configuring DiracX
 
-Update `run_demo.sh` to by changing the idp-url to `https://auth.cern.ch/auth/realms/cern` and `idp-client-id` to the application identifier you registered previously
+Update `run_demo.sh` by changing the `idp-url` to `https://auth.cern.ch/auth/realms/cern` and `idp-client-id` to the application identifier you registered previously
 
 
 ```
