@@ -2,7 +2,7 @@ u# How to enable CERN SSO with DiracX
 
 ## Registering the service in SSO
 
-Detailed instructions can be found here : https://auth.docs.cern.ch/applications/adding-application/ 
+Detailed instructions can be found here : https://auth.docs.cern.ch/applications/adding-application/
  Go to https://application-portal.web.cern.ch/
 
 ![](./SSO1.png)
