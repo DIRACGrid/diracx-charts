@@ -8,6 +8,12 @@ PARTY_EMOJI='\xF0\x9F\x8E\x89'
 INFO_EMOJI='\xE2\x84\xB9\xEF\xB8\x8F'
 WARN_EMOJI='\xE2\x9A\xA0\xEF\xB8\x8F'
 
+if [ "$EUID" -eq 0 ]
+  then printf "%b Do not run this script as root\n" "${SKULL_EMOJI}"
+  exit 1
+fi
+
+
 script_dir=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 
 tmp_dir=$(mktemp -d)
