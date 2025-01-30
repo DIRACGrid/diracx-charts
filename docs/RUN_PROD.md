@@ -138,13 +138,102 @@ minio:
   enabled: false
 ```
 
+## Databases
+
+You should be running against the existing `DIRAC` databases, so we do not recommend deploying the DB in your cluster using this chart.
+
+### SQL
+
+The access to the database is controlled by the following values.
+Every DB which is used should be configured.
+
+```yaml
+diracx:
+  sqlDbs:
+    default:
+         rootUser: admin
+         rootPassword: hunter123
+         user: dirac
+         password: password123
+         host: sqlHost:123
+    dbs:
+      AuthDB:
+        internalName: DiracXAuthDB
+      JobDB:
+```
+
+You can chose whether you prefer to create the DB yourself or let `diracx` do it.
+
+```yaml
+# Create the DB and the schema if set to True
+init-sql:
+  enabled: false
+
+# Disable the installation of mysql
+mysql:
+  enabled: fase
+```
+
+The command being executed is
+
+```python
+python -m diracx.db init-sql
+```
+
+
+Note that these options will generate mysql urls only. Should you need another DB,
+you should write the URL yourself in the settings, for example
+
+```yaml
+diracx:
+  settings:
+    DIRACX_DB_URL_BOOKKEEPINGDB: oracle+oracledb_async://ACCOUNT:PASSWORD@itrac1234.cern.ch/?service_name=int123.cern.ch
+```
+
+### Opensearch DB
+
+The setup is the same as for the SQL dbs
+
+```yaml
+diracx:
+  osDbs:
+    dbs:
+      JobParametersDB: null
+      PilotLogsDB: null
+    default:
+      host: os-dirac.cern.ch:443/os
+      password: secret123
+      rootPassword: secret1234
+      rootUser: sangoku
+      user: vegeta
+```
+
+
+You can chose to initialize the DBs yourself or let `diracx` do it.
+
+```yaml
+initOs:
+  enabled: true
+```
+
+The command executed is
+
+```python
+python -m diracx.db init-os
+```
+
+
 ## DiracX service configuration
 
+The configuration for the service itself is minimal and just requires the hostname
 
 ```yaml
 diracx:
   hostname: diracx-cert.app.cern.ch
 ```
+
+You can also configure the images and the registry that are used
+
 
 ```yaml
 global:
@@ -158,54 +247,15 @@ global:
 ```
 
 
+## Secrets management
+
+The secrets are managed by the following flag
 
 ```yaml
-  # If mysql is enabled, you are not allowed
-  # to set the username passwords
-  sqlDbs:
-    default:
-    #     rootUser: admin
-    #     rootPassword: hunter123
-    #     user: dirac
-    #     password: password123
-    #     host: sqlHost:123
-    # -- Which DiracX MySQL DBs are used?
-    dbs:
-  #    AuthDB:
-  #      internalName: DiracXAuthDB
-  #    JobDB:
-  #    JobLoggingDB:
-  #    SandboxMetadataDB:
-  #    TaskQueueDB:
-  #    PilotAgentsDB
-  #    ProxyDB:
-  #      user: proxyUser
-  #      password: hush
-  #      host: proxyHost:345
-
-  # If opensearch is enabled, you are not allowed
-  # to set the username passwords
-  osDbs:
-    default:
-
-    # -- Which DiracX OpenSearch DBs are used?
-    dbs:
-      # JobParametersDB:
-      # PilotLogsDB:
+initSecrets:
+  enabled: true
 ```
 
-```yaml
-init-secrets:
-  enabled: true
-init-sql:
-  enabled: false
-initOs:
-  enabled: true
+It will make sure to generate the appropriate settings from the db configurations, generate token signing keys if not present, etc
 
-mysql:
-  enabled: false
-opensearch:
-  enabled: false
-rabbitmq:
-  enabled: false
-```
+We recommend you leave it to `true`.

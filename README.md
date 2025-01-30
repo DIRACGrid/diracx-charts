@@ -273,7 +273,7 @@ Note that this configuration is trivial and does not follow production recommand
 | diracx.settings.DIRACX_SANDBOX_STORE_BUCKET_NAME | string | `"sandboxes-store"` | Name of the bucket for the sandbox |
 | diracx.settings.DIRACX_SERVICE_AUTH_TOKEN_KEY | string | `"file:///signing-key/rsa256.key"` | path storing the token key |
 | diracx.sqlDbs.dbs | string | `nil` | Which DiracX MySQL DBs are used? |
-| diracx.sqlDbs.default | string | `nil` |  |
+| diracx.sqlDbs.default | string | `nil` | default credentials |
 | diracxWeb.branch | string | `""` |  |
 | diracxWeb.repoURL | string | `""` | install specification to pass to npm before launching container |
 | diracxWeb.service.port | int | `8080` |  |

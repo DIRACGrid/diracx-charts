@@ -149,14 +149,19 @@ diracx:
   # If mysql is enabled, you are not allowed
   # to set the username passwords
   sqlDbs:
+    # -- default credentials
     default:
     #     rootUser: admin
     #     rootPassword: hunter123
     #     user: dirac
     #     password: password123
     #     host: sqlHost:123
+
     # -- Which DiracX MySQL DBs are used?
     dbs:
+    # All DBs used should be configured here.
+    # If they use the default configuration
+    # they should have a null value
   #    AuthDB:
   #      internalName: DiracXAuthDB
   #    JobDB:
