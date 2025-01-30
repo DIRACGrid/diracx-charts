@@ -125,11 +125,12 @@ DIRACX_SANDBOX_STORE_S3_CLIENT_KWARGS: '{"endpoint_url": "http://minio.invalid:3
 DIRACX_SANDBOX_STORE_AUTO_CREATE_BUCKET: "true"
 ```
 
+To avoid running minio:
+
 ```yaml
 minio:
   enabled: false
 ```
-
 
 ## DiracX configuration
 

@@ -167,36 +167,23 @@ helm diff upgrade diracx-demo  ./diracx --values .demo/values.yaml --set rabbitm
 
 # Actually run "helm upgrade" to apply changes
 helm upgrade diracx-demo ./diracx --values .demo/values.yaml
+
+# Retrieve the values.yaml that was used
+
+helm get values diracx-demo
 ```
 
 See [here](./docs/RUN_DEMO.md) for more details on what you can do to alter the behavior of the local installation.
 
 ## Deploying in production
 
-TODO: Link to k3s
+See [docs](./docs/RUN_DEMO.md)
 
-TODO: Explain how to download the values from helm
+### Deploying a custom branch
 
-TODO: add info about diracx-web
+This can be useful when debugging a problem, or running a specific version of the code which is not the one in the image.
 
-### Deploying a custom branch to DIRAC certification
-
-Apply the following on top of the standard `values.yaml` file, replacing `USERNAME` and `BRANCH_NAME` with the appropriate values.
-
-```yaml
-global:
-  images:
-    tag: "dev"
-    # TODO: We should use the base images here but pythonModulesToInstall would need to be split
-    services: ghcr.io/diracgrid/diracx/services
-    client: ghcr.io/diracgrid/diracx/client
-
-diracx:
-  pythonModulesToInstall:
-    - "git+https://github.com/USERNAME/diracx.git@BRANCH_NAME#egg=diracx_core&subdirectory=diracx-core"
-    - "git+https://github.com/USERNAME/diracx.git@BRANCH_NAME#egg=diracx_db&subdirectory=diracx-db"
-    - "git+https://github.com/USERNAME/diracx.git@BRANCH_NAME#egg=diracx_routers&subdirectory=diracx-routers"yaml
-```
+See [docs](./docs/DEBUGGING.md)
 
 ## OpenTelemetry
 
