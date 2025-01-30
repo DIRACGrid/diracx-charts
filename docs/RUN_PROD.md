@@ -9,6 +9,14 @@ We go here with the assumption that you have a `kubernetes` cluster at hand. If 
 
 If your central infrastructure already provide the following services, by all mean, use them.
 
+## Getting started
+
+You can generate a template for your installation using
+`dirac internal legacy generate-helm-values`
+
+This file still needs to be edited (look for `TODO`).
+The following sections give you more details.
+
 ## IDP
 
 To authenticate a VO, you need an IDP that can work with the Oauth2 Authorization with PKCE.
@@ -24,15 +32,21 @@ https://<youdiracx.invalid>/api/auth/authorize/complete
 * The necessary scopes are `email`, `openid`, `profile`
 * The needed grant type is authorization flow
 
-### IAM client
 
-No authentication (public client)
+You can for example use [CERN SSO](SSO.md) as an IdP.
 
+Note that you still need to have the users registered in `diracx` by filling the `CsSync` section in the CS.
 
 
 ## Cert manager
 
-TODO with letsencrypt
+### letsencrypt
+TODO
+
+
+### Openshift
+
+Openshift takes care of distributing certificates to the ingress
 
 ```yaml
 cert-manager:
@@ -46,9 +60,8 @@ cert-manager-issuer:
 
 A new concept in `diracx` is the `AdminVO`, which has super karma on `diracx` itself but not on the resources the VO use.
 
-We recommand using [dex](https://github.com/dexidp/dex) as the IdP for that. The [helper script](dex_config_helper.sh) can assist you in that.
-
-
+We recommand using the SSO of your institute of it supports it (see [IdP](#idp)).
+Otherwise, [dex](https://github.com/dexidp/dex) is a good choice. You can either have local account (the [helper script](dex_config_helper.sh) can assist you in that), or use `dex` as a redirector for external IdP, which may not support PKCE flow (like `EGI CheckIn`)
 
 
 ```yaml
@@ -57,16 +70,30 @@ dex:
 ```
 
 
-
 ## CS
 
+We recommend taking the configuration from a git repository (gitlab, github, ...).
+
+This is controled with the `DIRACX_CONFIG_BACKEND_URL` variable.
+
+For example:
 
 ```yaml
-init-cs:
-  enabled: true
+DIRACX_CONFIG_BACKEND_URL: git+https://<token-name>:<token-value>@gitlab.cern.ch/lhcb-dirac/lhcbdiracx-cert-conf.git
 ```
 
-## Ingress
+If you want to use another branch than `master`, you can add a parameter at the end `?branch_name=something_else`.
+
+Instructions for conversion from the `DIRAC CS` to the `diracx config` can be found [here](https://github.com/DIRACGrid/diracx/blob/main/docs/CONFIGURATION.md)
+
+
+
+## Ingress controller
+
+This is very infrastructure dependant. In any case, we expect that the CertManager or your infrastructure is capable of delivering you certificates.
+
+### Openshift
+
 
 ```yaml
 ingress:
@@ -75,9 +102,28 @@ ingress:
     route.openshift.io/termination: edge
   className: null
   enabled: true
+  # Openshift takes care of filling in certificates
   tlsSecretName: null
 ```
+
+### K3S
+
+```yaml
+ingress:
+  className: "traefik"
+```
+
 ## Sandbox
+
+The Sandbox needs to be an object store. We highly recommend that you use one provided by your institute.
+
+The connections parameters are controlled with
+
+```yaml
+DIRACX_SANDBOX_STORE_BUCKET_NAME: sandboxes-store
+DIRACX_SANDBOX_STORE_S3_CLIENT_KWARGS: '{"endpoint_url": "http://minio.invalid:32000", "aws_access_key_id": "my-access-key", "aws_secret_access_key": "my-secret-key-123"}'
+DIRACX_SANDBOX_STORE_AUTO_CREATE_BUCKET: "true"
+```
 
 ```yaml
 minio:

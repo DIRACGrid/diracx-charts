@@ -22,6 +22,8 @@ developer:
 diracx:
   hostname: {{ hostname }}
   settings:
+    DIRACX_CONFIG_BACKEND_URL: "git+file:///cs_store/initialRepo"
+    DIRACX_SERVICE_AUTH_TOKEN_KEY: "file:///signing-key/rsa256.key"
     DIRACX_SERVICE_AUTH_ALLOWED_REDIRECTS: '["https://{{ hostname }}:8000/api/docs/oauth2-redirect", "https://{{ hostname }}:8000/#authentication-callback"]'
     DIRACX_SANDBOX_STORE_BUCKET_NAME: demo-sandboxes
     DIRACX_SANDBOX_STORE_S3_CLIENT_KWARGS: '{"endpoint_url": "http://{{ hostname }}:32000", "aws_access_key_id": "console", "aws_secret_access_key": "console123"}'

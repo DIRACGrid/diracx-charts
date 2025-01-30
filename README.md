@@ -282,7 +282,9 @@ Note that this configuration is trivial and does not follow production recommand
 | diracx.pythonModulesToInstall | list | `[]` | List of install specifications to pass to pip before launching each container |
 | diracx.service.port | int | `8000` |  |
 | diracx.settings | object | "e.g. DIRACX_CONFIG_BACKEND_URL=..." | Settings to inject into the API container via environment variables |
-| diracx.settings.DIRACX_CONFIG_BACKEND_URL | string | `"git+file:///cs_store/initialRepo"` | This corresponds to the basic dirac.cfg which must be present on all the servers TODO: autogenerate all of these |
+| diracx.settings.DIRACX_CONFIG_BACKEND_URL | string | `"git+https://gitlab.invalid/myvo/diracx-config"` | URL to get the diracx config |
+| diracx.settings.DIRACX_SANDBOX_STORE_BUCKET_NAME | string | `"sandboxes-store"` | Name of the bucket for the sandbox |
+| diracx.settings.DIRACX_SERVICE_AUTH_TOKEN_KEY | string | `"file:///signing-key/rsa256.key"` | path storing the token key |
 | diracx.sqlDbs.dbs | string | `nil` | Which DiracX MySQL DBs are used? |
 | diracx.sqlDbs.default | string | `nil` |  |
 | diracxWeb.branch | string | `""` |  |
