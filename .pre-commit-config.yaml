@@ -28,7 +28,7 @@ repos:
       pass_filenames: false
 
   - repo: https://github.com/koalaman/shellcheck-precommit
-    rev: v0.9.0
+    rev: v0.10.0
     hooks:
     - id: shellcheck
       # TODO: Render demo in CI and run the scripts through shell-check
