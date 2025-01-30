@@ -9,6 +9,8 @@ We go here with the assumption that you have a `kubernetes` cluster at hand. If 
 
 If your central infrastructure already provide the following services, by all mean, use them.
 
+More configuration options are available, please refer to the [values.yaml](../diracx/values.yaml)
+
 ## Getting started
 
 You can generate a template for your installation using
@@ -74,12 +76,14 @@ dex:
 
 We recommend taking the configuration from a git repository (gitlab, github, ...).
 
-This is controled with the `DIRACX_CONFIG_BACKEND_URL` variable.
+This is controled with the `DIRACX_CONFIG_BACKEND_URL` setting.
 
 For example:
 
 ```yaml
-DIRACX_CONFIG_BACKEND_URL: git+https://<token-name>:<token-value>@gitlab.cern.ch/lhcb-dirac/lhcbdiracx-cert-conf.git
+diracx:
+  settings:
+    DIRACX_CONFIG_BACKEND_URL: git+https://<token-name>:<token-value>@gitlab.cern.ch/lhcb-dirac/lhcbdiracx-cert-conf.git
 ```
 
 If you want to use another branch than `master`, you can add a parameter at the end `?branch_name=something_else`.
@@ -120,9 +124,11 @@ The Sandbox needs to be an object store. We highly recommend that you use one pr
 The connections parameters are controlled with
 
 ```yaml
-DIRACX_SANDBOX_STORE_BUCKET_NAME: sandboxes-store
-DIRACX_SANDBOX_STORE_S3_CLIENT_KWARGS: '{"endpoint_url": "http://minio.invalid:32000", "aws_access_key_id": "my-access-key", "aws_secret_access_key": "my-secret-key-123"}'
-DIRACX_SANDBOX_STORE_AUTO_CREATE_BUCKET: "true"
+diracx:
+  settings:
+    DIRACX_SANDBOX_STORE_BUCKET_NAME: sandboxes-store
+    DIRACX_SANDBOX_STORE_S3_CLIENT_KWARGS: '{"endpoint_url": "http://minio.invalid:32000", "aws_access_key_id": "my-access-key", "aws_secret_access_key": "my-secret-key-123"}'
+    DIRACX_SANDBOX_STORE_AUTO_CREATE_BUCKET: "true"
 ```
 
 To avoid running minio:
@@ -132,7 +138,7 @@ minio:
   enabled: false
 ```
 
-## DiracX configuration
+## DiracX service configuration
 
 
 ```yaml
@@ -152,6 +158,41 @@ global:
 ```
 
 
+
+```yaml
+  # If mysql is enabled, you are not allowed
+  # to set the username passwords
+  sqlDbs:
+    default:
+    #     rootUser: admin
+    #     rootPassword: hunter123
+    #     user: dirac
+    #     password: password123
+    #     host: sqlHost:123
+    # -- Which DiracX MySQL DBs are used?
+    dbs:
+  #    AuthDB:
+  #      internalName: DiracXAuthDB
+  #    JobDB:
+  #    JobLoggingDB:
+  #    SandboxMetadataDB:
+  #    TaskQueueDB:
+  #    PilotAgentsDB
+  #    ProxyDB:
+  #      user: proxyUser
+  #      password: hush
+  #      host: proxyHost:345
+
+  # If opensearch is enabled, you are not allowed
+  # to set the username passwords
+  osDbs:
+    default:
+
+    # -- Which DiracX OpenSearch DBs are used?
+    dbs:
+      # JobParametersDB:
+      # PilotLogsDB:
+```
 
 ```yaml
 init-secrets:
