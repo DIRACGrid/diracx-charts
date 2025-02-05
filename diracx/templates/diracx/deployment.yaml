@@ -131,7 +131,7 @@ spec:
               port: http
             failureThreshold: 30
             periodSeconds: 5
-          command: ["bash", "/entrypoint.sh"]
+          command: [ "/usr/local/bin/_entrypoint.sh", "tini", "--", "bash", "/entrypoint.sh" ]
           args:
             - uvicorn
             - --factory
