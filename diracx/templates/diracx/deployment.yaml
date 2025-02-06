@@ -119,19 +119,19 @@ spec:
               protocol: TCP
           livenessProbe:
             httpGet:
-              path: /api/docs/
+              path: /api/docs
               port: http
           readinessProbe:
             httpGet:
-              path: /api/docs/
+              path: /api/docs
               port: http
           startupProbe:
             httpGet:
-              path: /api/docs/
+              path: /api/docs
               port: http
             failureThreshold: 30
             periodSeconds: 5
-          command: ["bash", "/entrypoint.sh"]
+          command: [ "/usr/local/bin/_entrypoint.sh", "tini", "--", "bash", "/entrypoint.sh" ]
           args:
             - uvicorn
             - --factory
