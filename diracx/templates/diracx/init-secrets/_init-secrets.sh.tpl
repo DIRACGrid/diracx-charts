@@ -129,18 +129,6 @@ generate_secret_if_needed diracx-sql-root-connection-urls \
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
 {{- if .Values.initOs.enabled }}
 # If we deploy opensearch ourselves
 {{- if .Values.opensearch.enabled }}
