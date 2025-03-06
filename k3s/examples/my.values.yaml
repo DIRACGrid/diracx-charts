@@ -6,6 +6,7 @@ diracx:
   service:
     port: 8000
   settings:
+    DIRACX_SERVICE_AUTH_TOKEN_ISSUER: "https://<your_hostname>"
     DIRACX_SERVICE_AUTH_ALLOWED_REDIRECTS: '["https://<your_hostname>/api/docs/oauth2-redirect","https://<your_hostname>/#authentication-callback"]'
     DIRACX_SANDBOX_STORE_BUCKET_NAME: demo-sandboxes
     DIRACX_SANDBOX_STORE_S3_CLIENT_KWARGS: '{"endpoint_url": "http://diracx-minio:9000", "aws_access_key_id": "console", "aws_secret_access_key": "console123"}'
