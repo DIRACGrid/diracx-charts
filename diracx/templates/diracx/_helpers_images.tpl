@@ -26,15 +26,18 @@ ghcr.io/diracgrid/diracx/services:v0.0.7
 {{- define "diracx.image" }}
 {{- $root := .root }}
 {{- $registry := index $root.Values.global.images (printf "%s_registry" ( .registryType | default "ghcr" )) }}
-{{- $repository := .repository }}
-{{- if not $repository -}}
-{{- fail (printf "Non-empty repository is required when calling diracx.image") -}}
-{{- end -}}
 {{- $tag := .tag | default $root.Values.global.images.tag | default $root.Chart.AppVersion }}
+{{- $repositoryWithTag := .repositoryWithTag }}
+{{- if not $repositoryWithTag }}
+{{- if not .repository }}
+{{- fail (printf "Non-empty repository is required when calling diracx.image when repositoryWithTag is not provided") }}
+{{- end -}}
+{{- $repositoryWithTag = printf "%s:%s" .repository $tag }}
+{{- end }}
 {{- if $registry -}}
-{{- $registry }}/{{ $repository }}:{{ $tag }}
+{{- $registry }}/{{- $repositoryWithTag -}}
 {{- else -}}
-{{- $repository }}:{{ $tag }}
+{{- $repositoryWithTag -}}
 {{- end -}}
 {{- end }}
 
@@ -97,5 +100,5 @@ Generates the web image path
 Generates the node image path
 */}}
 {{- define "diracx.nodeImage" }}
-{{- include "diracx.image" (dict "registryType" "dockerhub" "repository" .Values.developer.nodeImage "root" . "tag" "latest" ) }}
+{{- include "diracx.image" (dict "registryType" "dockerhub" "repositoryWithTag" .Values.developer.nodeImage "root" . ) }}
 {{- end }}
