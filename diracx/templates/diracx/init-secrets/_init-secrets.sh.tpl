@@ -113,15 +113,22 @@ generate_secret_if_needed diracx-sql-root-connection-urls \
 {{- $db_password :=  $db_settings.password | default $default_db_password  }}
 {{- $db_internal_name :=  $db_settings.internalName | default $dbName  }}
 
+{{- $url_string := urlJoin (dict "scheme" "mysql+aiomysql" "userinfo" ( print $db_user  ":" $db_password ) "host" $db_host "path" $db_internal_name ) }}
+{{- $root_url_string := urlJoin (dict "scheme" "mysql+aiomysql" "userinfo" ( print $db_root_user  ":" $db_root_password ) "host" $db_host "path" $db_internal_name ) }}
+
 generate_secret_if_needed diracx-sql-connection-urls \
-  --from-literal=DIRACX_DB_URL_{{ $dbName | upper }}="mysql+aiomysql://{{ $db_user }}:{{ $db_password }}@{{ $db_host }}/{{ $db_internal_name }}"
+  --from-literal=DIRACX_DB_URL_{{ $dbName | upper }}="{{ $url_string }}"
 generate_secret_if_needed diracx-sql-root-connection-urls \
-  --from-literal=DIRACX_DB_URL_{{ $dbName | upper }}="mysql+aiomysql://{{ $db_root_user }}:{{ $db_root_password }}@{{ $db_host }}/{{ $db_internal_name }}"
+  --from-literal=DIRACX_DB_URL_{{ $dbName | upper }}="{{ $root_url_string }}"
 {{- else }}
+
+{{- $url_string := urlJoin (dict "scheme" "mysql+aiomysql" "userinfo" ( print $default_db_user  ":" $default_db_password ) "host" $default_db_host "path" $db_internal_name ) }}
+{{- $root_url_string := urlJoin (dict "scheme" "mysql+aiomysql" "userinfo" ( print $default_db_root_user  ":" $default_db_root_password ) "host" $default_db_host "path" $db_internal_name ) }}
+
 generate_secret_if_needed diracx-sql-connection-urls \
-  --from-literal=DIRACX_DB_URL_{{ $dbName | upper }}="mysql+aiomysql://{{ $default_db_user }}:{{ $default_db_password }}@{{ $default_db_host }}/{{ $dbName }}"
+  --from-literal=DIRACX_DB_URL_{{ $dbName | upper }}="{{ $url_string }}"
 generate_secret_if_needed diracx-sql-root-connection-urls \
-  --from-literal=DIRACX_DB_URL_{{ $dbName | upper }}="mysql+aiomysql://{{ $default_db_root_user }}:{{ $default_db_root_password }}@{{ $default_db_host }}/{{ $dbName }}"
+  --from-literal=DIRACX_DB_URL_{{ $dbName | upper }}="{{ $root_url_string }}"
 {{- end }}
 
 {{- end }}
