@@ -147,6 +147,12 @@ spec:
             {{- end }}
           {{- end }}
           volumeMounts: {{ toYaml $commonVolumeMounts | nindent 12 }}
+          env:
+            # Required by FastAPIInstrumentor
+            # to follow semantic conventions for HTTP metrics
+            # https://opentelemetry.io/docs/specs/semconv/http/http-metrics/
+            - name: OTEL_SEMCONV_STABILITY_OPT_IN
+              value: "http"
           envFrom:
             # - configMapRef:
             #     name: diracx-env-config
