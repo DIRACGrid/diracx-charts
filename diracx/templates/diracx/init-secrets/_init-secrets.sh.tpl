@@ -122,8 +122,8 @@ generate_secret_if_needed diracx-sql-root-connection-urls \
   --from-literal=DIRACX_DB_URL_{{ $dbName | upper }}="{{ $root_url_string }}"
 {{- else }}
 
-{{- $url_string := urlJoin (dict "scheme" "mysql+aiomysql" "userinfo" ( print $default_db_user  ":" $default_db_password ) "host" $default_db_host "path" $db_internal_name ) }}
-{{- $root_url_string := urlJoin (dict "scheme" "mysql+aiomysql" "userinfo" ( print $default_db_root_user  ":" $default_db_root_password ) "host" $default_db_host "path" $db_internal_name ) }}
+{{- $url_string := urlJoin (dict "scheme" "mysql+aiomysql" "userinfo" ( print $default_db_user  ":" $default_db_password ) "host" $default_db_host "path" $dbName ) }}
+{{- $root_url_string := urlJoin (dict "scheme" "mysql+aiomysql" "userinfo" ( print $default_db_root_user  ":" $default_db_root_password ) "host" $default_db_host "path" $dbName ) }}
 
 generate_secret_if_needed diracx-sql-connection-urls \
   --from-literal=DIRACX_DB_URL_{{ $dbName | upper }}="{{ $url_string }}"
