@@ -25,7 +25,10 @@ global:
       tag: "dev"
       repository: ghcr.io/diracgrid/diracx-web/static
 
+# Number of diracx pods
 replicaCount: 1
+# Number of web pods
+replicaCountWeb: 1
 
 # Created with
 # kubectl create secret generic regcred \
