@@ -119,7 +119,7 @@ spec:
               protocol: TCP
           livenessProbe:
             httpGet:
-              path: /api/docs
+              path: /api/health/live
               port: http
             timeoutSeconds: 15
             periodSeconds: 20
@@ -127,7 +127,7 @@ spec:
             failureThreshold: 3
           readinessProbe:
             httpGet:
-              path: /api/docs
+              path: /api/health/ready
               port: http
             timeoutSeconds: 15
             periodSeconds: 20
@@ -135,7 +135,7 @@ spec:
             failureThreshold: 3
           startupProbe:
             httpGet:
-              path: /api/docs
+              path: /api/health/startup
               port: http
             timeoutSeconds: 5
             periodSeconds: 5
