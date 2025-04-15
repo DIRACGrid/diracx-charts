@@ -462,8 +462,8 @@ opentelemetry-collector:
         #   cst_label1: value1
         send_timestamps: true
         metric_expiration: 180m
-        #resource_to_telemetry_conversion:
-        #  enabled: true
+        resource_to_telemetry_conversion:
+          enabled: true
 
       # prometheusremotewrite:
       #   endpoint: "http://diracx-demo-prometheus-pushgateway:9091/api/v1/push"
@@ -559,6 +559,15 @@ grafana:
     type: NodePort
     port: 32004
     nodePort: 32004
+
+  # TODO: we currently cannot load the dashboards using the "dashboards" section, which would be much simpler,
+  # because of https://github.com/grafana/helm-charts/issues/27
+  sidecar:
+    dashboards:
+      enabled: true
+      label: grafana_dashboard
+      labelValue: "1"
+      folder: /var/lib/grafana/dashboards/default
 
   # data source jaeger with url http://diracx-demo-jaeger-query:16686
   # https://grafana.com/docs/grafana/latest/datasources/jaeger/#provision-the-data-source
