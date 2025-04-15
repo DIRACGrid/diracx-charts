@@ -121,16 +121,25 @@ spec:
             httpGet:
               path: /api/docs
               port: http
+            timeoutSeconds: 15
+            periodSeconds: 20
+            successThreshold: 1
+            failureThreshold: 3
           readinessProbe:
             httpGet:
               path: /api/docs
               port: http
+            timeoutSeconds: 15
+            periodSeconds: 20
+            successThreshold: 1
+            failureThreshold: 3
           startupProbe:
             httpGet:
               path: /api/docs
               port: http
-            failureThreshold: 30
+            timeoutSeconds: 5
             periodSeconds: 5
+            failureThreshold: 30
           command: [ "/usr/local/bin/_entrypoint.sh", "tini", "--", "bash", "/entrypoint.sh" ]
           args:
             - uvicorn
