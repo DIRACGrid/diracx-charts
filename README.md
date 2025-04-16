@@ -338,6 +338,10 @@ Note that this configuration is trivial and does not follow production recommand
 | grafana.service.nodePort | int | `32004` |  |
 | grafana.service.port | int | `32004` |  |
 | grafana.service.type | string | `"NodePort"` |  |
+| grafana.sidecar.dashboards.enabled | bool | `true` |  |
+| grafana.sidecar.dashboards.folder | string | `"/var/lib/grafana/dashboards/default"` |  |
+| grafana.sidecar.dashboards.label | string | `"grafana_dashboard"` |  |
+| grafana.sidecar.dashboards.labelValue | string | `"1"` |  |
 | indigoiam.config.initial_client.id | string | `nil` |  |
 | indigoiam.config.initial_client.secret | string | `nil` |  |
 | indigoiam.config.issuer | string | `"http://anything:32003"` |  |
@@ -402,6 +406,7 @@ Note that this configuration is trivial and does not follow production recommand
 | opentelemetry-collector.config.exporters.otlp/jaeger.tls.insecure | bool | `true` |  |
 | opentelemetry-collector.config.exporters.prometheus.endpoint | string | `":8889"` |  |
 | opentelemetry-collector.config.exporters.prometheus.metric_expiration | string | `"180m"` |  |
+| opentelemetry-collector.config.exporters.prometheus.resource_to_telemetry_conversion.enabled | bool | `true` |  |
 | opentelemetry-collector.config.exporters.prometheus.send_timestamps | bool | `true` |  |
 | opentelemetry-collector.config.receivers.jaeger | string | `nil` |  |
 | opentelemetry-collector.config.receivers.otlp.protocols.grpc | string | `nil` |  |
