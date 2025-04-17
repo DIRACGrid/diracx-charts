@@ -5,7 +5,7 @@ This helm chart is intended to be used in two ways:
  * Development: The ./run_demo.sh script allows the infrastructure to be ran locally with docker+kind
  * Production: TODO
 
-![Version: 0.1.0](https://img.shields.io/badge/Version-0.1.0-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 0.0.1a](https://img.shields.io/badge/AppVersion-0.0.1a-informational?style=flat-square)
+![Version: 0.1.0-alpha.1](https://img.shields.io/badge/Version-0.1.0--alpha.1-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 0.0.1a](https://img.shields.io/badge/AppVersion-0.0.1a-informational?style=flat-square)
 
 ![DiracX Chart tests](https://github.com/DIRACGrid/diracx-charts/actions/workflows/main.yml/badge.svg?branch=master)
 
