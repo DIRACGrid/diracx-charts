@@ -503,10 +503,11 @@ if [ ${#python_pkg_names[@]} -gt 0 ]; then
   done
 fi
 
-for diracx_compatible_pkg in "${diracx_and_extensions_pkgs[@]}"; do
-  json+="\"$diracx_compatible_pkg\","
-
-done
+if [ ${#diracx_and_extensions_pkgs[@]} -gt 0 ]; then
+  for diracx_compatible_pkg in "${diracx_and_extensions_pkgs[@]}"; do
+    json+="\"$diracx_compatible_pkg\","
+  done
+fi
 
 json="${json%,}]"
 sed "s#{{ mounted_python_modules }}#${json}#g" "${demo_dir}/values.yaml.bak" > "${demo_dir}/values.yaml"
