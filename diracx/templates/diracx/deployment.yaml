@@ -5,6 +5,7 @@ metadata:
   labels:
     {{- include "diracx.labels" . | nindent 4 }}
 spec:
+  storageClassName: {{ if eq .Values.global.environment "prod" }}IfNotPresent{{ else }}standard{{ end }}
   replicas: {{ .Values.replicaCount }}
   selector:
     matchLabels:
