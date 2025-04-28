@@ -85,6 +85,9 @@ initSql:
 initOs:
   enabled: true
 
+initKeyStore:
+  enabled: true
+
 developer:
   enabled: true
   # -- Make it possible to launch the demo without having an internet connection
@@ -125,7 +128,7 @@ diracx:
     # which must be present on all the servers
     #TODO: autogenerate all of these
     DIRACX_CONFIG_BACKEND_URL: "git+file:///cs_store/initialRepo"
-    DIRACX_SERVICE_AUTH_TOKEN_KEY: "file:///signing-key/rsa256.key"
+    DIRACX_SERVICE_AUTH_TOKEN_KEYSTORE: "file:///keystore/jwks.json"
     DIRACX_SERVICE_AUTH_ALLOWED_REDIRECTS: '["http://anything:8000/docs/oauth2-redirect"]'
 
   # If mysql is enabled, you are not allowed

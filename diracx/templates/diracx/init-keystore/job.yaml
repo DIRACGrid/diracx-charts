@@ -1,0 +1,73 @@
+{{- if .Values.initKeyStore.enabled -}}
+
+{{/* Define common volume mounts for reusability */}}
+{{- $commonVolumeMounts := list }}
+{{- $commonVolumeMounts = append $commonVolumeMounts (dict "mountPath" "/entrypoint.sh" "name" "container-entrypoint" "subPath" "entrypoint.sh") }}
+{{- if and .Values.developer.enabled .Values.developer.mountedPythonModulesToInstall }}
+{{- $commonVolumeMounts = append $commonVolumeMounts (dict "mountPath" .Values.developer.sourcePath "name" "diracx-code-mount" "readOnly" true) }}
+{{- range $module := .Values.developer.mountedPythonModulesToInstall }}
+{{- if $.Values.developer.editableMountedPythonModules }}
+{{- $commonVolumeMounts = append $commonVolumeMounts (dict "mountPath" (printf "%s/%s/src/%s.egg-info" $.Values.developer.sourcePath $module (replace "-" "_" (base $module))) "name" (printf "%s-editable-install" (base $module | lower)) "readOnly" false) }}
+{{- else }}
+{{- $commonVolumeMounts = append $commonVolumeMounts (dict "mountPath" (printf "%s/%s/build" $.Values.developer.sourcePath $module (replace "-" "_" (base $module))) "name" (printf "%s-editable-install" (base $module | lower)) "readOnly" false) }}
+{{- end }}
+{{- end }}
+{{- end }}
+
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{ template "initKeyStore.jobname" . }}
+  namespace: {{ .Release.Namespace }}
+  annotations:
+    "helm.sh/hook": pre-install
+spec:
+  ttlSecondsAfterFinished: {{ .Values.global.batchJobTTL }}
+  activeDeadlineSeconds: {{ .Values.global.activeDeadlineSeconds }}
+  template:
+    spec:
+      restartPolicy: Never
+      serviceAccountName: {{ template "initSecrets.serviceAccountName" . }}
+      initContainers:
+        - name: {{ .Chart.Name }}-init-keystore
+          image: "{{ .Values.global.images.services }}:{{ .Values.global.images.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.global.imagePullPolicy }}
+          command: ["/bin/bash", "/entrypoint.sh"]
+          args: ["/bin/bash", "/scripts/init-keystore"]
+          volumeMounts:
+            {{ toYaml $commonVolumeMounts | nindent 12 }}
+            - name: scripts
+              mountPath: /scripts
+            - name: keystore
+              mountPath: /keystore
+
+      containers:
+        - name: {{ .Chart.Name }}-load-keystore-as-secret
+          image: ghcr.io/diracgrid/diracx/secret-generation:latest
+          imagePullPolicy: {{ .Values.global.imagePullPolicy }}
+          args: ["/bin/bash", "/scripts/load-keystore-as-secret"]
+          volumeMounts:
+            - name: scripts
+              mountPath: /scripts
+            - name: keystore
+              mountPath: /keystore
+      volumes:
+      - name: keystore
+        emptyDir: {}
+      - name: scripts
+        configMap:
+          name: {{ template "initKeyStore.fullname" . }}
+      {{- if and .Values.developer.enabled .Values.developer.mountedPythonModulesToInstall }}
+      - name: diracx-code-mount
+        persistentVolumeClaim:
+          claimName: pvc-diracx-code
+      {{- range $module := .Values.developer.mountedPythonModulesToInstall }}
+      - name: {{ base $module | lower }}-editable-install
+        emptyDir:
+          sizeLimit: 5Mi
+      {{- end }}
+      {{- end }}
+      - name: container-entrypoint
+        configMap:
+          name: diracx-container-entrypoint
+{{- end }}

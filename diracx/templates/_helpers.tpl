@@ -169,3 +169,23 @@ reduce collisions.
 {{- $rand := randAlphaNum 3 | lower }}
 {{- printf "%s-%d-%s" $name .Release.Revision $rand | trunc 63 | trimSuffix "-" -}}
 {{- end -}}
+
+{{/*
+Return the fullname template for the initKeyStore job.
+*/}}
+{{- define "initKeyStore.fullname" -}}
+{{- printf "%s-init-keystore" .Release.Name -}}
+{{- end -}}
+
+{{/*
+Create a default fully qualified job name for initKeyStore.
+Due to the job only being allowed to run once, we add the chart revision so helm
+upgrades don't cause errors trying to create the already ran job.
+Due to the helm delete not cleaning up these jobs, we add a random value to
+reduce collisions.
+*/}}
+{{- define "initKeyStore.jobname" -}}
+{{- $name := include "initKeyStore.fullname" . | trunc 55 | trimSuffix "-" -}}
+{{- $rand := randAlphaNum 3 | lower }}
+{{- printf "%s-%d-%s" $name .Release.Revision $rand | trunc 63 | trimSuffix "-" -}}
+{{- end -}}
