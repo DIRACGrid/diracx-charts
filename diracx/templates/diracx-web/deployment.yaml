@@ -104,10 +104,26 @@ spec:
             - |
               # Install dependencies and build the app
               npm ci && \
-              NEXT_TELEMETRY_DISABLED=1 npm run build && \
+              npm run build && \
               mv out/* /app/
           workingDir: "/diracx-web"
-
+          env:
+            # Disable telemetry
+            - name: NEXT_TELEMETRY_DISABLED
+              value: "1"
+            # Disable Cypress installation
+            - name: CYPRESS_INSTALL_BINARY
+              value: "0"
+            # Set the cache folders to avoid getting permissions errors
+            - name: CYPRESS_CACHE_FOLDER
+              value: "/tmp/.cypress"
+            - name: npm_config_cache
+              value: "/tmp/.npm"
+          # RAM usage can be high, so we can set a larger limit if needed
+          {{- with .Values.diracxWeb.installDiracxWeb.resources }}
+          resources:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
           volumeMounts:
             # This volume contains the source code of the cloned diracx-web repository
             - mountPath: "/diracx-web"
