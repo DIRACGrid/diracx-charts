@@ -21,6 +21,11 @@ demo_dir="${script_dir}/.demo"
 mkdir -p "${demo_dir}"
 export KUBECONFIG="${demo_dir}/kube.conf"
 export HELM_DATA_HOME="${demo_dir}/helm_data"
+# Provide a mechanism to override use a proxy for accessing the registry
+# This is useful for either restricted environments or avoiding rate limits
+export REGISTRY_PROXY=${DOCKERHUB_URL:-""}
+export REGISTRY_PROXY_DOCKERHUB=${REGISTRY_PROXY_DOCKERHUB:-"${REGISTRY_PROXY}docker.io"}
+export REGISTRY_PROXY_GITHUB=${REGISTRY_PROXY_GITHUB:-"${REGISTRY_PROXY}ghcr.io"}
 
 function cleanup(){
   trap - SIGTERM;
@@ -77,7 +82,7 @@ function check_hostname(){
     printf "%b Hostname %s resolves to 127.0.0.1 but this is not supported\n" ${SKULL_EMOJI} "${1}"
     return 1
   fi
-  if ! docker_ip_address=$(docker run --rm alpine ping -c 1 "$1" | grep -Eo '([0-9]{1,3}\.){3}[0-9]{1,3}' | head -n 1); then
+  if ! docker_ip_address=$(docker run --rm "${REGISTRY_PROXY_DOCKERHUB}/library/alpine:latest" ping -c 1 "$1" | grep -Eo '([0-9]{1,3}\.){3}[0-9]{1,3}' | head -n 1); then
     printf "%b ping command exited with a non-zero exit code from within docker\n" ${SKULL_EMOJI}
     return 1
   fi
@@ -434,6 +439,7 @@ space_monitor_pid=$!
 # Create the cluster itself
 printf "%b Starting Kind cluster...\n" ${UNICORN_EMOJI}
 "${demo_dir}/kind" create cluster \
+  --image "${REGISTRY_PROXY_DOCKERHUB}/kindest/node:latest" \
   --kubeconfig "${KUBECONFIG}" \
   --wait "1m" \
   --config "${demo_dir}/demo_cluster_conf.yaml" \
