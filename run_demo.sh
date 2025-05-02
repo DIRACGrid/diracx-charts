@@ -605,7 +605,7 @@ else
      --group="admin" >> /tmp/init_cs.log
 
     # Create a pilot into the CS
-    # We need : 
+    # We need :
     # - A pilot group (created with the vo)
     # - A pilot user inside this group with GenericPilot
     # - To set the pilot user as a pilot
