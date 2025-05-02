@@ -604,6 +604,28 @@ else
      --preferred-username="admin" \
      --group="admin" >> /tmp/init_cs.log
 
+    # Create a pilot into the CS
+    # We need : 
+    # - A pilot group (created with the vo)
+    # - A pilot user inside this group with GenericPilot
+    # - To set the pilot user as a pilot
+    # - A user in the vo to create secrets
+    "${demo_dir}/kubectl" exec deployments/diracx-demo-cli -- bash /entrypoint.sh dirac internal add-group /cs_store/initialRepo \
+      --vo="diracAdmin" \
+      --properties="GenericPilot" \
+      --group="pilotGroup" >>/tmp/init_cs.log
+
+    "${demo_dir}/kubectl" exec deployments/diracx-demo-cli -- bash /entrypoint.sh dirac internal add-user /cs_store/initialRepo \
+      --vo="diracAdmin" \
+      --sub="EfOPa2rh5A" \
+      --preferred-username="pilotUser" \
+      --group="pilotGroup" >>/tmp/init_cs.log
+
+    "${demo_dir}/kubectl" exec deployments/diracx-demo-cli -- bash /entrypoint.sh dirac internal set-user-as-pilot /cs_store/initialRepo \
+      --vo="diracAdmin" \
+      --sub="EfOPa2rh5A" \
+      --pilot-preferred-username="pilotUser" \
+      --pilot-group="pilotGroup" >>/tmp/init_cs.log
 
     # This file is used by the various CI to test for success
     touch "${demo_dir}/.success"

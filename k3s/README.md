@@ -252,7 +252,7 @@ kubectl exec -it deployments/diracx -- bash
 micromamba install -c conda-forge vim
 
 # Edit the content of the config file
-# and replcate it with ./diracx-charts/k3s/examples/cs.yaml
+# and replace it with ./diracx-charts/k3s/examples/cs.yaml
 cd /cs_store/initialRepo/
 vim default.yml
 
