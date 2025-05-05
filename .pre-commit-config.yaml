@@ -16,7 +16,7 @@ repos:
     - id: helm-docs
       name: helm-docs
       language: docker_image
-      entry: jnorwood/helm-docs:v1.11.2 --chart-search-root=diracx --output-file=../README.md --template-files=../README.md.gotmpl --chart-to-generate=diracx
+      entry: jnorwood/helm-docs:v1.11.2 --chart-search-root=diracx --output-file=../docs/admin/reference/values.md --template-files=../docs/admin/reference/values.md.gotmpl --chart-to-generate=diracx
       always_run: true
       pass_filenames: false
 
