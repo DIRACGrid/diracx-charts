@@ -12,4 +12,3 @@ fi
 # Generate the initial keystore
 python -m diracx.logic rotate-jwk \
   --jwks-path $KEYSTORE_PATH
-

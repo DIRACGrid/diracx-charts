@@ -138,6 +138,7 @@
 | ingress.className | string | `"nginx"` |  |
 | ingress.enabled | bool | `true` |  |
 | ingress.tlsSecretName | string | `"myingress-cert"` |  |
+| initKeyStore.enabled | bool | `true` |  |
 | initOs.enabled | bool | `true` |  |
 | initSecrets.enabled | bool | `true` |  |
 | initSecrets.rbac.create | bool | `true` |  |

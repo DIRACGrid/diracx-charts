@@ -21,4 +21,3 @@ fi
 kubectl create secret generic diracx-jwks \
   --namespace=$namespace \
   --from-file=$KEYSTORE_PATH \
-
