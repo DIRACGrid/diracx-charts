@@ -1,0 +1,9 @@
+[submodule "wms"]
+	path = wms
+	url = https://gitlab.cta-observatory.org/cta-computing/dpps/workload/wms
+[submodule "bdms"]
+	path = bdms
+	url = https://gitlab.cta-observatory.org/cta-computing/dpps/bdms/bdms
+[submodule "dpps-aiv-toolkit"]
+	path = dpps-aiv-toolkit
+	url = git@gitlab.cta-observatory.org:cta-computing/dpps/aiv/dpps-aiv-toolkit.git
