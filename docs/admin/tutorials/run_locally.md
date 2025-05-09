@@ -1,7 +1,7 @@
 
 ## Intro to Kubernetes and Helm
 
-[Kubernetes](https://kubernetes.io/docs/tutorials/kubernetes-basics/) (k8s) allows you to deploy containerized applications while letting you abstract the underlying infrastructure. The configuration of your application and how you run it is communicated to k8s via ``yaml`` files.
+[Kubernetes](https://kubernetes.io) (k8s) allows you to deploy containerized applications while letting you abstract the underlying infrastructure. The configuration of your application and how you run it is communicated to k8s via ``yaml`` files.
 
 [Helm](https://helm.sh/) allows to template these ``yaml`` files. Such a templated description of an application like ``diracx`` is called ``chart``. Helm also allows to manage dependencies between ``charts``. For example, the ``diracx`` application needs a database to run, so the ``diracx charts`` has a dependency on the ``mysql charts``.
 
@@ -13,32 +13,25 @@ To understand this ``chart`` you will need to familiarize yourself with a few k8
 * A ``Service`` is how you expose your ``Deployment``. If I want to talk to my ``diracx`` application, it is a ``Service`` which will take care of redirecting me within the cluster to one of the ``pod``. Most of the time, the ``Service`` is used for routing inside the cluster
 * An ``Ingress`` exposes your ``Services`` outside of the cluster.
 
-## Running the demo locally
+If you are not familiar with the above concepts, we recommend you follow the [Kubernetes tutorial](https://kubernetes.io/docs/tutorials/kubernetes-basics/).
 
-Running an instance locally is useful for demo or testing purposes. This entails running a local kubernetes cluster, installing this helm chart and all its dependencies, and configuring it accordingly. In order to make that easy, we wrote the ``run_demo.sh`` script, which covers all these needs. This is also used for the [diracx ci](https://github.com/DIRACGrid/diracx/blob/main/.github/workflows/main.yml)
+## Running DiracX locally
+
+It is possible to run an instance of DiracX locally for demo or testing purposes. This entails running a local kubernetes cluster, installing this helm chart and all its dependencies, and configuring it accordingly.
+
+!!! warning
+
+    This setup is **not** suitable for a production or long-lived deployment. To learn how to run a long-lived deployment, see [the how-to](../how-to/installing.md).
+
+In order to make that easy, we wrote the ``run_demo.sh`` script, which covers all these needs. This is also used for the [diracx ci](https://github.com/DIRACGrid/diracx/blob/main/.github/workflows/main.yml)
 
 ### ``run_demo.sh``
 
 This is the script used to start a demo or the integration tests.
 
-```bash
-Usage: run_demo.sh [-h|--help] [--exit-when-done] [--offline] [--enable-coverage] [--no-mount-containerd] [--set-value key=value] [--] [source directories]
 
-  -h|--help: Print this help message and exit
-  --exit-when-done: Exit after the demo has been started (it will be left running in the background)
-  --enable-coverage: Enable coverage reporting (used by diracx CI)
-  --no-editable-python: Do not install Python source directories in editable mode
-  --offline: Run in a mode which is suitable for fully offline use.
-             WARNING: This may result in some weird behaviour, see the demo documentation for details.
-             Implies: --mount-containerd
-  --no-mount-containerd: Mount a directory on the host for the kind containerd storage.
-                         This option avoids needing to pull container images every time the demo is started.
-                         WARNING: There is no garbage collection so the directory will grow without bound.
-  --enable-open-telemetry: lauches OpenTelemetry collection.
-                           WARNING: experimental and resource hungry.
-  --set-value: Set a value in the Helm values file. This can be used to override the default values.
-               For example, to enable coverage reporting pass: --set-value developer.enableCoverage=true
-  source directories: A list of directories containing Python packages to mount in the demo cluster.
+```
+--8<-- "docs/admin/tutorials/run_demo_help.txt"
 ```
 
 Once ready, you will get some information on how to interact with your cluster
