@@ -53,12 +53,12 @@ spec:
         - name: container-entrypoint
           configMap:
             name: diracx-container-entrypoint
-        - name: signing-key-mount
+        - name: jwks-mount
           secret:
-            secretName: diracx-token-signing-key
+            secretName: diracx-jwks
             items:
-            - key: rsa256.key
-              path: rsa256.key
+            - key: jwks.json
+              path: jwks.json
         {{- if and .Values.developer.enabled .Values.developer.enableCoverage }}
         - name: coverage-data
           persistentVolumeClaim:
@@ -70,7 +70,7 @@ spec:
       {{- if .Values.developer.enabled }}
       {{- $commonVolumeMounts = append $commonVolumeMounts (dict "mountPath" "/cs_store" "name" "cs-store-mount" "readOnly" false) }}
       {{- end }}
-      {{- $commonVolumeMounts = append $commonVolumeMounts (dict "mountPath" "/signing-key" "name" "signing-key-mount" "readOnly" false) }}
+      {{- $commonVolumeMounts = append $commonVolumeMounts (dict "mountPath" "/keystore" "name" "jwks-mount" "readOnly" false) }}
       {{- $commonVolumeMounts = append $commonVolumeMounts (dict "mountPath" "/entrypoint.sh" "name" "container-entrypoint" "subPath" "entrypoint.sh") }}
       {{- if and .Values.developer.enabled .Values.developer.enableCoverage }}
       {{- $commonVolumeMounts = append $commonVolumeMounts (dict "mountPath" "/diracx-coveragerc" "name" "container-entrypoint" "subPath" "coveragerc") }}
