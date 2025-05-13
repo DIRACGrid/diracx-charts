@@ -69,6 +69,7 @@
 | diracx.sqlDbs.dbs | string | `nil` | Which DiracX MySQL DBs are used? |
 | diracx.sqlDbs.default | string | `nil` |  |
 | diracxWeb.branch | string | `""` |  |
+| diracxWeb.installDiracxWeb | object | `{"resources":{"limits":{"memory":"1Gi"},"requests":{"memory":"512Mi"}}}` | resources to use for building the webapp if diracxWeb.repoURL is set |
 | diracxWeb.repoURL | string | `""` | install specification to pass to npm before launching container |
 | diracxWeb.service.port | int | `8080` |  |
 | elasticsearch."discovery.seed_hosts"[0] | string | `"elasticsearch-master-headless"` |  |
