@@ -120,9 +120,11 @@ spec:
             - name: npm_config_cache
               value: "/tmp/.npm"
           # RAM usage can be high, so we can set a larger limit if needed
-          {{- with .Values.diracxWeb.installDiracxWeb.resources }}
+          {{- with .Values.diracxWeb.installDiracxWeb }}
+          {{- with .resources}}
           resources:
             {{- toYaml . | nindent 12 }}
+          {{- end }}
           {{- end }}
           volumeMounts:
             # This volume contains the source code of the cloned diracx-web repository
