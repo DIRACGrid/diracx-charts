@@ -8,13 +8,12 @@ PARTY_EMOJI='\xF0\x9F\x8E\x89'
 INFO_EMOJI='\xE2\x84\xB9\xEF\xB8\x8F'
 WARN_EMOJI='\xE2\x9A\xA0\xEF\xB8\x8F'
 
-if [ "$EUID" -eq 0 ]
-  then printf "%b Do not run this script as root\n" "${SKULL_EMOJI}"
+if [ "$EUID" -eq 0 ]; then
+  printf "%b Do not run this script as root\n" "${SKULL_EMOJI}"
   exit 1
 fi
 
-
-script_dir=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
+script_dir=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &>/dev/null && pwd)
 
 tmp_dir=$(mktemp -d)
 demo_dir="${script_dir}/.demo"
@@ -22,14 +21,14 @@ mkdir -p "${demo_dir}"
 export KUBECONFIG="${demo_dir}/kube.conf"
 export HELM_DATA_HOME="${demo_dir}/helm_data"
 
-function cleanup(){
-  trap - SIGTERM;
-  echo "Cleaning up";
+function cleanup() {
+  trap - SIGTERM
+  echo "Cleaning up"
   if [[ -n "${space_monitor_pid:-}" ]]; then
     kill $space_monitor_pid || true
   fi
   if [[ -f "${demo_dir}/kind" ]] && [[ -f "${KUBECONFIG}" ]]; then
-      "${demo_dir}/kind" delete cluster --name diracx-demo
+    "${demo_dir}/kind" delete cluster --name diracx-demo
   fi
   rm -rf "${tmp_dir}"
   if [[ -n "${space_monitor_pid:-}" ]]; then
@@ -37,7 +36,7 @@ function cleanup(){
   fi
 }
 
-function space_monitor(){
+function space_monitor() {
   # Check every 600 seconds if the cluster is low on space
   while true; do
     sleep 600
@@ -59,7 +58,7 @@ function space_monitor(){
   done
 }
 
-function check_hostname(){
+function check_hostname() {
 
   # Force the use of ipv4.
 
@@ -94,10 +93,10 @@ function element_not_in_array() {
   local found=0
 
   for existing_element in "${elements[@]}"; do
-      if [[ "$existing_element" == "$element" ]]; then
-          found=1
-          break
-      fi
+    if [[ "$existing_element" == "$element" ]]; then
+      found=1
+      break
+    fi
   done
 
   return $found
@@ -135,11 +134,13 @@ open_telemetry=0
 declare -a ci_values_files=()
 declare -a docker_images_to_load=()
 
-while [ -n "${1:-}" ]; do case $1 in
+while [ -n "${1:-}" ]; do
+  case $1 in
   # Print a brief usage summary and exit
-  -h|--help|-\?)
+  -h | --help | -\?)
     printf 'Usage: %b\n' "$usage"
-    exit ;;
+    exit
+    ;;
 
   # # Unbundle short options
   # -[niladic-short-opts]?*)
@@ -163,24 +164,28 @@ while [ -n "${1:-}" ]; do case $1 in
   --exit-when-done)
     exit_when_done=1
     shift
-    continue ;;
+    continue
+    ;;
 
   --enable-coverage)
     helm_arguments+=("--set")
     helm_arguments+=("developer.enableCoverage=true")
     enable_coverage=1
     shift
-    continue ;;
+    continue
+    ;;
 
   --no-editable-python)
     editable_python=0
     shift
-    continue ;;
+    continue
+    ;;
 
   --no-mount-containerd)
     mount_containerd=0
     shift
-    continue ;;
+    continue
+    ;;
 
   --offline)
     mount_containerd=1
@@ -188,12 +193,14 @@ while [ -n "${1:-}" ]; do case $1 in
     helm_arguments+=("--set" "global.imagePullPolicy=IfNotPresent")
     helm_arguments+=("--set" "developer.offline=true")
     shift
-    continue ;;
+    continue
+    ;;
 
   --enable-open-telemetry)
     open_telemetry=1
     shift
-    continue ;;
+    continue
+    ;;
 
   --set-value)
     shift
@@ -204,7 +211,8 @@ while [ -n "${1:-}" ]; do case $1 in
     helm_arguments+=("--set")
     helm_arguments+=("${1}")
     shift
-    continue ;;
+    continue
+    ;;
 
   --load-docker-image)
     shift
@@ -214,7 +222,8 @@ while [ -n "${1:-}" ]; do case $1 in
     fi
     docker_images_to_load+=("${1}")
     shift
-    continue ;;
+    continue
+    ;;
 
   --ci-values)
     shift
@@ -225,29 +234,32 @@ while [ -n "${1:-}" ]; do case $1 in
     ci_values_file=$(realpath "${1}")
     if [[ ! -f "${ci_values_file}" ]]; then
       printf "%b Error: --ci-values does not point to a file\n" ${SKULL_EMOJI}
-      exit 1;
+      exit 1
     fi
     ci_values_files+=("${ci_values_file}")
     shift
-    continue ;;
+    continue
+    ;;
 
   # Double-dash: Terminate option parsing
   --)
     shift
-    break ;;
+    break
+    ;;
 
   # Invalid option: abort
-  --*|-?*)
+  --* | -?*)
     >&2 printf '%b %s: Invalid option: "%s"\n' ${SKULL_EMOJI} "${0##*/}" "$1"
     >&2 printf 'Usage: %b\n' "$usage"
-    exit 1 ;;
+    exit 1
+    ;;
 
   # Argument not prefixed with a dash
   *) break ;;
 
-esac; shift
+  esac
+  shift
 done
-
 
 # Remaining arguments are positional parameters that are used to specify which
 # source directories to mount in the demo cluster
@@ -264,29 +276,26 @@ for src_dir in "$@"; do
   fi
   pkg_dirs+=("${src_dir}")
 
-
   # Does that look like a namespace package with the structure we expect ?
   # i.e. is it diracx itself or an extension ?
   if [ -f "${src_dir}/pyproject.toml" ]; then
-      # Name of the package
-      pkg_name="$(basename "${src_dir}")"
+    # Name of the package
+    pkg_name="$(basename "${src_dir}")"
 
-      # Do we find subdirectories called the same way as the package
-      if [ -n "$(find "${src_dir}" -mindepth 3 -maxdepth 3 -type d  -path "*src/${pkg_name}")" ]; then
+    # Do we find subdirectories called the same way as the package
+    if [ -n "$(find "${src_dir}" -mindepth 3 -maxdepth 3 -type d -path "*src/${pkg_name}")" ]; then
       # And are there multiple pyprojects
-        if [ -n "$(find "${src_dir}" -mindepth 2 -maxdepth 2 -type f  -name "pyproject.toml")" ]; then
-          # Then let's add all these
-          while IFS= read -r  sub_pkg_dir
-          do
-            diracx_and_extensions_pkgs+=("$(basename "${src_dir}")/$(basename "${sub_pkg_dir}")");
-          done < <(find "${src_dir}" -mindepth 1 -maxdepth 1 -type d -name "${pkg_name}-*" )
+      if [ -n "$(find "${src_dir}" -mindepth 2 -maxdepth 2 -type f -name "pyproject.toml")" ]; then
+        # Then let's add all these
+        while IFS= read -r sub_pkg_dir; do
+          diracx_and_extensions_pkgs+=("$(basename "${src_dir}")/$(basename "${sub_pkg_dir}")")
+        done < <(find "${src_dir}" -mindepth 1 -maxdepth 1 -type d -name "${pkg_name}-*")
 
-          continue
-        fi
+        continue
       fi
+    fi
 
   fi
-
 
   # Python packages
   if [ -f "${src_dir}/pyproject.toml" ]; then
@@ -338,7 +347,10 @@ if [ "${node_pkg_name}" != "" ]; then
   printf "%b Found Node package directory for: %s\n" ${UNICORN_EMOJI} "${node_pkg_name}"
 fi
 if [ ${#node_pkg_workspaces[@]} -gt 0 ]; then
-    printf "%b Found Node package workspaces for: %s\n" ${UNICORN_EMOJI} "$(IFS=' '; echo "${node_pkg_workspaces[*]}")"
+  printf "%b Found Node package workspaces for: %s\n" ${UNICORN_EMOJI} "$(
+    IFS=' '
+    echo "${node_pkg_workspaces[*]}"
+  )"
 fi
 
 trap "cleanup" EXIT
@@ -350,21 +362,21 @@ if [[ ! -f "${demo_dir}/helm" ]]; then
   system_name=$(uname -s | tr '[:upper:]' '[:lower:]')
   system_arch=$(uname -m)
   if [[ "${system_arch}" == "x86_64" ]]; then
-      system_arch="amd64"
+    system_arch="amd64"
   fi
 
   # Download kind
   printf "%b Downloading kind\n" ${UNICORN_EMOJI}
-  curl --no-progress-meter -L "https://kind.sigs.k8s.io/dl/v0.19.0/kind-${system_name}-${system_arch}" > "${demo_dir}/kind"
+  curl --no-progress-meter -L "https://kind.sigs.k8s.io/dl/v0.19.0/kind-${system_name}-${system_arch}" >"${demo_dir}/kind"
 
   # Download kubectl
   printf "%b Downloading kubectl\n" ${UNICORN_EMOJI}
   latest_version=$(curl -L -s https://dl.k8s.io/release/stable.txt)
-  curl --no-progress-meter -L "https://dl.k8s.io/release/${latest_version}/bin/${system_name}/${system_arch}/kubectl" > "${demo_dir}/kubectl"
+  curl --no-progress-meter -L "https://dl.k8s.io/release/${latest_version}/bin/${system_name}/${system_arch}/kubectl" >"${demo_dir}/kubectl"
 
   # Download helm
   printf "%b Downloading helm\n" ${UNICORN_EMOJI}
-  curl --no-progress-meter -L "https://get.helm.sh/helm-v3.12.0-${system_name}-${system_arch}.tar.gz" > "${tmp_dir}/helm.tar.gz"
+  curl --no-progress-meter -L "https://get.helm.sh/helm-v3.12.0-${system_name}-${system_arch}.tar.gz" >"${tmp_dir}/helm.tar.gz"
   mkdir -p "${tmp_dir}/helm-tarball"
   tar xzf "${tmp_dir}/helm.tar.gz" -C "${tmp_dir}/helm-tarball"
   mv "${tmp_dir}/helm-tarball/${system_name}-${system_arch}/helm" "${demo_dir}"
@@ -382,7 +394,7 @@ cp "${script_dir}/demo/demo_cluster_conf.tpl.yaml" "${demo_dir}/demo_cluster_con
 if [ ${#pkg_dirs[@]} -gt 0 ]; then
   for pkg_dir in "${pkg_dirs[@]}"; do
     mv "${demo_dir}/demo_cluster_conf.yaml" "${demo_dir}/demo_cluster_conf.yaml.bak"
-    sed "s@{{ extraMounts }}@  - hostPath: ${pkg_dir}\n    containerPath: /diracx_source/$(basename "${pkg_dir}")\n{{ extraMounts }}@g" "${demo_dir}/demo_cluster_conf.yaml.bak" > "${demo_dir}/demo_cluster_conf.yaml"
+    sed "s@{{ extraMounts }}@  - hostPath: ${pkg_dir}\n    containerPath: /diracx_source/$(basename "${pkg_dir}")\n{{ extraMounts }}@g" "${demo_dir}/demo_cluster_conf.yaml.bak" >"${demo_dir}/demo_cluster_conf.yaml"
   done
 fi
 # If requested, mount the containerd storage from the host
@@ -390,7 +402,7 @@ if [ ${mount_containerd} -eq 1 ]; then
   # We use a docker volume for the containerd mount rather than a directory on
   # the host as it needs to support overlayfs. This isn't the case for some
   # host file systems or when Docker Desktop is used (e.g. macOS)
-  if docker volume inspect diracx-demo-containerd -f '{{ .Mountpoint }}' > /dev/null 2>&1; then
+  if docker volume inspect diracx-demo-containerd -f '{{ .Mountpoint }}' >/dev/null 2>&1; then
     printf "%b Using existing containerd storage\n" ${UNICORN_EMOJI}
   else
     printf "%b Creating containerd storage\n" ${UNICORN_EMOJI}
@@ -398,7 +410,7 @@ if [ ${mount_containerd} -eq 1 ]; then
   fi
   containerd_mount=$(docker volume inspect diracx-demo-containerd -f '{{ .Mountpoint }}')
   mv "${demo_dir}/demo_cluster_conf.yaml" "${demo_dir}/demo_cluster_conf.yaml.bak"
-  sed "s@{{ extraMounts }}@  - hostPath: ${containerd_mount}\n    containerPath: /var/lib/containerd\n{{ extraMounts }}@g" "${demo_dir}/demo_cluster_conf.yaml.bak" > "${demo_dir}/demo_cluster_conf.yaml"
+  sed "s@{{ extraMounts }}@  - hostPath: ${containerd_mount}\n    containerPath: /var/lib/containerd\n{{ extraMounts }}@g" "${demo_dir}/demo_cluster_conf.yaml.bak" >"${demo_dir}/demo_cluster_conf.yaml"
 fi
 # Add the mount for the CS
 # hack to cleanup the cs-mount content owned by somebody else
@@ -409,7 +421,7 @@ mkdir -p "${demo_dir}/cs-mount"
 # Make sure the directory is writable by the container
 chmod 777 "${demo_dir}/cs-mount"
 mv "${demo_dir}/demo_cluster_conf.yaml" "${demo_dir}/demo_cluster_conf.yaml.bak"
-sed "s@{{ csStorePath }}@${demo_dir}/cs-mount@g" "${demo_dir}/demo_cluster_conf.yaml.bak" > "${demo_dir}/demo_cluster_conf.yaml"
+sed "s@{{ csStorePath }}@${demo_dir}/cs-mount@g" "${demo_dir}/demo_cluster_conf.yaml.bak" >"${demo_dir}/demo_cluster_conf.yaml"
 # If coverage is enabled mount .demo/coverage-reports into the cluster
 if [[ ${enable_coverage} -eq 1 ]]; then
   rm -rf "${demo_dir}/coverage-reports"
@@ -417,11 +429,11 @@ if [[ ${enable_coverage} -eq 1 ]]; then
   # Make sure the directory is writable by the container
   chmod 777 "${demo_dir}/coverage-reports"
   mv "${demo_dir}/demo_cluster_conf.yaml" "${demo_dir}/demo_cluster_conf.yaml.bak"
-  sed "s@{{ extraMounts }}@  - hostPath: ${demo_dir}/coverage-reports\n    containerPath: /coverage-reports\n{{ extraMounts }}@g" "${demo_dir}/demo_cluster_conf.yaml.bak" > "${demo_dir}/demo_cluster_conf.yaml"
+  sed "s@{{ extraMounts }}@  - hostPath: ${demo_dir}/coverage-reports\n    containerPath: /coverage-reports\n{{ extraMounts }}@g" "${demo_dir}/demo_cluster_conf.yaml.bak" >"${demo_dir}/demo_cluster_conf.yaml"
 fi
 # Cleanup the "{{ extraMounts }}" part of the template and make sure things look reasonable
 mv "${demo_dir}/demo_cluster_conf.yaml" "${demo_dir}/demo_cluster_conf.yaml.bak"
-sed "s@{{ extraMounts }}@@g" "${demo_dir}/demo_cluster_conf.yaml.bak" > "${demo_dir}/demo_cluster_conf.yaml"
+sed "s@{{ extraMounts }}@@g" "${demo_dir}/demo_cluster_conf.yaml.bak" >"${demo_dir}/demo_cluster_conf.yaml"
 if grep '{{' "${demo_dir}/demo_cluster_conf.yaml"; then
   printf "%b Error generating Kind template. Found {{ in the template result\n" ${UNICORN_EMOJI}
   exit 1
@@ -473,33 +485,32 @@ fi
 
 # Generate the Helm values file
 printf "%b Generating Helm templates\n" ${UNICORN_EMOJI}
-sed "s/{{ hostname }}/${machine_hostname}/g" "${script_dir}/demo/values.tpl.yaml" > "${demo_dir}/values.yaml"
+sed "s/{{ hostname }}/${machine_hostname}/g" "${script_dir}/demo/values.tpl.yaml" >"${demo_dir}/values.yaml"
 mv "${demo_dir}/values.yaml" "${demo_dir}/values.yaml.bak"
-sed "s@{{ demo_dir }}@${demo_dir}@g" "${demo_dir}/values.yaml.bak" > "${demo_dir}/values.yaml"
+sed "s@{{ demo_dir }}@${demo_dir}@g" "${demo_dir}/values.yaml.bak" >"${demo_dir}/values.yaml"
 mv "${demo_dir}/values.yaml" "${demo_dir}/values.yaml.bak"
 
 # Enable OpenTelemetry
 if [[ ${open_telemetry} -eq 1 ]]; then
-  sed "s/{{ open_telemetry }}/true/g" "${demo_dir}/values.yaml.bak" > "${demo_dir}/values.yaml"
+  sed "s/{{ open_telemetry }}/true/g" "${demo_dir}/values.yaml.bak" >"${demo_dir}/values.yaml"
   mv "${demo_dir}/values.yaml" "${demo_dir}/values.yaml.bak"
 else
-  sed "s/{{ open_telemetry }}/false/g" "${demo_dir}/values.yaml.bak" > "${demo_dir}/values.yaml"
+  sed "s/{{ open_telemetry }}/false/g" "${demo_dir}/values.yaml.bak" >"${demo_dir}/values.yaml"
   mv "${demo_dir}/values.yaml" "${demo_dir}/values.yaml.bak"
 fi
 
-
 # Add python packages
 if [[ ${editable_python} -eq 1 ]]; then
-  sed "s/{{ editable_mounted_modules }}/true/g" "${demo_dir}/values.yaml.bak" > "${demo_dir}/values.yaml"
+  sed "s/{{ editable_mounted_modules }}/true/g" "${demo_dir}/values.yaml.bak" >"${demo_dir}/values.yaml"
   mv "${demo_dir}/values.yaml" "${demo_dir}/values.yaml.bak"
 else
-  sed "s/{{ editable_mounted_modules }}/false/g" "${demo_dir}/values.yaml.bak" > "${demo_dir}/values.yaml"
+  sed "s/{{ editable_mounted_modules }}/false/g" "${demo_dir}/values.yaml.bak" >"${demo_dir}/values.yaml"
   mv "${demo_dir}/values.yaml" "${demo_dir}/values.yaml.bak"
 fi
 json="["
 if [ ${#python_pkg_names[@]} -gt 0 ]; then
   for pkg_name in "${python_pkg_names[@]}"; do
-      json+="\"$pkg_name\","
+    json+="\"$pkg_name\","
   done
 fi
 
@@ -510,11 +521,11 @@ if [ ${#diracx_and_extensions_pkgs[@]} -gt 0 ]; then
 fi
 
 json="${json%,}]"
-sed "s#{{ mounted_python_modules }}#${json}#g" "${demo_dir}/values.yaml.bak" > "${demo_dir}/values.yaml"
+sed "s#{{ mounted_python_modules }}#${json}#g" "${demo_dir}/values.yaml.bak" >"${demo_dir}/values.yaml"
 mv "${demo_dir}/values.yaml" "${demo_dir}/values.yaml.bak"
 
 # Add the node package and its workspaces
-sed "s#{{ node_module_to_mount }}#${node_pkg_name}#g" "${demo_dir}/values.yaml.bak" > "${demo_dir}/values.yaml"
+sed "s#{{ node_module_to_mount }}#${node_pkg_name}#g" "${demo_dir}/values.yaml.bak" >"${demo_dir}/values.yaml"
 mv "${demo_dir}/values.yaml" "${demo_dir}/values.yaml.bak"
 
 json="["
@@ -525,8 +536,7 @@ if [ ${#node_pkg_workspaces[@]} -gt 0 ]; then
 fi
 json="${json%,}]"
 printf "%b Node workspaces json: %s\n" ${UNICORN_EMOJI} "${json}"
-sed "s#{{ node_module_workspaces }}#${json}#g" "${demo_dir}/values.yaml.bak" > "${demo_dir}/values.yaml"
-
+sed "s#{{ node_module_workspaces }}#${json}#g" "${demo_dir}/values.yaml.bak" >"${demo_dir}/values.yaml"
 
 # Final check
 if grep '{{' "${demo_dir}/values.yaml"; then
@@ -534,16 +544,15 @@ if grep '{{' "${demo_dir}/values.yaml"; then
   exit 1
 fi
 
-
 # Add an ingress to the cluster
 printf "%b Creating an ingress...\n" ${UNICORN_EMOJI}
 # TODO: This should move to the chart itself
 if [ ${offline_mode} -eq 0 ]; then
-  curl -L https://raw.githubusercontent.com/kubernetes/ingress-nginx/main/deploy/static/provider/kind/deploy.yaml > "${tmp_dir}/kind-ingress-deploy.yaml"
+  curl -L https://raw.githubusercontent.com/kubernetes/ingress-nginx/main/deploy/static/provider/kind/deploy.yaml >"${tmp_dir}/kind-ingress-deploy.yaml"
   # Disable the strict validation of the path
   # https://github.com/kubernetes/ingress-nginx/issues/11176
   # https://github.com/kubernetes/ingress-nginx/issues/10200
-  sed -E 's/^data: null/data:\n  strict-validate-path-type: "false"/g'  "${tmp_dir}/kind-ingress-deploy.yaml" > "${demo_dir}/kind-ingress-deploy.yaml"
+  sed -E 's/^data: null/data:\n  strict-validate-path-type: "false"/g' "${tmp_dir}/kind-ingress-deploy.yaml" >"${demo_dir}/kind-ingress-deploy.yaml"
 fi
 
 "${demo_dir}/kubectl" apply -f "${demo_dir}/kind-ingress-deploy.yaml"
@@ -559,53 +568,47 @@ helm_arguments+=("--values" "${demo_dir}/values.yaml")
 
 if [ ${#ci_values_files[@]} -ne 0 ]; then
   printf "%b Adding extra values.yaml: ${ci_values_files[*]} \n" ${UNICORN_EMOJI}
-  for ci_values_file in "${ci_values_files[@]}"
-  do
+  for ci_values_file in "${ci_values_files[@]}"; do
     helm_arguments+=("--values" "${ci_values_file}")
   done
 fi
 
-
 # Load images into kind
 
 if [ ${#docker_images_to_load[@]} -ne 0 ]; then
-printf "%b Loading docker images...\n" ${UNICORN_EMOJI}
-for img_name in "${docker_images_to_load[@]}"
-do
-  "${demo_dir}/kind" --name diracx-demo load docker-image "${img_name}"
-done
+  printf "%b Loading docker images...\n" ${UNICORN_EMOJI}
+  for img_name in "${docker_images_to_load[@]}"; do
+    "${demo_dir}/kind" --name diracx-demo load docker-image "${img_name}"
+  done
 
-
-fi;
-
-
+fi
 
 if ! "${demo_dir}/helm" install --debug diracx-demo "${script_dir}/diracx" "${helm_arguments[@]}"; then
   printf "%b Error using helm DiracX\n" ${WARN_EMOJI}
-  echo "Failed to run \"helm install\"" >> "${demo_dir}/.failed"
+  echo "Failed to run \"helm install\"" >>"${demo_dir}/.failed"
 else
   printf "%b Waiting for installation to finish...\n" ${UNICORN_EMOJI}
   if "${demo_dir}/kubectl" wait --for=condition=ready pod --selector=app.kubernetes.io/name=diracx --timeout=900s; then
     printf "%b %b %b Pods are ready! %b %b %b\n" "${PARTY_EMOJI}" "${PARTY_EMOJI}" "${PARTY_EMOJI}" "${PARTY_EMOJI}" "${PARTY_EMOJI}" "${PARTY_EMOJI}"
 
     # Dump the CA certificate to a file so that it can be used by the client
-    "${demo_dir}/kubectl" get secret/root-secret -o template --template='{{ index .data "tls.crt" }}' | base64 -d > "${demo_dir}/demo-ca.pem"
+    "${demo_dir}/kubectl" get secret/root-secret -o template --template='{{ index .data "tls.crt" }}' | base64 -d >"${demo_dir}/demo-ca.pem"
 
     printf "%b Creating initial CS content ...\n" ${UNICORN_EMOJI}
     "${demo_dir}/kubectl" exec deployments/diracx-demo-cli -- bash /entrypoint.sh dirac internal add-vo /cs_store/initialRepo \
-     --vo="diracAdmin" \
-     --idp-url="http://${machine_hostname}:32002" \
-     --idp-client-id="d396912e-2f04-439b-8ae7-d8c585a34790" \
-     --default-group="admin" >> /tmp/init_cs.log
+      --vo="diracAdmin" \
+      --idp-url="http://${machine_hostname}:32002" \
+      --idp-client-id="d396912e-2f04-439b-8ae7-d8c585a34790" \
+      --default-group="admin" >>/tmp/init_cs.log
 
-    "${demo_dir}/kubectl" exec deployments/diracx-demo-cli -- bash /entrypoint.sh  dirac internal add-user /cs_store/initialRepo \
-     --vo="diracAdmin" \
-     --sub="EgVsb2NhbA" \
-     --preferred-username="admin" \
-     --group="admin" >> /tmp/init_cs.log
+    "${demo_dir}/kubectl" exec deployments/diracx-demo-cli -- bash /entrypoint.sh dirac internal add-user /cs_store/initialRepo \
+      --vo="diracAdmin" \
+      --sub="EgVsb2NhbA" \
+      --preferred-username="admin" \
+      --group="admin" >>/tmp/init_cs.log
 
     # Create a pilot into the CS
-    # We need : 
+    # We need :
     # - A pilot group (created with the vo)
     # - A pilot user inside this group with GenericPilot
     # - To set the pilot user as a pilot
@@ -621,7 +624,7 @@ else
       --preferred-username="pilotUser" \
       --group="pilotGroup" >>/tmp/init_cs.log
 
-    "${demo_dir}/kubectl" exec deployments/diracx-demo-cli -- bash /entrypoint.sh dirac internal set-user-as-pilot /cs_store/initialRepo \
+    "${demo_dir}/kubectl" exec deployments/diracx-demo-cli -- bash /entrypoint.sh dirac internal set-user-as-pilot-user /cs_store/initialRepo \
       --vo="diracAdmin" \
       --sub="EfOPa2rh5A" \
       --pilot-preferred-username="pilotUser" \
@@ -631,7 +634,7 @@ else
     touch "${demo_dir}/.success"
   else
     printf "%b Installation did not start sucessfully!\n" ${WARN_EMOJI}
-    echo "Installation did not start sucessfully!" >> "${demo_dir}/.failed"
+    echo "Installation did not start sucessfully!" >>"${demo_dir}/.failed"
   fi
 fi
 
@@ -647,7 +650,7 @@ printf "%b  Press Ctrl+C to clean up and exit\n" "${INFO_EMOJI}"
 
 machine_hostname_has_changed=0
 while true; do
-  sleep 60;
+  sleep 60
   # If the machine hostname changes then the demo will need to be restarted.
   # See the original machine_hostname detection description above.
   if ! check_hostname "${machine_hostname}"; then
