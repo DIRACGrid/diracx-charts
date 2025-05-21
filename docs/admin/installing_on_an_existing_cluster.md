@@ -4,7 +4,7 @@
 
 
 1. Verify existing resources:
-    - `cert-manager`: 
+    - `cert-manager`:
         ```
         kubectl get cert-manager
         NAME                                               READY   AGE
@@ -76,7 +76,7 @@
         # {{- end }}
         ```
         Finally specify the use the cluster issuer: `ingress.annotations.cert-manager.io/cluster-issuer=<cluster-issuer-name>`
-    
+
     - `ingress`:
         - simply replace: `ingress.className` by the existing one.
         - using an [external-dns](https://github.com/kubernetes-sigs/external-dns) service:
@@ -84,5 +84,4 @@
                 - `ingress.annotations.external-dns.alpha.kubernetes.io/hostname=<hostname>`
                 - `ingress.annotations.external-dns.alpha.kubernetes.io/target: <static-ip>`
                 - `ingress.annotations.kubernetes.io/tls-acme="true"`
-                - `ingress.loadBalancerIP=<static-ip>` 
-    
+                - `ingress.loadBalancerIP=<static-ip>`
