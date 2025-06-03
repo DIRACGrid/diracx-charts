@@ -182,13 +182,6 @@ diracxWeb:
   # -- install specification to pass to npm before launching container
   repoURL: ""
   branch: ""
-  # -- resources to use for building the webapp if diracxWeb.repoURL is set
-  installDiracxWeb:
-    resources:
-      requests:
-        memory: 512Mi
-      limits:
-        memory: 1Gi
 
 ##########################
 
