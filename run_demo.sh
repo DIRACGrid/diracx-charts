@@ -585,7 +585,7 @@ if ! "${demo_dir}/helm" install --debug diracx-demo "${script_dir}/diracx" "${he
   echo "Failed to run \"helm install\"" >> "${demo_dir}/.failed"
 else
   printf "%b Waiting for installation to finish...\n" ${UNICORN_EMOJI}
-  if "${demo_dir}/kubectl" wait --for=condition=ready pod --selector=app.kubernetes.io/name=diracx --timeout=900s; then
+  if "${demo_dir}/kubectl" wait --for=condition=ready pod --selector='app.kubernetes.io/name in (diracx, diracx-web)' --timeout=900s; then
     printf "%b %b %b Pods are ready! %b %b %b\n" "${PARTY_EMOJI}" "${PARTY_EMOJI}" "${PARTY_EMOJI}" "${PARTY_EMOJI}" "${PARTY_EMOJI}" "${PARTY_EMOJI}"
 
     # Dump the CA certificate to a file so that it can be used by the client
