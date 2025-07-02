@@ -119,11 +119,12 @@ spec:
               value: "/tmp/.cypress"
             - name: npm_config_cache
               value: "/tmp/.npm"
-          # RAM usage can be high, so we can set a larger limit if needed
-          {{- with .Values.diracxWeb.installDiracxWeb.resources }}
+          # RAM usage can be high, so we set a larger limit
           resources:
-            {{- toYaml . | nindent 12 }}
-          {{- end }}
+            requests:
+              memory: 512Mi
+            limits:
+              memory: 1Gi
           volumeMounts:
             # This volume contains the source code of the cloned diracx-web repository
             - mountPath: "/diracx-web"
@@ -148,10 +149,25 @@ spec:
             httpGet:
               path: /
               port: http
+            timeoutSeconds: 15
+            periodSeconds: 20
+            successThreshold: 1
+            failureThreshold: 3
           readinessProbe:
             httpGet:
               path: /
               port: http
+            timeoutSeconds: 15
+            periodSeconds: 20
+            successThreshold: 1
+            failureThreshold: 3
+          startupProbe:
+            httpGet:
+              path: /
+              port: http
+            timeoutSeconds: 5
+            periodSeconds: 5
+            failureThreshold: 30
 
           {{- if $nodeDevInstall }}
           # Start the node module in development mode
