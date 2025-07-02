@@ -216,6 +216,11 @@ while [ -n "${1:-}" ]; do case $1 in
     shift
     continue ;;
 
+  --prune-loaded-images)
+    prune_loaded_images=1
+    shift
+    continue ;;
+
   --ci-values)
     shift
     if [[ -z "${1:-}" ]]; then
@@ -567,12 +572,16 @@ fi
 
 
 # Load images into kind
-
 if [ ${#docker_images_to_load[@]} -ne 0 ]; then
-printf "%b Loading docker images...\n" ${UNICORN_EMOJI}
-for img_name in "${docker_images_to_load[@]}"
-do
-  "${demo_dir}/kind" --name diracx-demo load docker-image "${img_name}"
+  printf "%b Loading docker images...\n" ${UNICORN_EMOJI}
+  for img_name in "${docker_images_to_load[@]}"; do
+    "${demo_dir}/kind" --name diracx-demo load docker-image "${img_name}"
+
+    if [[ ${prune_loaded_images:-0} -eq 1 ]]; then
+      printf "%b Pruning ${img_name} locally\n" ${UNICORN_EMOJI}
+      # Delete the tag (will delete the layers if no other tag is using them)
+      docker image rm -f "${img_name}"
+    fi
 done
 
 
