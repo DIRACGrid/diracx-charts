@@ -6,7 +6,7 @@ import logging
 import yaml
 
 from typing import List, Dict, Optional
-from pydantic import BaseModel, parse_obj_as, validator
+from pydantic import BaseModel, field_validator, RootModel
 
 
 class User(BaseModel):
@@ -16,15 +16,17 @@ class User(BaseModel):
     given_name: Optional[str] = None
     family_name: Optional[str] = None
 
-    @validator('given_name', pre=True, always=True)
+    @field_validator('given_name', mode='before')
+    @classmethod
     def set_given_name(cls, v, values):
         # Use the username to set the given_name if it's not provided
-        if v is None and 'username' in values:
-            return values['username'].capitalize()
+        if v is None and values.data and 'username' in values.data:
+            return values.data['username'].capitalize()
         return v
 
-    @validator('family_name', pre=True, always=True)
-    def set_family_name(cls, v, values):
+    @field_validator('family_name', mode='before')
+    @classmethod
+    def set_family_name(cls, v):
         # Set the family_name to an empty string if it's not provided
         return v or ""
 
@@ -38,10 +40,11 @@ class Client(BaseModel):
     scope: Optional[List[str]] = []
     redirect_uris: Optional[List[str]] = []
 
-    @validator('redirect_uris', pre=True, always=True)
+    @field_validator('redirect_uris', mode='before')
+    @classmethod
     def set_redirect_uris(cls, v, values):
         # redirect_uris is required if grant_types contains "authorization_code" or "device_code"
-        grant_types = values.get('grant_types', [])
+        grant_types = values.data.get('grant_types', []) if values.data else []
         if not v and ('authorization_code' in grant_types or \
                 'urn:ietf:params:oauth:grant-type:device_code' in grant_types):
             raise ValueError("redirect_uris is required")
@@ -55,9 +58,8 @@ class InitialClient(Client):
     scope: Optional[List[str]] = ["scim:read", "scim:write", "iam:admin.read", "iam:admin.write"]
 
 
-class Group(BaseModel):
+class Group(RootModel[Dict[str, List[str]]]):
     """Group to create."""
-    __root__: Dict[str, List[str]]
 
 
 class Config(BaseModel):
@@ -76,7 +78,7 @@ def prepare_iam_instance(config_path):
         # Load and parse the configuration using Pydantic
         with open(config_path, 'r') as file:
             config_data = yaml.safe_load(file)
-        config = parse_obj_as(Config, config_data)
+        config = Config.model_validate(config_data)
     except FileNotFoundError:
         logging.error("Config file not found")
         raise RuntimeError("Config file not found")
@@ -126,7 +128,7 @@ def prepare_iam_instance(config_path):
         group_id = group_config["id"]
 
         # Subgroups
-        for subgroup_name, users in group_details.__root__.items():
+        for subgroup_name, users in group_details.root.items():
             subgroup_config = _create_iam_subgroup(issuer, admin_access_token, group_name, group_id, subgroup_name)
             subgroup_id = subgroup_config["id"]
 
