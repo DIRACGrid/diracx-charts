@@ -60,7 +60,6 @@ class InitialClient(Client):
 
 class Group(RootModel[Dict[str, List[str]]]):
     """Group to create."""
-    root: Dict[str, List[str]]
 
 
 class Config(BaseModel):
