@@ -16,19 +16,19 @@ repos:
     - id: helm-docs
       name: helm-docs
       language: docker_image
-      entry: jnorwood/helm-docs:v1.11.2 --chart-search-root=diracx --output-file=../docs/admin/reference/values.md --template-files=../docs/admin/reference/values.md.gotmpl --chart-to-generate=diracx
+      entry: jnorwood/helm-docs:v1.14.2 --chart-search-root=diracx --output-file=../docs/admin/reference/values.md --template-files=../docs/admin/reference/values.md.gotmpl --chart-to-generate=diracx
       always_run: true
       pass_filenames: false
 
     - id: helm-lint
       name: helm-lint
       language: docker_image
-      entry: alpine/helm:3.11.1 lint diracx/ --set diracx.hostname=diracx.invalid
+      entry: alpine/helm:3.17.0 lint diracx/ --set diracx.hostname=diracx.invalid
       always_run: true
       pass_filenames: false
 
   - repo: https://github.com/koalaman/shellcheck-precommit
-    rev: v0.9.0
+    rev: v0.10.0
     hooks:
     - id: shellcheck
       # TODO: Render demo in CI and run the scripts through shell-check

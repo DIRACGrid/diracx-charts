@@ -6,6 +6,7 @@
 [Helm](https://helm.sh/) allows to template these ``yaml`` files. Such a templated description of an application like ``diracx`` is called ``chart``. Helm also allows to manage dependencies between ``charts``. For example, the ``diracx`` application needs a database to run, so the ``diracx charts`` has a dependency on the ``mysql charts``.
 
 To understand this ``chart`` you will need to familiarize yourself with a few k8s concepts:
+
 * A ``node`` is one of the machine (VM, physical) which sustains your k8s cluster.
 * Your application runs inside a container which is part of a ``pod``. A ``pod`` is the atomic unit with which kubernetes will work, and in most cases it corresponds to a single container. ``pods`` are deployed on ``nodes``.
 * A ``ReplicaSet`` represents how many ``pods`` of a given type you want to run. For example, you want to run 3 ``pods`` containing the ``diracx`` container for redundancy reasons.
@@ -30,65 +31,12 @@ In order to make that easy, we wrote the ``run_demo.sh`` script, which covers al
 This is the script used to start a demo or the integration tests.
 
 
-```
---8<-- "docs/admin/tutorials/run_demo_help.txt"
-```
+
 
 Once ready, you will get some information on how to interact with your cluster
 
 ```md
-NOTES:
-
-🚧 Chart has been installed in developer mode.
-
-ℹ️  To interact with the cluster directly using kubectl/helm you'll need to set the
-first following environment variables:
-
-  export KUBECONFIG=/home/chaen/dirac/diracx-project/diracx-charts/.demo/kube.conf
-  export HELM_DATA_HOME=/home/chaen/dirac/diracx-project/diracx-charts/.demo/helm_data
-  export PATH=${PATH}:/home/chaen/dirac/diracx-project/diracx-charts/.demo
-
-Then see the chart README for more information on how to use kubectl/helm.
-
-ℹ️  To use the demo with the DiracX client set:
-
-  export DIRACX_URL=https://172.18.0.1.nip.io:8000
-  export DIRACX_CA_PATH=/home/chaen/dirac/diracx-project/diracx-charts/.demo/demo-ca.pem
-
-ℹ️  To use the demo with a DiracX client without local installation:
-
-  kubectl exec -it  deployment/diracx-demo-cli -- bash
-
-ℹ️  To access the web application visit:
-
-  https://172.18.0.1.nip.io:8000
-
-ℹ️  To access the interactive API documentation visit:
-
-  https://172.18.0.1.nip.io:8000/api/docs
-
-ℹ️  When prompted to login the credentials are:
-
-  Username: admin@example.com
-  Password: password
-
-ℹ️  Grafana dashboard for telemetry (if enabled)
-
-  https://172.18.0.1.nip.io:32004
-
-  Username: admin
-  Password: run ``kubectl get secrets diracx-demo-grafana -o jsonpath="{.data.admin-password}" | base64 --decode ; echo``
-
-🦄 Waiting for installation to finish...
-pod/diracx-demo-7fd5c47cd6-mq8s7 condition met
-🎉 🎉 🎉 Pods are ready! 🎉 🎉 🎉
-🦄 Creating initial CS content ...
-Writing back configuration to /cs_store/initialRepo/default.yml
-Successfully added vo to git+file:///cs_store/initialRepo
-Writing back configuration to /cs_store/initialRepo/default.yml
-Successfully added user to git+file:///cs_store/initialRepo
-
-ℹ️  Press Ctrl+C to clean up and exit
+--8<-- "docs/dev/explanations/run_demo_output.txt"
 ```
 ### Interacting with the demo
 

@@ -531,6 +531,20 @@ fi
 json="${json%,}]"
 printf "%b Node workspaces json: %s\n" ${UNICORN_EMOJI} "${json}"
 sed "s#{{ node_module_workspaces }}#${json}#g" "${demo_dir}/values.yaml.bak" > "${demo_dir}/values.yaml"
+mv "${demo_dir}/values.yaml" "${demo_dir}/values.yaml.bak"
+
+
+# Generate the static client GUID for Dex
+dex_client_uuid=$(uuidgen)
+sed "s/{{ dex_client_uuid }}/${dex_client_uuid}/g" "${demo_dir}/values.yaml.bak" > "${demo_dir}/values.yaml"
+mv "${demo_dir}/values.yaml" "${demo_dir}/values.yaml.bak"
+
+# Generate the admin account for dex
+dex_admin_uuid=$(uuidgen)
+sed "s/{{ dex_admin_uuid }}/${dex_admin_uuid}/g" "${demo_dir}/values.yaml.bak" > "${demo_dir}/values.yaml"
+# This is how dex generates the sub from a UserID
+# https://github.com/dexidp/dex/issues/1719
+dex_admin_sub=$(printf '\n$%s\x12\x05local' "${dex_admin_uuid}" | base64 -w 0)
 
 
 # Final check
@@ -604,12 +618,12 @@ else
     "${demo_dir}/kubectl" exec deployments/diracx-demo-cli -- bash /entrypoint.sh dirac internal add-vo /cs_store/initialRepo \
      --vo="diracAdmin" \
      --idp-url="http://${machine_hostname}:32002" \
-     --idp-client-id="d396912e-2f04-439b-8ae7-d8c585a34790" \
+     --idp-client-id="${dex_client_uuid}" \
      --default-group="admin" >> /tmp/init_cs.log
 
     "${demo_dir}/kubectl" exec deployments/diracx-demo-cli -- bash /entrypoint.sh  dirac internal add-user /cs_store/initialRepo \
      --vo="diracAdmin" \
-     --sub="EgVsb2NhbA" \
+     --sub="${dex_admin_sub}" \
      --preferred-username="admin" \
      --group="admin" >> /tmp/init_cs.log
 
