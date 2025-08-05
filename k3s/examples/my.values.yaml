@@ -29,9 +29,6 @@ ingress:
   tlsSecretName: myingress-cert
   annotations: {}
 
-developer:
-  enabled: false
-
 
 
 dex:
