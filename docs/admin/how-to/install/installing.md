@@ -134,9 +134,7 @@ The file generated looks like the following
             DIRACX_LEGACY_EXCHANGE_HASHED_API_KEY: aafabc9c0b8f7e6c0eaed8cee9acbda187fdd90f59d7975dae9b478a1c4be8ae
             DIRACX_SANDBOX_STORE_AUTO_CREATE_BUCKET: "true"
             DIRACX_SANDBOX_STORE_BUCKET_NAME: diracx-sandboxes
-            DIRACX_SANDBOX_STORE_S3_CLIENT_KWARGS:
-                '{"endpoint_url": "FILL ME", "aws_access_key_id":
-                "FILL ME", "aws_secret_access_key": "FILL ME"}'
+            DIRACX_SANDBOX_STORE_S3_CLIENT_KWARGS: '{"endpoint_url": "FILL ME", "aws_access_key_id": "FILL ME", "aws_secret_access_key": "FILL ME"}'
             DIRACX_SANDBOX_STORE_SE_NAME: ProductionSandboxSE
             DIRACX_SERVICE_AUTH_ALLOWED_REDIRECTS:
                 '["https://mydiracx.k8s.institute.invalid/api/docs/oauth2-redirect",
@@ -214,7 +212,7 @@ GRANT SELECT, INSERT, UPDATE, DELETE, INDEX, CREATE TEMPORARY TABLES, LOCK TABLE
 
 ## DiracX Config URL
 
-This should be the URL of the repository populated by synchronizing the CS. You should already have [followed this step](./convert-cs.md). For more details about the configuration, see the [dedicated explanations](../explanations/configuration.md)
+This should be the URL of the repository populated by synchronizing the CS. You should already have completed the CS synchronization step. For more details about the configuration, see the [dedicated explanations](../explanations/configuration.md)
 
 !!! note "You do not need write permissions"
 
@@ -225,7 +223,7 @@ This should be the URL of the repository populated by synchronizing the CS. You 
 
 ## Sandbox URL
 
-The [DiracX SandboxStore](../explanations/sandbox-store.md) stores files on an object store. The `DIRACX_SANDBOX_STORE_S3_CLIENT_KWARGS` should contain the credentials for it
+The [DiracX SandboxStore](../../explanations/sandbox-store.md) stores files on an object store. The `DIRACX_SANDBOX_STORE_S3_CLIENT_KWARGS` should contain the credentials for it
 
 !!! example "DIRACX_SANDBOX_STORE_S3_CLIENT_KWARGS"
 
