@@ -22,7 +22,7 @@ It is possible to run an instance of DiracX locally for demo or testing purposes
 
 !!! warning
 
-    This setup is **not** suitable for a production or long-lived deployment. To learn how to run a long-lived deployment, see [the how-to](../how-to/installing.md).
+    This setup is **not** suitable for a production or long-lived deployment. To learn how to run a long-lived deployment, see [the how-to](../how-to/install/installing.md).
 
 In order to make that easy, we wrote the ``run_demo.sh`` script, which covers all these needs. This is also used for the [diracx ci](https://github.com/DIRACGrid/diracx/blob/main/.github/workflows/main.yml)
 
