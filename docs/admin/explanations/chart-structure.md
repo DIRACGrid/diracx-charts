@@ -81,7 +81,7 @@ The chart uses a series of initialization jobs to bootstrap the DiracX environme
 - **Components**:
   - ConfigMap with SQL initialization scripts
   - Job that connects to MySQL and creates/updates schemas
-- **When it runs**: After secret initialization, before application startup
+- **When it runs**: After secret initialization, before application startup. See [the explanation on how databases are handled](database-management.md) for more details.
 
 ### 3. OpenSearch Initialization (`init-os/`)
 - **Purpose**: Configures OpenSearch indices and mappings
