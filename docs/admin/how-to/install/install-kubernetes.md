@@ -15,9 +15,9 @@
 
 !!! tip "Your cluster is disposable"
 
-    Think of your kubernes cluster as something that you should be able to recreate quickly on a whim.
+    It's much easier to think of your Kubernetes cluster as something that you should be able to recreate quickly on a whim.
 
-## K3S
+## K3s
 
 [K3s](https://docs.k3s.io/) is a lightweight Kubernetes cluster easy to deploy. We are going to cover its installation such that `DiracX` can be deployed on it.
 
