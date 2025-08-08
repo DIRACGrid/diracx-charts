@@ -148,7 +148,7 @@ diracx:
 
     ### Open Telemetry settings (experimental)
 
-    DIRACX_OTEL_ENABLED: false
+    DIRACX_OTEL_ENABLED: "false"
     DIRACX_OTEL_GRPC_ENDPOINT: "diracx-demo-opentelemetry-collector:4317"
     DIRACX_OTEL_GRPC_INSECURE: "true"
 
