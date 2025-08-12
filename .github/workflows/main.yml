@@ -17,7 +17,7 @@ jobs:
   pre-commit:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v5
     - uses: actions/setup-python@v5
       with:
         python-version: 3.x
@@ -28,7 +28,7 @@ jobs:
   run-demo:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v5
     - name: Start demo
       run: |
         ./run_demo.sh --exit-when-done
@@ -56,7 +56,7 @@ jobs:
   run-demo-mount-sources:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v5
     - name: Clone source
       run: |
         git clone https://github.com/DIRACGrid/diracx.git /tmp/diracx
