@@ -6,38 +6,41 @@ The aim of this documentation is to give pointers on how to install the `diracx-
 
 Effectively, this means that you will be using your existing databases (`MySQL`, `OpenSearch`), and just install the new dependencies of `diracx`.
 
-!!! note "We assume you have a Kubernetes cluster available"
+## Prerequisites
+
+
+??? note "A Kubernetes cluster available"
     Which ever it is, at the stage we expect that you have a fully functional kubernetes cluster available. If it is not the case, check the [k3s how-to](./install-kubernetes.md)
 
-!!! warning "You should have a running `DIRAC` installation. "
+??? note "A running `DIRAC` installation. "
     DiracX always has to run in parallel of a `DIRAC v9` installation.
     In particular, make sure that the `DiracX` section of the `DIRAC CS` has been filled properly following the  Dirac V9 migration guide
 
 
-## Requirements
+??? note "Access to [kubectl](https://kubernetes.io/docs/tasks/tools/#kubectl) and [helm](https://helm.sh/docs/intro/install/#from-script)"
 
-You need a UI with [kubectl](https://kubernetes.io/docs/tasks/tools/#kubectl) and [helm](https://helm.sh/docs/intro/install/#from-script) available. You also need to be able to access and interact with your `DIRAC` installation
+    ```bash
+    # kubectl
+    curl -LO https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl
 
-```bash
-# kubectl
-curl -LO https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl
+    # kubectl checksum file
+    curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl.sha256"
 
-# kubectl checksum file
-curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl.sha256"
+    # validate binary
+    echo "$(cat kubectl.sha256)  kubectl" | sha256sum --check
 
-# validate binary
-echo "$(cat kubectl.sha256)  kubectl" | sha256sum --check
-
-# install
-sudo install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl
+    # install
+    sudo install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl
 
 
-curl -fsSL -o get_helm.sh https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3
-chmod 700 get_helm.sh
-./get_helm.sh
-```
+    curl -fsSL -o get_helm.sh https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3
+    chmod 700 get_helm.sh
+    ./get_helm.sh
+    ```
 
-You should also have the `kubeconfig` file to connect to your cluster available.
+??? note "The `kubeconfig` file to connect to your cluster"
+
+    See the [k3s docs](https://docs.k3s.io/cluster-access) if you installed it.
 
 
 ## Configure the DiracX URL in DIRAC
@@ -233,6 +236,12 @@ The [DiracX SandboxStore](../../explanations/sandbox-store.md) stores files on a
       "sdalkja34983204923kds"}'
     ```
 
+??? question "What if I don't have an object store at hand?"
+
+    * Investigate if there is a plugin for any storage system you already run (e.g. [CEPH](https://docs.ceph.com/en/latest/radosgw/s3/))
+    * Consider investing in a public cloud storage
+    * If you have to install it yourself, we recommand installing [Minio](https://www.min.io/).
+
 
 ## Ingress configuration
 
@@ -343,13 +352,4 @@ helm install --timeout 3600s <release-name> ./diracx-charts/diracx/ -f my_values
 
 !!! success "Congrats, you have installed DiracX"
 
-    However, it does not do anything so far... Follow the post-installation steps
-
-## After installation
-
-### Enable the sandbox
-
-
-!!! warning Enable the DiracX SandboxStore in the DIRAC CS
-
-    The `DIRAC` clients still interact with the DIRAC services to proxy the sandbox files to S3. New writes only go to S3, and read can be done from both. Eventually, given the periodic cleanup of sandboxes, all the files will be on S3 only.
+    However, it does not do anything so far... See the [following steps](register-the-admin-vo.md)
