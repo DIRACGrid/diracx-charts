@@ -212,7 +212,7 @@ GRANT SELECT, INSERT, UPDATE, DELETE, INDEX, CREATE TEMPORARY TABLES, LOCK TABLE
 
 ## DiracX Config URL
 
-This should be the URL of the repository populated by synchronizing the CS. You should already have completed the CS synchronization step. For more details about the configuration, see the [dedicated explanations](../explanations/configuration.md)
+This should be the URL of the repository populated by synchronizing the CS. You should already have completed the CS synchronization step. For more details about the configuration, see the [dedicated explanations](../../explanations/configuration.md)
 
 !!! note "You do not need write permissions"
 

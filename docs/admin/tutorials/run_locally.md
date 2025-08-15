@@ -10,7 +10,7 @@ To understand this ``chart`` you will need to familiarize yourself with a few k8
 * A ``node`` is one of the machine (VM, physical) which sustains your k8s cluster.
 * Your application runs inside a container which is part of a ``pod``. A ``pod`` is the atomic unit with which kubernetes will work, and in most cases it corresponds to a single container. ``pods`` are deployed on ``nodes``.
 * A ``ReplicaSet`` represents how many ``pods`` of a given type you want to run. For example, you want to run 3 ``pods`` containing the ``diracx`` container for redundancy reasons.
-* A ``Deployment`` is how you describe your workload to k8s. It ensures that any number of replicas of your ``pod`` are running (via ``ReplicaSEt``). This chart contains a ``deployment`` for ``diracx`` (see [here](diracx/templates/diracx/deployment.yaml)), and a ``deployment`` for ``diracx-web`` (see [here](diracx/templates/diracx-web/deployment.yaml)). Kubernetes will always make sure that the ``deployment`` is satisfied.
+* A ``Deployment`` is how you describe your workload to k8s. It ensures that any number of replicas of your ``pod`` are running (via ``ReplicaSEt``). This chart contains a ``deployment`` for ``diracx`` (see [here](https://github.com/DIRACGrid/diracx-charts/blob/master/diracx/templates/diracx/deployment.yaml)), and a ``deployment`` for ``diracx-web`` (see [here](https://github.com/DIRACGrid/diracx-charts/blob/master/diracx/templates/diracx-web/deployment.yaml)). Kubernetes will always make sure that the ``deployment`` is satisfied.
 * A ``Service`` is how you expose your ``Deployment``. If I want to talk to my ``diracx`` application, it is a ``Service`` which will take care of redirecting me within the cluster to one of the ``pod``. Most of the time, the ``Service`` is used for routing inside the cluster
 * An ``Ingress`` exposes your ``Services`` outside of the cluster.
 
@@ -78,7 +78,7 @@ helm diff upgrade diracx-demo  ./diracx --values .demo/values.yaml --set rabbitm
 helm upgrade diracx-demo ./diracx --values .demo/values.yaml
 ```
 
-See [here](../../../dev/explanations/run_demo.md) for more details on what you can do to alter the behavior of the local installation.
+See [here](../../dev/explanations/run_demo.md) for more details on what you can do to alter the behavior of the local installation.
 
 
 ## OpenTelemetry
@@ -96,4 +96,4 @@ To enable it, run ``run_demo.sh`` with ``enable-open-telemetry``
 
 Note that this configuration is trivial and does not follow production recommandations (like using batch processing)
 
-![OTEL collector configuration](../../../demo/otel-collector.png)
+![OTEL collector configuration](https://diracx-docs-static.s3.cern.ch/assets/images/admin/tutorials/otel-collector.png)

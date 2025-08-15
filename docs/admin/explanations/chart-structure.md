@@ -20,7 +20,7 @@ Detailed documentation with justification for technical decisions can be found [
 The chart includes the following external dependencies, all conditionally enabled:
 
 !!! warning "Production Deployments"
-    The bundled dependencies listed below are primarily intended for development and testing environments. For production deployments, you should use externally managed services. See the [installation guide](../how-to/installing.md) for production deployment recommendations.
+    The bundled dependencies listed below are primarily intended for development and testing environments. For production deployments, you should use externally managed services. See the [installation guide](../how-to/install/installing.md) for production deployment recommendations.
 
 ### Core Infrastructure
 - **MySQL** (`mysql`): Primary database for DiracX data storage
@@ -215,7 +215,7 @@ For production deployments:
 - Configures proper resource limits and requests
 - Sets up monitoring and alerting
 
-To find more about running in production mode see [here](../how-to/installing.md).
+To find more about running in production mode see [here](../how-to/install/installing.md).
 
 ## Bootstrap Sequence
 
