@@ -96,4 +96,4 @@ To enable it, run ``run_demo.sh`` with ``enable-open-telemetry``
 
 Note that this configuration is trivial and does not follow production recommandations (like using batch processing)
 
-![OTEL collector configuration](../../../demo/otel-collector.png)
+![OTEL collector configuration](https://diracx-docs-static.s3.cern.ch/assets/images/admin/tutorials/otel-collector.png)
