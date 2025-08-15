@@ -4,12 +4,12 @@ The aim of this documentation is to give pointers on how to install the `diracx-
 
 Effectively, this means that you will be using your existing databases (`MySQL`, `OpenSearch`), and just install the new dependencies of `diracx`.
 
-We go here with the assumption that you have a `kubernetes` cluster at hand. If you do no have one, see the [k3s example](../k3s/README.md).
+We go here with the assumption that you have a `kubernetes` cluster at hand.
 
 
 If your central infrastructure already provide the following services, by all mean, use them.
 
-More configuration options are available, please refer to the [values.yaml](../diracx/values.yaml)
+More configuration options are available in the chart's values.yaml file
 
 ## Getting started
 
