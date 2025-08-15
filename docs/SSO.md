@@ -32,7 +32,7 @@ Replace `<youdiracx.invalid>` with your actual DiracX hostname.
 ### Client Configuration
 
 - **Client Type**: Public (no client authentication required)
-- **Required Scopes**: `email`, `openid`, `profile`  
+- **Required Scopes**: `email`, `openid`, `profile`
 - **Grant Type**: Authorization Code Flow with PKCE
 - **Token Endpoint Authentication**: None (public client)
 
