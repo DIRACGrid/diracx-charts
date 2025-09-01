@@ -15,14 +15,14 @@ global:
   # -- timeout for job deadlines
   activeDeadlineSeconds: 900
   images:
-    tag: "dev"
+    tag: v0.0.1a48
     services: ghcr.io/diracgrid/diracx/services
     client: ghcr.io/diracgrid/diracx/client
     busybox:
       tag: "latest"
       repository: "busybox"
     web:
-      tag: "dev"
+      tag: v0.1.0-a10
       repository: ghcr.io/diracgrid/diracx-web/static
 
 # Number of diracx pods

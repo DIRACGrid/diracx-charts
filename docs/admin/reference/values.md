@@ -94,9 +94,9 @@
 | global.images.busybox.tag | string | `"latest"` |  |
 | global.images.client | string | `"ghcr.io/diracgrid/diracx/client"` |  |
 | global.images.services | string | `"ghcr.io/diracgrid/diracx/services"` |  |
-| global.images.tag | string | `"dev"` |  |
+| global.images.tag | string | `"v0.0.1a48"` |  |
 | global.images.web.repository | string | `"ghcr.io/diracgrid/diracx-web/static"` |  |
-| global.images.web.tag | string | `"dev"` |  |
+| global.images.web.tag | string | `"v0.1.0-a10"` |  |
 | global.storageClassName | string | `"standard"` |  |
 | grafana.datasources."datasources.yaml".apiVersion | int | `1` |  |
 | grafana.datasources."datasources.yaml".datasources[0].name | string | `"Jaeger"` |  |
