@@ -323,12 +323,12 @@ for src_dir in "$@"; do
   # Check for workspaces in the package.json
   if [ "$(jq -e ".workspaces | type== \"array\"" "$pkg_json")" == "true" ]; then
     readarray -t node_pkg_workspaces < <(jq -r ".workspaces[]" "$pkg_json")
-    node_pkg_workspaces=("${node_pkg_workspaces[@]}")
+    node_pkg_workspaces=("${node_pkg_workspaces[@]:-}")
   fi
 
   # Ensure node_modules exist, else create them, as volumes will be mounted there
   mkdir -p "${node_pkg_path}"/node_modules
-  for workspace in "${node_pkg_workspaces[@]}"; do
+  for workspace in "${node_pkg_workspaces[@]:-}"; do
     mkdir -p "${node_pkg_path}/${workspace}"/node_modules
   done
 done
@@ -342,8 +342,8 @@ fi
 if [ "${node_pkg_name}" != "" ]; then
   printf "%b Found Node package directory for: %s\n" ${UNICORN_EMOJI} "${node_pkg_name}"
 fi
-if [ ${#node_pkg_workspaces[@]} -gt 0 ]; then
-    printf "%b Found Node package workspaces for: %s\n" ${UNICORN_EMOJI} "$(IFS=' '; echo "${node_pkg_workspaces[*]}")"
+if [ ${#node_pkg_workspaces[@]:-0} -gt 0 ]; then
+    printf "%b Found Node package workspaces for: %s\n" ${UNICORN_EMOJI} "$(IFS=' '; echo "${node_pkg_workspaces[*]:-}")"
 fi
 
 trap "cleanup" EXIT
@@ -523,8 +523,8 @@ sed "s#{{ node_module_to_mount }}#${node_pkg_name}#g" "${demo_dir}/values.yaml.b
 mv "${demo_dir}/values.yaml" "${demo_dir}/values.yaml.bak"
 
 json="["
-if [ ${#node_pkg_workspaces[@]} -gt 0 ]; then
-  for workspace in "${node_pkg_workspaces[@]}"; do
+if [ ${#node_pkg_workspaces[@]:-0} -gt 0 ]; then
+  for workspace in "${node_pkg_workspaces[@]:-}"; do
     json+="\"$workspace\","
   done
 fi
