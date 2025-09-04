@@ -122,9 +122,9 @@ spec:
           # RAM usage can be high, so we set a larger limit
           resources:
             requests:
-              memory: 512Mi
-            limits:
               memory: 1Gi
+            limits:
+              memory: 2Gi
           volumeMounts:
             # This volume contains the source code of the cloned diracx-web repository
             - mountPath: "/diracx-web"
