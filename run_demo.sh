@@ -360,7 +360,7 @@ if [[ ! -f "${demo_dir}/helm" ]]; then
 
   # Download kind
   printf "%b Downloading kind\n" ${UNICORN_EMOJI}
-  curl --no-progress-meter -L "https://kind.sigs.k8s.io/dl/v0.19.0/kind-${system_name}-${system_arch}" > "${demo_dir}/kind"
+  curl --no-progress-meter -L "https://kind.sigs.k8s.io/dl/v0.30.0/kind-${system_name}-${system_arch}" > "${demo_dir}/kind"
 
   # Download kubectl
   printf "%b Downloading kubectl\n" ${UNICORN_EMOJI}
@@ -369,7 +369,7 @@ if [[ ! -f "${demo_dir}/helm" ]]; then
 
   # Download helm
   printf "%b Downloading helm\n" ${UNICORN_EMOJI}
-  curl --no-progress-meter -L "https://get.helm.sh/helm-v3.12.0-${system_name}-${system_arch}.tar.gz" > "${tmp_dir}/helm.tar.gz"
+  curl --no-progress-meter -L "https://get.helm.sh/helm-v3.18.6-${system_name}-${system_arch}.tar.gz" > "${tmp_dir}/helm.tar.gz"
   mkdir -p "${tmp_dir}/helm-tarball"
   tar xzf "${tmp_dir}/helm.tar.gz" -C "${tmp_dir}/helm-tarball"
   mv "${tmp_dir}/helm-tarball/${system_name}-${system_arch}/helm" "${demo_dir}"
