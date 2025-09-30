@@ -471,8 +471,8 @@ opentelemetry-collector:
     receivers:
       otlp:
         protocols:
-          grpc:
-          http:
+          grpc: null
+          http: null
       jaeger: null
       prometheus: null
 
