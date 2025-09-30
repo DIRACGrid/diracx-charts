@@ -413,6 +413,8 @@ rabbitmq:
 cert-manager:
   enabled: true
   installCRDs: true
+  startupapicheck:
+    enabled: true
 
 cert-manager-issuer:
   enabled: true
