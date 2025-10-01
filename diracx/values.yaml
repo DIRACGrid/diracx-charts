@@ -376,6 +376,8 @@ indigoiam:
 ##########################
 
 mysql:
+  image:
+    repository: bitnamilegacy/mysql
   enabled: true
   auth:
     existingSecret: mysql-secret
@@ -398,7 +400,7 @@ mysql:
 ##########################
 
 rabbitmq:
-  enabled: true
+  enabled: false
   # Security context must be set to run on some k8s clusters (e.g. openshift)
   podSecurityContext:
     enabled: false

@@ -172,6 +172,7 @@
 | mysql.auth.existingSecret | string | `"mysql-secret"` |  |
 | mysql.auth.username | string | `"sqldiracx"` |  |
 | mysql.enabled | bool | `true` |  |
+| mysql.image.repository | string | `"bitnamilegacy/mysql"` |  |
 | mysql.initdbScriptsConfigMap | string | `"mysql-init-diracx-dbs"` |  |
 | nameOverride | string | `""` | type=kubernetes.io/dockerconfigjson imagePullSecrets:   - name: regcred |
 | nodeSelector | object | `{}` |  |
@@ -230,7 +231,7 @@
 | rabbitmq.auth.existingErlangSecret | string | `"rabbitmq-secret"` |  |
 | rabbitmq.auth.existingPasswordSecret | string | `"rabbitmq-secret"` |  |
 | rabbitmq.containerSecurityContext.enabled | bool | `false` |  |
-| rabbitmq.enabled | bool | `true` |  |
+| rabbitmq.enabled | bool | `false` |  |
 | rabbitmq.podSecurityContext.enabled | bool | `false` |  |
 | replicaCount | int | `1` |  |
 | replicaCountWeb | int | `1` |  |
