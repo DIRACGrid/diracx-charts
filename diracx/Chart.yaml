@@ -23,7 +23,7 @@ appVersion: v0.0.1a49
 dependencies:
 
 - name: opensearch
-  version: 2.13.1
+  version: 3.2.0
   repository:  https://opensearch-project.github.io/helm-charts/
   condition: opensearch.enabled
 
@@ -34,28 +34,28 @@ dependencies:
   condition: elasticsearch.enabled
 
 - name: dex
-  version: 0.14.2
+  version: 0.24.0
   repository: https://charts.dexidp.io/
   condition: dex.enabled
 
 - name: minio
-  version: 5.0.11
-  repository: https://charts.min.io/
+  version: 17.0.21
+  repository: https://charts.bitnami.com/bitnami
   condition: minio.enabled
 
 - name: rabbitmq
-  version: 12.0.10
+  version: 16.0.14
   repository: https://charts.bitnami.com/bitnami/
   condition: rabbitmq.enabled
 
 - name: mysql
-  version: 9.11.0
+  version: 14.0.3
   repository: https://charts.bitnami.com/bitnami/
   condition: mysql.enabled
 
 
 - name: cert-manager
-  version: 1.13.1
+  version: v1.18.2
   repository: https://charts.jetstack.io
   condition: cert-manager.enabled
 
@@ -64,21 +64,21 @@ dependencies:
   condition: cert-manager-issuer.enabled
 
 - name: opentelemetry-collector
-  version: 0.68.0
+  version: 0.136.1
   repository: https://open-telemetry.github.io/opentelemetry-helm-charts
   condition: opentelemetry-collector.enabled
 
 - name: jaeger
-  version: 0.71.14
+  version: 3.4.1
   repository: https://jaegertracing.github.io/helm-charts
   condition: jaeger.enabled
 
 - name: grafana
-  version: 6.59.4
+  version: 10.0.0
   repository: https://grafana.github.io/helm-charts
   condition: grafana.enabled
 
 - name: prometheus
-  version: 25.0.0
+  version: 27.39.0
   repository: https://prometheus-community.github.io/helm-charts
   condition: prometheus.enabled

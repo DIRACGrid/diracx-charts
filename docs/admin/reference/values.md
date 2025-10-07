@@ -3,17 +3,17 @@
 | Repository | Name | Version |
 |------------|------|---------|
 |  | cert-manager-issuer | *.*.* |
-| https://charts.bitnami.com/bitnami/ | mysql | 9.11.0 |
-| https://charts.bitnami.com/bitnami/ | rabbitmq | 12.0.10 |
-| https://charts.dexidp.io/ | dex | 0.14.2 |
-| https://charts.jetstack.io | cert-manager | 1.13.1 |
-| https://charts.min.io/ | minio | 5.0.11 |
-| https://grafana.github.io/helm-charts | grafana | 6.59.4 |
+| https://charts.bitnami.com/bitnami/ | mysql | 14.0.3 |
+| https://charts.bitnami.com/bitnami/ | rabbitmq | 16.0.14 |
+| https://charts.bitnami.com/bitnami | minio | 17.0.21 |
+| https://charts.dexidp.io/ | dex | 0.24.0 |
+| https://charts.jetstack.io | cert-manager | v1.18.2 |
+| https://grafana.github.io/helm-charts | grafana | 10.0.0 |
 | https://helm.elastic.co | elasticsearch | 8.5.1 |
-| https://jaegertracing.github.io/helm-charts | jaeger | 0.71.14 |
-| https://open-telemetry.github.io/opentelemetry-helm-charts | opentelemetry-collector | 0.68.0 |
-| https://opensearch-project.github.io/helm-charts/ | opensearch | 2.13.1 |
-| https://prometheus-community.github.io/helm-charts | prometheus | 25.0.0 |
+| https://jaegertracing.github.io/helm-charts | jaeger | 3.4.1 |
+| https://open-telemetry.github.io/opentelemetry-helm-charts | opentelemetry-collector | 0.136.1 |
+| https://opensearch-project.github.io/helm-charts/ | opensearch | 3.2.0 |
+| https://prometheus-community.github.io/helm-charts | prometheus | 27.39.0 |
 
 ## Values
 

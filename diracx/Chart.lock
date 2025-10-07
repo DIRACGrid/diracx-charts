@@ -1,0 +1,39 @@
+dependencies:
+- name: opensearch
+  repository: https://opensearch-project.github.io/helm-charts/
+  version: 3.2.0
+- name: elasticsearch
+  repository: https://helm.elastic.co
+  version: 8.5.1
+- name: dex
+  repository: https://charts.dexidp.io/
+  version: 0.24.0
+- name: minio
+  repository: https://charts.bitnami.com/bitnami
+  version: 17.0.21
+- name: rabbitmq
+  repository: https://charts.bitnami.com/bitnami/
+  version: 16.0.14
+- name: mysql
+  repository: https://charts.bitnami.com/bitnami/
+  version: 14.0.3
+- name: cert-manager
+  repository: https://charts.jetstack.io
+  version: v1.18.2
+- name: cert-manager-issuer
+  repository: ""
+  version: '*.*.*'
+- name: opentelemetry-collector
+  repository: https://open-telemetry.github.io/opentelemetry-helm-charts
+  version: 0.136.1
+- name: jaeger
+  repository: https://jaegertracing.github.io/helm-charts
+  version: 3.4.1
+- name: grafana
+  repository: https://grafana.github.io/helm-charts
+  version: 10.0.0
+- name: prometheus
+  repository: https://prometheus-community.github.io/helm-charts
+  version: 27.39.0
+digest: sha256:3e5fbbadf35918d420ea2e3b86902e5bb96e6b6a0b33e3253eeac3135222d685
+generated: "2025-10-07T14:23:41.677189455+02:00"
