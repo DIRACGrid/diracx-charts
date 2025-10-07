@@ -413,6 +413,8 @@ rabbitmq:
 cert-manager:
   enabled: true
   installCRDs: true
+  startupapicheck:
+    enabled: true
 
 cert-manager-issuer:
   enabled: true
@@ -471,8 +473,8 @@ opentelemetry-collector:
     receivers:
       otlp:
         protocols:
-          grpc:
-          http:
+          grpc: null
+          http: null
       jaeger: null
       prometheus: null
 
