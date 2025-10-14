@@ -15,6 +15,8 @@ The DiracX chart is an umbrella chart that orchestrates the deployment of:
 The structure is heavily inspired by the one provided for GitLab due to their similar use case of providing a generic helm chart for a wide variety of installations.
 Detailed documentation with justification for technical decisions can be found [here](https://docs.gitlab.com/charts/).
 
+![DiracX architecture](https://diracx-docs-static.s3.cern.ch/assets/images/admin/explanations/architecture_diragram.png)
+
 ## Chart Dependencies
 
 The chart includes the following external dependencies, all conditionally enabled:
