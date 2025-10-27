@@ -103,7 +103,7 @@ function element_not_in_array() {
   return $found
 }
 
-usage="${0##*/} [-h|--help] [--exit-when-done] [--offline] [--enable-coverage] [--no-mount-containerd] [--set-value key=value] [--ci-values=values.yaml] [--load-docker-image=<image_name:tag>] [--chart-path=path] [--] [source directories]"
+usage="${0##*/} [-h|--help] [--exit-when-done] [--offline] [--enable-coverage] [--no-mount-containerd] [--set-value key=value] [--ci-values=values.yaml] [--load-docker-image=<image_name:tag>] [--chart-path=path] [--only-download-deps] [--] [source directories]"
 usage+="\n\n"
 usage+="  -h|--help: Print this help message and exit\n"
 usage+="  --chart-path: Path to a custom Helm chart to install instead of the default diracx chart\n"
@@ -122,6 +122,8 @@ usage+="                         WARNING: There is no garbage collection so the 
 usage+="  --offline: Run in a mode which is suitable for fully offline use.\n"
 usage+="             WARNING: This may result in some weird behaviour, see the demo documentation for details.\n"
 usage+="             Implies: --mount-containerd\n"
+usage+="  --only-download-deps: Only download kind/kubectl/helm binaries and helm plugins, then exit\n"
+usage+="                        Useful for preparing the environment before running other commands\n"
 usage+="  --set-value: Set a value in the Helm values file. This can be used to override the default values.\n"
 usage+="               For example, to enable coverage reporting pass: --set-value developer.enableCoverage=true\n"
 usage+="  source directories: A list of directories containing Python packages to mount in the demo cluster.\n"
@@ -137,6 +139,7 @@ open_telemetry=0
 declare -a ci_values_files=()
 declare -a docker_images_to_load=()
 chart_path=""
+only_download_deps=0
 
 while [ -n "${1:-}" ]; do case $1 in
   # Print a brief usage summary and exit
@@ -250,6 +253,11 @@ while [ -n "${1:-}" ]; do case $1 in
       printf "%b Error: --chart-path does not point to a directory\n" ${SKULL_EMOJI}
       exit 1;
     fi
+    shift
+    continue ;;
+
+  --only-download-deps)
+    only_download_deps=1
     shift
     continue ;;
 
@@ -396,6 +404,14 @@ if [[ ! -f "${demo_dir}/helm" ]]; then
 
   # Install helm plugins to ${HELM_DATA_HOME}
   "${demo_dir}/helm" plugin install https://github.com/databus23/helm-diff
+fi
+
+# Exit early if we're only downloading dependencies
+if [ ${only_download_deps} -eq 1 ]; then
+  printf "%b Dependencies downloaded successfully to %s\n" ${PARTY_EMOJI} "${demo_dir}"
+  # Remove the EXIT trap so we don't clean up
+  trap - EXIT
+  exit 0
 fi
 
 # Generate the cluster template for kind which includes the source directories
@@ -621,6 +637,12 @@ fi;
 # Set the chart path to use (default to the diracx chart in this repository)
 if [[ -z "${chart_path}" ]]; then
   chart_path="${script_dir}/diracx"
+fi
+
+# If using a custom chart, build its dependencies first
+if [[ "${chart_path}" != "${script_dir}/diracx" ]]; then
+  printf "%b Building Helm chart dependencies for %s...\n" ${UNICORN_EMOJI} "${chart_path}"
+  "${demo_dir}/helm" dependency build "${chart_path}"
 fi
 
 if ! "${demo_dir}/helm" install --debug diracx-demo "${chart_path}" "${helm_arguments[@]}"; then
