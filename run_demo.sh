@@ -639,12 +639,6 @@ if [[ -z "${chart_path}" ]]; then
   chart_path="${script_dir}/diracx"
 fi
 
-# If using a custom chart, build its dependencies first
-if [[ "${chart_path}" != "${script_dir}/diracx" ]]; then
-  printf "%b Building Helm chart dependencies for %s...\n" ${UNICORN_EMOJI} "${chart_path}"
-  "${demo_dir}/helm" dependency build "${chart_path}"
-fi
-
 if ! "${demo_dir}/helm" install --debug diracx-demo "${chart_path}" "${helm_arguments[@]}"; then
   printf "%b Error using helm DiracX\n" ${WARN_EMOJI}
   echo "Failed to run \"helm install\"" >> "${demo_dir}/.failed"
