@@ -103,9 +103,11 @@ function element_not_in_array() {
   return $found
 }
 
-usage="${0##*/} [-h|--help] [--exit-when-done] [--offline] [--enable-coverage] [--no-mount-containerd] [--set-value key=value] [--ci-values=values.yaml] [--load-docker-image=<image_name:tag>] [--] [source directories]"
+usage="${0##*/} [-h|--help] [--exit-when-done] [--offline] [--enable-coverage] [--no-mount-containerd] [--set-value key=value] [--ci-values=values.yaml] [--load-docker-image=<image_name:tag>] [--chart-path=path] [--] [source directories]"
 usage+="\n\n"
 usage+="  -h|--help: Print this help message and exit\n"
+usage+="  --chart-path: Path to a custom Helm chart to install instead of the default diracx chart\n"
+usage+="                This is useful for installing umbrella charts that depend on diracx (e.g., extension charts)\n"
 usage+="  --ci-values: Path to a values.yaml file which contains diracx dev settings only enabled for CI\n"
 usage+="  --exit-when-done: Exit after the demo has been started (it will be left running in the background)\n"
 usage+="  --enable-coverage: Enable coverage reporting (used by diracx CI)\n"
@@ -134,6 +136,7 @@ editable_python=1
 open_telemetry=0
 declare -a ci_values_files=()
 declare -a docker_images_to_load=()
+chart_path=""
 
 while [ -n "${1:-}" ]; do case $1 in
   # Print a brief usage summary and exit
@@ -233,6 +236,20 @@ while [ -n "${1:-}" ]; do case $1 in
       exit 1;
     fi
     ci_values_files+=("${ci_values_file}")
+    shift
+    continue ;;
+
+  --chart-path)
+    shift
+    if [[ -z "${1:-}" ]]; then
+      printf "%b Error: --chart-path requires an argument\n" ${SKULL_EMOJI}
+      exit 1
+    fi
+    chart_path=$(realpath "${1}")
+    if [[ ! -d "${chart_path}" ]]; then
+      printf "%b Error: --chart-path does not point to a directory\n" ${SKULL_EMOJI}
+      exit 1;
+    fi
     shift
     continue ;;
 
@@ -601,9 +618,12 @@ done
 
 fi;
 
+# Set the chart path to use (default to the diracx chart in this repository)
+if [[ -z "${chart_path}" ]]; then
+  chart_path="${script_dir}/diracx"
+fi
 
-
-if ! "${demo_dir}/helm" install --debug diracx-demo "${script_dir}/diracx" "${helm_arguments[@]}"; then
+if ! "${demo_dir}/helm" install --debug diracx-demo "${chart_path}" "${helm_arguments[@]}"; then
   printf "%b Error using helm DiracX\n" ${WARN_EMOJI}
   echo "Failed to run \"helm install\"" >> "${demo_dir}/.failed"
 else
