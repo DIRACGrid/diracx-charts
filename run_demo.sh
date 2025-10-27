@@ -622,6 +622,11 @@ fi;
 # Set the chart path to use (default to the diracx chart in this repository)
 if [[ -z "${chart_path}" ]]; then
   chart_path="${script_dir}/diracx"
+else
+  printf "%b Auto-indenting generated values into diracx section\n" ${UNICORN_EMOJI}
+  # We need to indent all the file under a new "diracx" top section
+  # shellcheck disable=SC2016
+  "${demo_dir}/yq" eval -i '. as $item ireduce ({}; .diracx += $item )' "${demo_dir}/values.yaml"
 fi
 
 if ! "${demo_dir}/helm" install --debug diracx-demo "${chart_path}" "${helm_arguments[@]}"; then
