@@ -632,7 +632,7 @@ fi
 if [ ${offline_mode} -eq 1 ]; then
   helm_arguments+=("--set" "${helm_arg_prefix}developer.offline=true")
 fi
-if [ ${collect_coverage} -eq 1 ]; then
+if [ ${enable_coverage} -eq 1 ]; then
   helm_arguments+=("--set" "${helm_arg_prefix}developer.enableCoverage=true")
 fi
 
