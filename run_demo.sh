@@ -172,8 +172,6 @@ while [ -n "${1:-}" ]; do case $1 in
     continue ;;
 
   --enable-coverage)
-    helm_arguments+=("--set")
-    helm_arguments+=("developer.enableCoverage=true")
     enable_coverage=1
     shift
     continue ;;
@@ -192,7 +190,6 @@ while [ -n "${1:-}" ]; do case $1 in
     mount_containerd=1
     offline_mode=1
     helm_arguments+=("--set" "global.imagePullPolicy=IfNotPresent")
-    helm_arguments+=("--set" "developer.offline=true")
     shift
     continue ;;
 
@@ -490,9 +487,6 @@ if ! check_hostname "${machine_hostname}"; then
   fi
   printf "%b Using IP address %s instead \n" ${INFO_EMOJI} "${machine_hostname}"
 fi
-if [ "${machine_ip}" ]; then
-  helm_arguments+=("--set" "developer.ipAlias=${machine_ip}")
-fi
 
 # Generate the Helm values file
 printf "%b Generating Helm templates\n" ${UNICORN_EMOJI}
@@ -620,6 +614,7 @@ done
 fi;
 
 # Set the chart path to use (default to the diracx chart in this repository)
+helm_arg_prefix=""
 if [[ -z "${chart_path}" ]]; then
   chart_path="${script_dir}/diracx"
 else
@@ -627,6 +622,18 @@ else
   # We need to indent all the file under a new "diracx" top section
   # shellcheck disable=SC2016
   "${demo_dir}/yq" eval -i '. as $item ireduce ({}; .diracx += $item )' "${demo_dir}/values.yaml"
+  helm_arg_prefix="diracx."
+fi
+
+# Set the helm arguments which might need to be prefixed
+if [ "${machine_ip}" ]; then
+  helm_arguments+=("--set" "${helm_arg_prefix}developer.ipAlias=${machine_ip}")
+fi
+if [ ${offline_mode} -eq 1 ]; then
+  helm_arguments+=("--set" "${helm_arg_prefix}developer.offline=true")
+fi
+if [ ${collect_coverage} -eq 1 ]; then
+  helm_arguments+=("--set" "${helm_arg_prefix}developer.enableCoverage=true")
 fi
 
 if ! "${demo_dir}/helm" install --debug diracx-demo "${chart_path}" "${helm_arguments[@]}"; then
