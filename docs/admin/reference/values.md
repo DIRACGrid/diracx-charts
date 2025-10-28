@@ -32,7 +32,7 @@
 | developer.localCSPath | string | `"/local_cs_store"` | If set, mount the CS stored localy instead of initializing a default one |
 | developer.mountedNodeModuleToInstall | string | `nil` | Node module to install |
 | developer.mountedPythonModulesToInstall | list | `[]` | List of packages which are mounted into developer.sourcePath and should be installed with pip install SOURCEPATH/... |
-| developer.nodeImage | string | `"node:alpine"` | Image to use for the webapp if nodeModuleToInstall is set |
+| developer.nodeImage | string | `"node:24-alpine"` | Image to use for the webapp if nodeModuleToInstall is set |
 | developer.nodeWorkspacesDirectories | list | `[]` | List of node workspace directories to manage in the diracx-web container (node_modules) |
 | developer.offline | bool | `false` | Make it possible to launch the demo without having an internet connection |
 | developer.sourcePath | string | `"/diracx_source"` | Path from which to mount source of DIRACX |
