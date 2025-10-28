@@ -18,14 +18,12 @@ The repository uses automated CI checks to ensure that chart versions are increm
 
 #### Which versions need to be bumped?
 
-If your changes affect:
-
-- **The main chart** (`diracx/Chart.yaml`): Increment the `version` field following [Semantic Versioning](https://semver.org/)
+- **The main chart** (`diracx/Chart.yaml`): The `version` field MUST be incremented following [Semantic Versioning](https://semver.org/)
   - MAJOR version for incompatible API changes
   - MINOR version for backwards-compatible functionality additions
   - PATCH version for backwards-compatible bug fixes
 
-- **The cert-manager-issuer subchart** (`diracx/charts/cert-manager-issuer/Chart.yaml`): Increment the `version` field if you modify this subchart
+Note: Subcharts (like `diracx/charts/cert-manager-issuer/`) are not released separately and do not require version bumps unless you're also updating the main chart version.
 
 #### Example
 
