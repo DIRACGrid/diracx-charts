@@ -1,0 +1,73 @@
+name: Version Bump Check
+
+on:
+  pull_request:
+    branches:
+      - master
+
+jobs:
+  check-version-bump:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout PR branch
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - name: Check for version bumps
+        run: |
+          set -e
+          
+          # Get the base branch
+          BASE_BRANCH="${{ github.base_ref }}"
+          echo "Base branch: $BASE_BRANCH"
+          
+          # Fetch the base branch
+          git fetch origin "$BASE_BRANCH"
+          
+          # Find all Chart.yaml files (including subcharts)
+          CHART_FILES=$(find . -name "Chart.yaml" -type f | grep -v "/\.")
+          
+          echo "Checking Chart.yaml files for version bumps..."
+          
+          FAILED=0
+          
+          for CHART_FILE in $CHART_FILES; do
+            echo "---"
+            echo "Checking: $CHART_FILE"
+            
+            # Get current version
+            CURRENT_VERSION=$(grep "^version:" "$CHART_FILE" | awk '{print $2}' | tr -d '"' | tr -d "'")
+            echo "Current version: $CURRENT_VERSION"
+            
+            # Get base version (check if file exists in base branch)
+            if git cat-file -e "origin/$BASE_BRANCH:$CHART_FILE" 2>/dev/null; then
+              BASE_VERSION=$(git show "origin/$BASE_BRANCH:$CHART_FILE" | grep "^version:" | awk '{print $2}' | tr -d '"' | tr -d "'")
+              echo "Base version: $BASE_VERSION"
+              
+              # Compare versions
+              if [ "$CURRENT_VERSION" == "$BASE_VERSION" ]; then
+                echo "❌ ERROR: Version in $CHART_FILE has not been bumped!"
+                echo "   Current: $CURRENT_VERSION"
+                echo "   Base: $BASE_VERSION"
+                echo "   Please increment the version in $CHART_FILE"
+                FAILED=1
+              else
+                echo "✅ Version bumped from $BASE_VERSION to $CURRENT_VERSION"
+              fi
+            else
+              echo "ℹ️  New chart file (not in base branch), skipping version check"
+            fi
+          done
+          
+          echo "---"
+          
+          if [ $FAILED -eq 1 ]; then
+            echo ""
+            echo "❌ Version bump check FAILED"
+            echo "One or more Chart.yaml files need version updates."
+            echo "Please increment the version field according to semantic versioning."
+            exit 1
+          else
+            echo "✅ All Chart.yaml files have been properly versioned"
+          fi
