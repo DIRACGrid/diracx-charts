@@ -27,7 +27,7 @@ jobs:
           
           # Find all top-level Chart.yaml files (exclude subcharts in charts/ subdirectories)
           # The chart-releaser only releases top-level charts, so we only check those
-          CHART_FILES=$(find . -maxdepth 2 -name "Chart.yaml" -type f | grep -v "/\.")
+          CHART_FILES=$(find . -name "Chart.yaml" -not -path "*/charts/*" -type f | grep -v "/\.")
           
           echo "Checking Chart.yaml files for version bumps..."
           
