@@ -380,12 +380,28 @@ if [[ ! -f "${demo_dir}/helm" ]]; then
     chmod +x "${demo_dir}/arkade"
   fi
 
-  # Use arkade to download the required tools
+  # Use arkade to download the required tools with pinned versions
+  # renovate: datasource=github-releases depName=kubernetes-sigs/kind
+  KIND_VERSION="v0.30.0"
+  # renovate: datasource=github-releases depName=kubernetes/kubernetes
+  KUBECTL_VERSION="v1.31.4"
+  # renovate: datasource=github-releases depName=helm/helm versioning=loose
+  HELM_VERSION="v3.19.2"
+  # renovate: datasource=github-releases depName=mikefarah/yq
+  YQ_VERSION="v4.48.2"
+
   printf "%b Downloading kind, kubectl, helm and yq using arkade\n" ${UNICORN_EMOJI}
-  "${demo_dir}/arkade" get kind kubectl helm yq --path "${demo_dir}"
+  "${demo_dir}/arkade" get \
+    kind@${KIND_VERSION} \
+    kubectl@${KUBECTL_VERSION} \
+    helm@${HELM_VERSION} \
+    yq@${YQ_VERSION} \
+    --path "${demo_dir}"
 
   # Install helm plugins to ${HELM_DATA_HOME}
-  "${demo_dir}/helm" plugin install https://github.com/databus23/helm-diff
+  # renovate: datasource=github-releases depName=databus23/helm-diff
+  HELM_DIFF_VERSION="v3.13.1"
+  "${demo_dir}/helm" plugin install https://github.com/databus23/helm-diff --version ${HELM_DIFF_VERSION}
 fi
 
 # Exit early if we're only downloading dependencies
