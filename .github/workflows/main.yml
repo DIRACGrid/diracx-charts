@@ -60,11 +60,31 @@ jobs:
     - name: Clone source
       run: |
         git clone https://github.com/DIRACGrid/diracx.git /tmp/diracx
-        git clone https://github.com/DIRACGrid/DIRAC.git /tmp/DIRAC
         git clone https://github.com/DIRACGrid/diracx-web.git /tmp/diracx-web
+        git clone https://github.com/DIRACGrid/DIRAC.git /tmp/DIRAC
+
+        # We have to copy the code to another directory
+        # and make it a git repository by itself because otherwise the
+        # root in the pyproject do not make sense once mounted
+        # in the containers.
+        # The directory needs to be named after the module,
+        # otherwise the script will try to mount it in a location which
+        # kubernetes does not expect, and we get an error
+        cp -r /tmp/DIRAC/dirac-common /tmp/DIRACCommon
+        sed -i 's@\.\.@.@g' /tmp/DIRACCommon/pyproject.toml
+        git init /tmp/DIRACCommon/
+        git config --global user.email "so_annoying@example.com"
+        git config --global user.name "so_annoying"
+        git -C /tmp/DIRACCommon add .
+        git -C /tmp/DIRACCommon commit -m 'init'
+        # We need a tag with a big version because the diracx packages
+        # specify a minimal DIRACCommon version. So for pip to resolve
+        # that, we need a large number
+        git -C /tmp/DIRACCommon tag -a 99.99.99 -m 99.99.99
+
     - name: Start demo
       run: |
-        ./run_demo.sh --exit-when-done /tmp/diracx /tmp/DIRAC /tmp/diracx-web
+        ./run_demo.sh --exit-when-done --ci-values demo/ci_values.yaml /tmp/diracx /tmp/DIRACCommon/ /tmp/diracx-web
     - name: Debugging information
       run: |
         export KUBECONFIG=$PWD/.demo/kube.conf
