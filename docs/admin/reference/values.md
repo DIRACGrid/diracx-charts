@@ -95,7 +95,7 @@
 | global.images.busybox.tag | string | `"latest"` |  |
 | global.images.client | string | `"ghcr.io/diracgrid/diracx/client"` |  |
 | global.images.services | string | `"ghcr.io/diracgrid/diracx/services"` |  |
-| global.images.tag | string | `"v0.0.2"` |  |
+| global.images.tag | string | `"v0.0.3"` |  |
 | global.images.web.repository | string | `"ghcr.io/diracgrid/diracx-web/static"` |  |
 | global.images.web.tag | string | `"v0.1.0-a10"` |  |
 | global.storageClassName | string | `"standard"` |  |
