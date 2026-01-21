@@ -22,7 +22,7 @@ spec:
       serviceAccountName: {{ template "initSecrets.serviceAccountName" . }}
       containers:
         - name: {{ .Chart.Name }}
-          image: "{{ .Values.global.images.registry }}/{{ .Values.global.images.secret_generation }}:{{ .Values.global.images.tag | default .Chart.AppVersion }}"
+          image: "{{ .Values.global.images.registry }}/{{ .Values.global.images.secret_generation }}:latest"
           imagePullPolicy: {{ .Values.global.imagePullPolicy }}
           args: ["/bin/bash", "/scripts/init-secrets"]
           volumeMounts:
