@@ -88,13 +88,19 @@
 | elasticsearch.volumeClaimTemplate.resources.requests.storage | string | `"100M"` |  |
 | elasticsearch.volumeClaimTemplate.storageClassName | string | `"standard"` |  |
 | fullnameOverride | string | `""` |  |
-| global.activeDeadlineSeconds | int | `900` | timeout for job deadlines |
+| global.activeDeadlineSeconds | int | `900` | timeout for job deadlines TODO: need to be able to replace non-dirac images too |
 | global.batchJobTTL | int | `600` | How long should batch jobs be retained after completing? |
 | global.imagePullPolicy | string | `"Always"` |  |
+| global.images.busybox.registry | string | `"docker.io"` |  |
 | global.images.busybox.repository | string | `"busybox"` |  |
 | global.images.busybox.tag | string | `"latest"` |  |
-| global.images.client | string | `"ghcr.io/diracgrid/diracx/client"` |  |
-| global.images.services | string | `"ghcr.io/diracgrid/diracx/services"` |  |
+| global.images.client | string | `"diracgrid/diracx/client"` |  |
+| global.images.diracx_base_image | string | `"diracx/base"` |  |
+| global.images.dockerhub_registry | string | `"docker.io"` |  |
+| global.images.ghcr_registry | string | `"ghcr.io"` |  |
+| global.images.quay_registry | string | `"quay.io"` |  |
+| global.images.secret_generation | string | `"diracgrid/diracx/secret-generation"` |  |
+| global.images.services | string | `"diracgrid/diracx/services"` |  |
 | global.images.tag | string | `"v0.0.9"` |  |
 | global.images.web.repository | string | `"ghcr.io/diracgrid/diracx-web/static"` |  |
 | global.images.web.tag | string | `"v0.1.0-a10"` |  |
