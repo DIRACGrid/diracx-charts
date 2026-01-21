@@ -39,13 +39,13 @@ spec:
       {{- if .Values.mysql.enabled }}
       initContainers:
         - name: wait-for-mysql
-          image: {{ .Values.global.images.busybox.repository }}:{{ .Values.global.images.busybox.tag }}
+          image: "{{ .Values.global.images.busybox.registry }}/{{ .Values.global.images.busybox.repository }}:{{ .Values.global.images.busybox.tag }}"
           imagePullPolicy: IfNotPresent
           command: ['sh', '-c', 'until nc -vz {{ .Release.Name }}-mysql 3306; do echo "Waiting for mysql..."; sleep 3; done;']
       {{ end }}
       containers:
         - name: {{ .Chart.Name }}
-          image: "{{ .Values.global.images.registry }}/{{ .Values.global.images.services }}:{{ .Values.global.images.tag | default .Chart.AppVersion }}"
+          image: "{{ .Values.global.images.ghcr_registry }}/{{ .Values.global.images.services }}:{{ .Values.global.images.tag | default .Chart.AppVersion }}"
           imagePullPolicy: {{ .Values.global.imagePullPolicy }}
           command: ["/bin/bash", "/entrypoint.sh"]
           args: ["/bin/bash", "/scripts/init-sql"]
