@@ -43,7 +43,7 @@ spec:
 
       containers:
         - name: {{ .Chart.Name }}-load-keystore-as-secret
-          image: ghcr.io/diracgrid/diracx/secret-generation:latest
+          image: "{{ .Values.global.images.registry }}/{{ .Values.global.images.secret_generation }}:{{ .Values.global.images.tag | default .Chart.AppVersion }}"
           imagePullPolicy: {{ .Values.global.imagePullPolicy }}
           args: ["/bin/bash", "/scripts/load-keystore-as-secret"]
           volumeMounts:
