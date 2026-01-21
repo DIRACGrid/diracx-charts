@@ -19,7 +19,6 @@ global:
     tag: v0.0.9
 
     dockerhub_registry: docker.io
-    quay_registry: quay.io
     ghcr_registry: ghcr.io
 
     services: diracgrid/diracx/services

@@ -30,7 +30,7 @@ spec:
       serviceAccountName: {{ template "initSecrets.serviceAccountName" . }}
       initContainers:
         - name: {{ .Chart.Name }}-init-keystore
-          image: "{{ .Values.global.images.services }}:{{ .Values.global.images.tag | default .Chart.AppVersion }}"
+          image: "{{ .Values.global.images.ghcr_registry }}/{{ .Values.global.images.services }}:{{ .Values.global.images.tag | default .Chart.AppVersion }}"
           imagePullPolicy: {{ .Values.global.imagePullPolicy }}
           command: ["/bin/bash", "/entrypoint.sh"]
           args: ["/bin/bash", "/scripts/init-keystore"]

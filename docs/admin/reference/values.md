@@ -98,7 +98,6 @@
 | global.images.diracx_base_image | string | `"diracx/base"` |  |
 | global.images.dockerhub_registry | string | `"docker.io"` |  |
 | global.images.ghcr_registry | string | `"ghcr.io"` |  |
-| global.images.quay_registry | string | `"quay.io"` |  |
 | global.images.secret_generation | string | `"diracgrid/diracx/secret-generation"` |  |
 | global.images.services | string | `"diracgrid/diracx/services"` |  |
 | global.images.tag | string | `"v0.0.9"` |  |
