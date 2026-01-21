@@ -46,7 +46,7 @@ spec:
       {{ end }}
       containers:
         - name: {{ .Chart.Name }}
-          image: "{{ .Values.global.images.services }}:{{ .Values.global.images.tag | default .Chart.AppVersion }}"
+          image: "{{ .Values.global.images.registry }}/{{ .Values.global.images.services }}:{{ .Values.global.images.tag | default .Chart.AppVersion }}"
           imagePullPolicy: {{ .Values.global.imagePullPolicy }}
           command: ["/bin/bash", "/entrypoint.sh"]
           args: ["/bin/bash", "/scripts/init-os"]
