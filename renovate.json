@@ -1,0 +1,32 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": [
+    "config:recommended"
+  ],
+  "packageRules": [
+    {
+      "description": "Group all tool version updates together",
+      "matchDatasources": ["github-releases"],
+      "matchFileNames": ["run_demo.sh"],
+      "groupName": "demo script tool versions"
+    },
+    {
+      "description": "Pin Helm to 3.x to avoid v4 verification issues",
+      "matchDatasources": ["github-releases"],
+      "matchPackageNames": ["helm/helm"],
+      "allowedVersions": "<4.0.0"
+    }
+  ],
+  "regexManagers": [
+    {
+      "description": "Update tool versions in run_demo.sh",
+      "fileMatch": ["^run_demo\\.sh$"],
+      "matchStrings": [
+        "# renovate: datasource=(?<datasource>.*?) depName=(?<depName>.*?)( versioning=(?<versioning>.*?))?\\n\\s*[A-Z_]+_VERSION=\"(?<currentValue>.*)\"",
+        "# renovate: datasource=(?<datasource>.*?) depName=(?<depName>.*?)( versioning=(?<versioning>.*?))?\\n\\s*[A-Z_]+_VERSION='(?<currentValue>.*)'"
+      ],
+      "datasourceTemplate": "{{datasource}}",
+      "versioningTemplate": "{{#if versioning}}{{{versioning}}}{{else}}semver{{/if}}"
+    }
+  ]
+}

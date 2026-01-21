@@ -7,7 +7,7 @@ metadata:
   labels:
     {{- include "diracx.labels" . | nindent 4 }}
 spec:
-  replicas: {{ .Values.replicaCount }}
+  replicas: {{ .Values.replicaCountWeb }}
   selector:
     matchLabels:
       {{- include "diracxWeb.selectorLabels" . | nindent 6 }}
@@ -104,10 +104,27 @@ spec:
             - |
               # Install dependencies and build the app
               npm ci && \
-              NEXT_TELEMETRY_DISABLED=1 npm run build && \
+              npm run build && \
               mv out/* /app/
           workingDir: "/diracx-web"
-
+          env:
+            # Disable telemetry
+            - name: NEXT_TELEMETRY_DISABLED
+              value: "1"
+            # Disable Cypress installation
+            - name: CYPRESS_INSTALL_BINARY
+              value: "0"
+            # Set the cache folders to avoid getting permissions errors
+            - name: CYPRESS_CACHE_FOLDER
+              value: "/tmp/.cypress"
+            - name: npm_config_cache
+              value: "/tmp/.npm"
+          # RAM usage can be high, so we set a larger limit
+          resources:
+            requests:
+              memory: 1Gi
+            limits:
+              memory: 2Gi
           volumeMounts:
             # This volume contains the source code of the cloned diracx-web repository
             - mountPath: "/diracx-web"
@@ -132,10 +149,25 @@ spec:
             httpGet:
               path: /
               port: http
+            timeoutSeconds: 15
+            periodSeconds: 20
+            successThreshold: 1
+            failureThreshold: 3
           readinessProbe:
             httpGet:
               path: /
               port: http
+            timeoutSeconds: 15
+            periodSeconds: 20
+            successThreshold: 1
+            failureThreshold: 3
+          startupProbe:
+            httpGet:
+              path: /
+              port: http
+            timeoutSeconds: 5
+            periodSeconds: 5
+            failureThreshold: 30
 
           {{- if $nodeDevInstall }}
           # Start the node module in development mode

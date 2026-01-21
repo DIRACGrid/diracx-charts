@@ -8,6 +8,12 @@ PARTY_EMOJI='\xF0\x9F\x8E\x89'
 INFO_EMOJI='\xE2\x84\xB9\xEF\xB8\x8F'
 WARN_EMOJI='\xE2\x9A\xA0\xEF\xB8\x8F'
 
+if [ "$EUID" -eq 0 ]
+  then printf "%b Do not run this script as root\n" "${SKULL_EMOJI}"
+  exit 1
+fi
+
+
 script_dir=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 
 tmp_dir=$(mktemp -d)
@@ -97,9 +103,11 @@ function element_not_in_array() {
   return $found
 }
 
-usage="${0##*/} [-h|--help] [--exit-when-done] [--offline] [--enable-coverage] [--no-mount-containerd] [--set-value key=value] [--ci-values=values.yaml] [--load-docker-image=<image_name:tag>] [--] [source directories]"
+usage="${0##*/} [-h|--help] [--exit-when-done] [--offline] [--enable-coverage] [--no-mount-containerd] [--set-value key=value] [--ci-values=values.yaml] [--load-docker-image=<image_name:tag>] [--chart-path=path] [--only-download-deps] [--] [source directories]"
 usage+="\n\n"
 usage+="  -h|--help: Print this help message and exit\n"
+usage+="  --extension-chart-path: Path to a custom Helm chart to install instead of the default diracx chart\n"
+usage+="                          This is useful for installing umbrella charts that depend on diracx.\n"
 usage+="  --ci-values: Path to a values.yaml file which contains diracx dev settings only enabled for CI\n"
 usage+="  --exit-when-done: Exit after the demo has been started (it will be left running in the background)\n"
 usage+="  --enable-coverage: Enable coverage reporting (used by diracx CI)\n"
@@ -114,6 +122,8 @@ usage+="                         WARNING: There is no garbage collection so the 
 usage+="  --offline: Run in a mode which is suitable for fully offline use.\n"
 usage+="             WARNING: This may result in some weird behaviour, see the demo documentation for details.\n"
 usage+="             Implies: --mount-containerd\n"
+usage+="  --only-download-deps: Only download kind/kubectl/helm binaries and helm plugins, then exit\n"
+usage+="                        Useful for preparing the environment before running other commands\n"
 usage+="  --set-value: Set a value in the Helm values file. This can be used to override the default values.\n"
 usage+="               For example, to enable coverage reporting pass: --set-value developer.enableCoverage=true\n"
 usage+="  source directories: A list of directories containing Python packages to mount in the demo cluster.\n"
@@ -128,6 +138,8 @@ editable_python=1
 open_telemetry=0
 declare -a ci_values_files=()
 declare -a docker_images_to_load=()
+chart_path=""
+only_download_deps=0
 
 while [ -n "${1:-}" ]; do case $1 in
   # Print a brief usage summary and exit
@@ -160,8 +172,6 @@ while [ -n "${1:-}" ]; do case $1 in
     continue ;;
 
   --enable-coverage)
-    helm_arguments+=("--set")
-    helm_arguments+=("developer.enableCoverage=true")
     enable_coverage=1
     shift
     continue ;;
@@ -180,7 +190,6 @@ while [ -n "${1:-}" ]; do case $1 in
     mount_containerd=1
     offline_mode=1
     helm_arguments+=("--set" "global.imagePullPolicy=IfNotPresent")
-    helm_arguments+=("--set" "developer.offline=true")
     shift
     continue ;;
 
@@ -210,6 +219,11 @@ while [ -n "${1:-}" ]; do case $1 in
     shift
     continue ;;
 
+  --prune-loaded-images)
+    prune_loaded_images=1
+    shift
+    continue ;;
+
   --ci-values)
     shift
     if [[ -z "${1:-}" ]]; then
@@ -222,6 +236,25 @@ while [ -n "${1:-}" ]; do case $1 in
       exit 1;
     fi
     ci_values_files+=("${ci_values_file}")
+    shift
+    continue ;;
+
+  --extension-chart-path)
+    shift
+    if [[ -z "${1:-}" ]]; then
+      printf "%b Error: --extension-chart-path requires an argument\n" ${SKULL_EMOJI}
+      exit 1
+    fi
+    chart_path=$(realpath "${1}")
+    if [[ ! -d "${chart_path}" ]]; then
+      printf "%b Error: --extension-chart-path does not point to a directory\n" ${SKULL_EMOJI}
+      exit 1;
+    fi
+    shift
+    continue ;;
+
+  --only-download-deps)
+    only_download_deps=1
     shift
     continue ;;
 
@@ -337,37 +370,46 @@ fi
 
 trap "cleanup" EXIT
 
-# We download kind/kubectl/helm into the .demo directory to avoid having any
+# We use arkade to download kind/kubectl/helm into the .demo directory to avoid having any
 # requirements on the user's machine
 if [[ ! -f "${demo_dir}/helm" ]]; then
-  # Inspect the current system
-  system_name=$(uname -s | tr '[:upper:]' '[:lower:]')
-  system_arch=$(uname -m)
-  if [[ "${system_arch}" == "x86_64" ]]; then
-      system_arch="amd64"
+  # Check if arkade is available, download it if not
+  if [[ ! -f "${demo_dir}/arkade" ]]; then
+    printf "%b Downloading arkade\n" ${UNICORN_EMOJI}
+    curl --no-progress-meter -sSLf https://get.arkade.dev | env BINLOCATION="${demo_dir}" sh
+    chmod +x "${demo_dir}/arkade"
   fi
 
-  # Download kind
-  printf "%b Downloading kind\n" ${UNICORN_EMOJI}
-  curl --no-progress-meter -L "https://kind.sigs.k8s.io/dl/v0.19.0/kind-${system_name}-${system_arch}" > "${demo_dir}/kind"
+  # Use arkade to download the required tools with pinned versions
+  # renovate: datasource=github-releases depName=kubernetes-sigs/kind
+  KIND_VERSION="v0.30.0"
+  # renovate: datasource=github-releases depName=kubernetes/kubernetes
+  KUBECTL_VERSION="v1.31.4"
+  # renovate: datasource=github-releases depName=helm/helm versioning=loose
+  HELM_VERSION="v3.19.2"
+  # renovate: datasource=github-releases depName=mikefarah/yq
+  YQ_VERSION="v4.48.2"
 
-  # Download kubectl
-  printf "%b Downloading kubectl\n" ${UNICORN_EMOJI}
-  latest_version=$(curl -L -s https://dl.k8s.io/release/stable.txt)
-  curl --no-progress-meter -L "https://dl.k8s.io/release/${latest_version}/bin/${system_name}/${system_arch}/kubectl" > "${demo_dir}/kubectl"
-
-  # Download helm
-  printf "%b Downloading helm\n" ${UNICORN_EMOJI}
-  curl --no-progress-meter -L "https://get.helm.sh/helm-v3.12.0-${system_name}-${system_arch}.tar.gz" > "${tmp_dir}/helm.tar.gz"
-  mkdir -p "${tmp_dir}/helm-tarball"
-  tar xzf "${tmp_dir}/helm.tar.gz" -C "${tmp_dir}/helm-tarball"
-  mv "${tmp_dir}/helm-tarball/${system_name}-${system_arch}/helm" "${demo_dir}"
-
-  # Make the binaries executable
-  chmod +x "${demo_dir}/kubectl" "${demo_dir}/kind" "${demo_dir}/helm"
+  printf "%b Downloading kind, kubectl, helm and yq using arkade\n" ${UNICORN_EMOJI}
+  "${demo_dir}/arkade" get \
+    kind@${KIND_VERSION} \
+    kubectl@${KUBECTL_VERSION} \
+    helm@${HELM_VERSION} \
+    yq@${YQ_VERSION} \
+    --path "${demo_dir}"
 
   # Install helm plugins to ${HELM_DATA_HOME}
-  "${demo_dir}/helm" plugin install https://github.com/databus23/helm-diff
+  # renovate: datasource=github-releases depName=databus23/helm-diff
+  HELM_DIFF_VERSION="v3.13.1"
+  "${demo_dir}/helm" plugin install https://github.com/databus23/helm-diff --version ${HELM_DIFF_VERSION}
+fi
+
+# Exit early if we're only downloading dependencies
+if [ ${only_download_deps} -eq 1 ]; then
+  printf "%b Dependencies downloaded successfully to %s\n" ${PARTY_EMOJI} "${demo_dir}"
+  # Remove the EXIT trap so we don't clean up
+  trap - EXIT
+  exit 0
 fi
 
 # Generate the cluster template for kind which includes the source directories
@@ -461,9 +503,6 @@ if ! check_hostname "${machine_hostname}"; then
   fi
   printf "%b Using IP address %s instead \n" ${INFO_EMOJI} "${machine_hostname}"
 fi
-if [ "${machine_ip}" ]; then
-  helm_arguments+=("--set" "developer.ipAlias=${machine_ip}")
-fi
 
 # Generate the Helm values file
 printf "%b Generating Helm templates\n" ${UNICORN_EMOJI}
@@ -497,10 +536,11 @@ if [ ${#python_pkg_names[@]} -gt 0 ]; then
   done
 fi
 
-for diracx_compatible_pkg in "${diracx_and_extensions_pkgs[@]}"; do
-  json+="\"$diracx_compatible_pkg\","
-
-done
+if [ ${#diracx_and_extensions_pkgs[@]} -gt 0 ]; then
+  for diracx_compatible_pkg in "${diracx_and_extensions_pkgs[@]}"; do
+    json+="\"$diracx_compatible_pkg\","
+  done
+fi
 
 json="${json%,}]"
 sed "s#{{ mounted_python_modules }}#${json}#g" "${demo_dir}/values.yaml.bak" > "${demo_dir}/values.yaml"
@@ -519,6 +559,20 @@ fi
 json="${json%,}]"
 printf "%b Node workspaces json: %s\n" ${UNICORN_EMOJI} "${json}"
 sed "s#{{ node_module_workspaces }}#${json}#g" "${demo_dir}/values.yaml.bak" > "${demo_dir}/values.yaml"
+mv "${demo_dir}/values.yaml" "${demo_dir}/values.yaml.bak"
+
+
+# Generate the static client GUID for Dex
+dex_client_uuid=$(uuidgen)
+sed "s/{{ dex_client_uuid }}/${dex_client_uuid}/g" "${demo_dir}/values.yaml.bak" > "${demo_dir}/values.yaml"
+mv "${demo_dir}/values.yaml" "${demo_dir}/values.yaml.bak"
+
+# Generate the admin account for dex
+dex_admin_uuid=$(uuidgen)
+sed "s/{{ dex_admin_uuid }}/${dex_admin_uuid}/g" "${demo_dir}/values.yaml.bak" > "${demo_dir}/values.yaml"
+# This is how dex generates the sub from a UserID
+# https://github.com/dexidp/dex/issues/1719
+dex_admin_sub=$(printf '\n$%s\x12\x05local' "${dex_admin_uuid}" | base64 -w 0)
 
 
 # Final check
@@ -560,25 +614,50 @@ fi
 
 
 # Load images into kind
-
 if [ ${#docker_images_to_load[@]} -ne 0 ]; then
-printf "%b Loading docker images...\n" ${UNICORN_EMOJI}
-for img_name in "${docker_images_to_load[@]}"
-do
-  "${demo_dir}/kind" --name diracx-demo load docker-image "${img_name}"
+  printf "%b Loading docker images...\n" ${UNICORN_EMOJI}
+  for img_name in "${docker_images_to_load[@]}"; do
+    "${demo_dir}/kind" --name diracx-demo load docker-image "${img_name}"
+
+    if [[ ${prune_loaded_images:-0} -eq 1 ]]; then
+      printf "%b Pruning ${img_name} locally\n" ${UNICORN_EMOJI}
+      # Delete the tag (will delete the layers if no other tag is using them)
+      docker image rm -f "${img_name}"
+    fi
 done
 
 
 fi;
 
+# Set the chart path to use (default to the diracx chart in this repository)
+helm_arg_prefix=""
+if [[ -z "${chart_path}" ]]; then
+  chart_path="${script_dir}/diracx"
+else
+  printf "%b Auto-indenting generated values into diracx section\n" ${UNICORN_EMOJI}
+  # We need to indent all the file under a new "diracx" top section
+  # shellcheck disable=SC2016
+  "${demo_dir}/yq" eval -i '. as $item ireduce ({}; .diracx += $item )' "${demo_dir}/values.yaml"
+  helm_arg_prefix="diracx."
+fi
 
+# Set the helm arguments which might need to be prefixed
+if [ "${machine_ip}" ]; then
+  helm_arguments+=("--set" "${helm_arg_prefix}developer.ipAlias=${machine_ip}")
+fi
+if [ ${offline_mode} -eq 1 ]; then
+  helm_arguments+=("--set" "${helm_arg_prefix}developer.offline=true")
+fi
+if [ ${enable_coverage} -eq 1 ]; then
+  helm_arguments+=("--set" "${helm_arg_prefix}developer.enableCoverage=true")
+fi
 
-if ! "${demo_dir}/helm" install --debug diracx-demo "${script_dir}/diracx" "${helm_arguments[@]}"; then
+if ! "${demo_dir}/helm" install --debug diracx-demo "${chart_path}" "${helm_arguments[@]}"; then
   printf "%b Error using helm DiracX\n" ${WARN_EMOJI}
   echo "Failed to run \"helm install\"" >> "${demo_dir}/.failed"
 else
   printf "%b Waiting for installation to finish...\n" ${UNICORN_EMOJI}
-  if "${demo_dir}/kubectl" wait --for=condition=ready pod --selector=app.kubernetes.io/name=diracx --timeout=900s; then
+  if "${demo_dir}/kubectl" wait --for=condition=ready pod --selector='app.kubernetes.io/name in (diracx, diracx-web)' --timeout=900s; then
     printf "%b %b %b Pods are ready! %b %b %b\n" "${PARTY_EMOJI}" "${PARTY_EMOJI}" "${PARTY_EMOJI}" "${PARTY_EMOJI}" "${PARTY_EMOJI}" "${PARTY_EMOJI}"
 
     # Dump the CA certificate to a file so that it can be used by the client
@@ -588,12 +667,12 @@ else
     "${demo_dir}/kubectl" exec deployments/diracx-demo-cli -- bash /entrypoint.sh dirac internal add-vo /cs_store/initialRepo \
      --vo="diracAdmin" \
      --idp-url="http://${machine_hostname}:32002" \
-     --idp-client-id="d396912e-2f04-439b-8ae7-d8c585a34790" \
+     --idp-client-id="${dex_client_uuid}" \
      --default-group="admin" >> /tmp/init_cs.log
 
     "${demo_dir}/kubectl" exec deployments/diracx-demo-cli -- bash /entrypoint.sh  dirac internal add-user /cs_store/initialRepo \
      --vo="diracAdmin" \
-     --sub="EgVsb2NhbA" \
+     --sub="${dex_admin_sub}" \
      --preferred-username="admin" \
      --group="admin" >> /tmp/init_cs.log
 

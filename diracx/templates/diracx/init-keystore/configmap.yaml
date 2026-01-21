@@ -1,0 +1,16 @@
+{{- if .Values.initKeyStore.enabled -}}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ template "initKeyStore.fullname" . }}
+  namespace: {{ .Release.Namespace }}
+  annotations:
+    "helm.sh/hook": pre-install
+    "helm.sh/hook-weight": "-3"
+    "helm.sh/hook-delete-policy": hook-succeeded,before-hook-creation
+data:
+  init-keystore: |
+    {{- include (print $.Template.BasePath "/diracx/init-keystore/_init-keystore.sh.tpl") . | nindent 4 }}
+  load-keystore-as-secret: |
+    {{- include (print $.Template.BasePath "/diracx/init-keystore/_load-keystore-as-secret.sh.tpl") . | nindent 4 }}
+{{- end -}}

@@ -1,0 +1,42 @@
+[workspace]
+channels = ["conda-forge"]
+platforms = ["linux-64","osx-arm64"]
+
+[dependencies]
+python = ">=3.11.3,<3.12"
+# Add some useful development dependencies to most environments
+pip = ">=25.1.1"
+ipython = ">=9.2.0"
+
+# Features for generating the documentation
+[feature.diagram.dependencies]
+python = "*"
+kubernetes-helm = "*"
+[feature.diagram.pypi-dependencies]
+KubeDiagrams = "*"
+[feature.diagram.tasks.generate-diagram]
+cmd = "helm-diagrams ./diracx --set diracx.hostname=diracx.io --set cert-manager.enabled=false --set opensearch.enabled=false --set initSecrets.enabled=False --set rabbitmq.enabled=false --set mysql.enabled=false --set dex.enabled=false --set minio.enabled=false --set cert-manager-issuer.enabled=false --set initSql.enbled=False --set initOs.enabled=false -o architecture_diagram.png && echo Do not forget to upload the generated plot following https://diracx.diracgrid.org/en/latest/dev/tutorials/write-docs/#step-6-storing-images-and-other-large-files"
+description = "Generate the architecture diagram"
+
+
+# Features for running pre-commit hooks
+[feature.pre-commit.dependencies]
+pre-commit = "*"
+[feature.pre-commit.tasks.pre-commit]
+cmd = "pre-commit"
+description = "Run pre-commit hooks"
+
+# Features for running shellcheck
+[feature.shellcheck.dependencies]
+shellcheck = "*"
+[feature.shellcheck.tasks.shellcheck]
+cmd = "find . -not -wholename './.pixi/*' -not -wholename './.demo/*' -name '*.sh' -print -exec shellcheck --exclude=SC1090,SC1091 --external-source '{}' ';'"
+description = "Run shellcheck on all shell scripts"
+
+[environments]
+# DiracX environments
+default = {features = [], solve-group = "diracx"}
+# Tooling environments
+diagram = {features = ["diagram"], no-default-feature = true}
+shellcheck = {features = ["shellcheck"], no-default-feature = true}
+pre-commit = {features = ["pre-commit"], no-default-feature = true}

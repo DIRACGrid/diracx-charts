@@ -2,3 +2,7 @@
 diracx:
   settings:
     DIRACX_DEV_CRASH_ON_MISSED_ACCESS_POLICY: "true"
+
+global:
+  images:
+    tag: dev

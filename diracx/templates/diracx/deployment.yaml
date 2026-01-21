@@ -35,9 +35,11 @@ spec:
       securityContext:
         {{- toYaml .Values.podSecurityContext | nindent 8 }}
       volumes:
+        {{- if .Values.developer.enabled }}
         - name: cs-store-mount
           persistentVolumeClaim:
             claimName: pvc-cs-store
+        {{- end }}
         {{- if and .Values.developer.enabled .Values.developer.mountedPythonModulesToInstall }}
         - name: diracx-code-mount
           persistentVolumeClaim:
@@ -51,12 +53,12 @@ spec:
         - name: container-entrypoint
           configMap:
             name: diracx-container-entrypoint
-        - name: signing-key-mount
+        - name: jwks-mount
           secret:
-            secretName: diracx-token-signing-key
+            secretName: diracx-jwks
             items:
-            - key: rsa256.key
-              path: rsa256.key
+            - key: jwks.json
+              path: jwks.json
         {{- if and .Values.developer.enabled .Values.developer.enableCoverage }}
         - name: coverage-data
           persistentVolumeClaim:
@@ -65,8 +67,10 @@ spec:
 
       {{/* Define common volume mounts for reusability */}}
       {{- $commonVolumeMounts := list }}
+      {{- if .Values.developer.enabled }}
       {{- $commonVolumeMounts = append $commonVolumeMounts (dict "mountPath" "/cs_store" "name" "cs-store-mount" "readOnly" false) }}
-      {{- $commonVolumeMounts = append $commonVolumeMounts (dict "mountPath" "/signing-key" "name" "signing-key-mount" "readOnly" false) }}
+      {{- end }}
+      {{- $commonVolumeMounts = append $commonVolumeMounts (dict "mountPath" "/keystore" "name" "jwks-mount" "readOnly" false) }}
       {{- $commonVolumeMounts = append $commonVolumeMounts (dict "mountPath" "/entrypoint.sh" "name" "container-entrypoint" "subPath" "entrypoint.sh") }}
       {{- if and .Values.developer.enabled .Values.developer.enableCoverage }}
       {{- $commonVolumeMounts = append $commonVolumeMounts (dict "mountPath" "/diracx-coveragerc" "name" "container-entrypoint" "subPath" "coveragerc") }}
@@ -87,19 +91,19 @@ spec:
       {{- end }}
         {{- if .Values.mysql.enabled }}
         - name: wait-for-mysql
-          image: busybox:latest
+          image: {{ .Values.global.images.busybox.repository }}:{{ .Values.global.images.busybox.tag }}
           imagePullPolicy: IfNotPresent
           command: ['sh', '-c', 'until nc -vz {{ .Release.Name }}-mysql 3306; do echo "Waiting for mysql..."; sleep 3; done;']
         {{- end }}
         {{- if .Values.opensearch.enabled }}
         - name: wait-for-opensearch
-          image: busybox:latest
+          image: {{ .Values.global.images.busybox.repository }}:{{ .Values.global.images.busybox.tag }}
           imagePullPolicy: IfNotPresent
           command: ['sh', '-c', 'until nc -vz  opensearch-cluster-master 9200; do echo "Waiting for opensearch..."; sleep 3; done;']
         {{- end }}
         {{- if .Values.minio.enabled }}
         - name: wait-for-minio
-          image: busybox:latest
+          image: {{ .Values.global.images.busybox.repository }}:{{ .Values.global.images.busybox.tag }}
           imagePullPolicy: IfNotPresent
           command: ['sh', '-c', 'until echo -e "HEAD /minio/health/live HTTP/1.1\nHost: {{ .Release.Name }}-minio\nConnection: close\n" | nc {{ .Release.Name }}-minio:9000 | grep "HTTP/1.1 200 OK"; do echo "Waiting for minio..."; sleep 3; done;']
         {{- end }}
@@ -115,19 +119,28 @@ spec:
               protocol: TCP
           livenessProbe:
             httpGet:
-              path: /api/docs/
+              path: /api/health/live
               port: http
+            timeoutSeconds: 15
+            periodSeconds: 20
+            successThreshold: 1
+            failureThreshold: 3
           readinessProbe:
             httpGet:
-              path: /api/docs/
+              path: /api/health/ready
               port: http
+            timeoutSeconds: 15
+            periodSeconds: 20
+            successThreshold: 1
+            failureThreshold: 3
           startupProbe:
             httpGet:
-              path: /api/docs/
+              path: /api/health/startup
               port: http
-            failureThreshold: 30
+            timeoutSeconds: 5
             periodSeconds: 5
-          command: ["bash", "/entrypoint.sh"]
+            failureThreshold: 30
+          command: [ "/usr/local/bin/_entrypoint.sh", "tini", "--", "bash", "/entrypoint.sh" ]
           args:
             - uvicorn
             - --factory

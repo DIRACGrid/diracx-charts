@@ -48,10 +48,6 @@ function generate_secret_if_needed(){
   fi
 }
 
-# Generate the token signing key
-ssh-keygen -P '' -trsa -b4096 -mPEM -f"$PWD/rsa256.key"
-generate_secret_if_needed diracx-token-signing-key --from-file "$PWD/rsa256.key"
-
 # Generate the token state key (to safely pass information between authorize/device requests)
 generate_secret_if_needed diracx-dynamic-secrets --from-literal=DIRACX_SERVICE_AUTH_STATE_KEY=$(head -c 32 /dev/urandom | base64)
 
@@ -113,31 +109,26 @@ generate_secret_if_needed diracx-sql-root-connection-urls \
 {{- $db_password :=  $db_settings.password | default $default_db_password  }}
 {{- $db_internal_name :=  $db_settings.internalName | default $dbName  }}
 
+{{- $url_string := urlJoin (dict "scheme" "mysql+aiomysql" "userinfo" ( print $db_user  ":" $db_password ) "host" $db_host "path" $db_internal_name ) }}
+{{- $root_url_string := urlJoin (dict "scheme" "mysql+aiomysql" "userinfo" ( print $db_root_user  ":" $db_root_password ) "host" $db_host "path" $db_internal_name ) }}
+
 generate_secret_if_needed diracx-sql-connection-urls \
-  --from-literal=DIRACX_DB_URL_{{ $dbName | upper }}="mysql+aiomysql://{{ $db_user }}:{{ $db_password }}@{{ $db_host }}/{{ $db_internal_name }}"
+  --from-literal=DIRACX_DB_URL_{{ $dbName | upper }}="{{ $url_string }}"
 generate_secret_if_needed diracx-sql-root-connection-urls \
-  --from-literal=DIRACX_DB_URL_{{ $dbName | upper }}="mysql+aiomysql://{{ $db_root_user }}:{{ $db_root_password }}@{{ $db_host }}/{{ $db_internal_name }}"
+  --from-literal=DIRACX_DB_URL_{{ $dbName | upper }}="{{ $root_url_string }}"
 {{- else }}
+
+{{- $url_string := urlJoin (dict "scheme" "mysql+aiomysql" "userinfo" ( print $default_db_user  ":" $default_db_password ) "host" $default_db_host "path" $dbName ) }}
+{{- $root_url_string := urlJoin (dict "scheme" "mysql+aiomysql" "userinfo" ( print $default_db_root_user  ":" $default_db_root_password ) "host" $default_db_host "path" $dbName ) }}
+
 generate_secret_if_needed diracx-sql-connection-urls \
-  --from-literal=DIRACX_DB_URL_{{ $dbName | upper }}="mysql+aiomysql://{{ $default_db_user }}:{{ $default_db_password }}@{{ $default_db_host }}/{{ $dbName }}"
+  --from-literal=DIRACX_DB_URL_{{ $dbName | upper }}="{{ $url_string }}"
 generate_secret_if_needed diracx-sql-root-connection-urls \
-  --from-literal=DIRACX_DB_URL_{{ $dbName | upper }}="mysql+aiomysql://{{ $default_db_root_user }}:{{ $default_db_root_password }}@{{ $default_db_host }}/{{ $dbName }}"
+  --from-literal=DIRACX_DB_URL_{{ $dbName | upper }}="{{ $root_url_string }}"
 {{- end }}
 
 {{- end }}
 {{- end }}
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 

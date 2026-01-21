@@ -1,4 +1,4 @@
-{{- if .Values.initCs.enabled -}}
+{{- if .Values.developer.enabled -}}
 apiVersion: v1
 kind: ConfigMap
 metadata:

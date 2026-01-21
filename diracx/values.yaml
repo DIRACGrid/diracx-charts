@@ -17,17 +17,23 @@ global:
   # TODO: need to be able to replace non-dirac images too
   activeDeadlineSeconds: 900
   images:
-    tag: "dev"
-    dockerhub_registry: docker.io
+    tag: v0.0.7
     registry: ghcr.io
-    services: diracgrid/diracx/services
-    client: diracgrid/diracx/client
+    dockerhub_registry: docker.io
+    services: ghcr.io/diracgrid/diracx/services
+    client: ghcr.io/diracgrid/diracx/client
     secret_generation: diracgrid/diracx/secret-generation
+    busybox:
+      tag: "latest"
+      repository: "busybox"
     web:
-      tag: "dev"
-      repository: diracgrid/diracx-web/static
+      tag: v0.1.0-a10
+      repository: ghcr.io/diracgrid/diracx-web/static
 
+# Number of diracx pods
 replicaCount: 1
+# Number of web pods
+replicaCountWeb: 1
 
 # Created with
 # kubectl create secret generic regcred \
@@ -57,6 +63,7 @@ podSecurityContext:
 
 securityContext:
   {}
+  # fsGroup: 2000
   # capabilities:
   #   drop:
   #   - ALL
@@ -65,10 +72,6 @@ securityContext:
   # runAsUser: 1000
 
 #################
-
-initCs:
-  # Automatically initialize the repository in the CS volume
-  enabled: true
 
 initSecrets:
   enabled: true
@@ -87,8 +90,11 @@ initSql:
 initOs:
   enabled: true
 
-developer:
+initKeyStore:
   enabled: true
+
+developer:
+  enabled: false
   # -- Make it possible to launch the demo without having an internet connection
   offline: false
   # -- URLs which can be used to access various components of the demo (diracx, minio, dex, etc).
@@ -106,7 +112,7 @@ developer:
   # -- List of node workspace directories to manage in the diracx-web container (node_modules)
   nodeWorkspacesDirectories: []
   # -- Image to use for the webapp if nodeModuleToInstall is set
-  nodeImage: node:alpine
+  nodeImage: node:24-alpine
   # -- Enable collection of coverage reports (intended for CI usage only)
   enableCoverage: false
   # -- Enable automatic reloading inside uvicorn when the sources change
@@ -125,22 +131,48 @@ diracx:
   settings:
     # -- This corresponds to the basic dirac.cfg
     # which must be present on all the servers
-    #TODO: autogenerate all of these
-    DIRACX_CONFIG_BACKEND_URL: "git+file:///cs_store/initialRepo"
-    DIRACX_SERVICE_AUTH_TOKEN_KEY: "file:///signing-key/rsa256.key"
+    # -- URL to get the diracx config
+    DIRACX_CONFIG_BACKEND_URL: "git+https://gitlab.invalid/myvo/diracx-config"
+
+    ### AuthSettings https://github.com/DIRACGrid/diracx/blob/main/diracx-routers/src/diracx/routers/utils/users.py
+    # -- path storing the token key
+    DIRACX_SERVICE_AUTH_TOKEN_KEYSTORE: "file:///keystore/jwks.json"
     DIRACX_SERVICE_AUTH_ALLOWED_REDIRECTS: '["http://anything:8000/docs/oauth2-redirect"]'
+
+    # -- legacy exchange key for DIRAC legacy (see https://github.com/DIRACGrid/diracx/blob/7f766158a674fde0eed011cd2745d359e507f846/diracx-routers/src/diracx/routers/auth/token.py#L264)
+    # -- DIRACX_LEGACY_EXCHANGE_HASHED_API_KEY: <sha256>
+
+    # -- Sandbox settings See https://github.com/DIRACGrid/diracx/blob/7f766158a674fde0eed011cd2745d359e507f846/diracx-routers/src/diracx/routers/jobs/sandboxes.py#L46
+
+    # -- Name of the bucket for the sandbox
+    DIRACX_SANDBOX_STORE_BUCKET_NAME: sandboxes-store
+    DIRACX_SANDBOX_STORE_S3_CLIENT_KWARGS: '{"endpoint_url": "http://minio.invalid:32000", "aws_access_key_id": "my-access-key", "aws_secret_access_key": "my-secret-key-123"}'
+    DIRACX_SANDBOX_STORE_AUTO_CREATE_BUCKET: "true"
+
+    ###
+
+    ### Open Telemetry settings (experimental)
+
+    DIRACX_OTEL_ENABLED: "false"
+    DIRACX_OTEL_GRPC_ENDPOINT: "diracx-demo-opentelemetry-collector:4317"
+    DIRACX_OTEL_GRPC_INSECURE: "true"
 
   # If mysql is enabled, you are not allowed
   # to set the username passwords
   sqlDbs:
+    # -- default credentials
     default:
     #     rootUser: admin
     #     rootPassword: hunter123
     #     user: dirac
     #     password: password123
     #     host: sqlHost:123
+
     # -- Which DiracX MySQL DBs are used?
     dbs:
+    # All DBs used should be configured here.
+    # If they use the default configuration
+    # they should have a null value
   #    AuthDB:
   #      internalName: DiracXAuthDB
   #    JobDB:
@@ -288,7 +320,7 @@ dex:
   enabled: true
   https.enabled: false
   image:
-    tag: v2.37.0
+    tag: v2.41.1
 
   service:
     type: NodePort
@@ -302,12 +334,10 @@ dex:
 
   config:
     issuer: http://anything:32002
-
     storage:
       type: sqlite3
       config:
         file: /tmp/dex.db
-
     web:
       http: 8000
 
@@ -351,6 +381,8 @@ indigoiam:
 ##########################
 
 mysql:
+  image:
+    repository: bitnamilegacy/mysql
   enabled: true
   auth:
     existingSecret: mysql-secret
@@ -373,7 +405,7 @@ mysql:
 ##########################
 
 rabbitmq:
-  enabled: true
+  enabled: false
   # Security context must be set to run on some k8s clusters (e.g. openshift)
   podSecurityContext:
     enabled: false
@@ -386,6 +418,8 @@ rabbitmq:
 cert-manager:
   enabled: true
   installCRDs: true
+  startupapicheck:
+    enabled: true
 
 cert-manager-issuer:
   enabled: true
@@ -444,8 +478,8 @@ opentelemetry-collector:
     receivers:
       otlp:
         protocols:
-          grpc:
-          http:
+          grpc: null
+          http: null
       jaeger: null
       prometheus: null
 
@@ -464,8 +498,8 @@ opentelemetry-collector:
         #   cst_label1: value1
         send_timestamps: true
         metric_expiration: 180m
-        #resource_to_telemetry_conversion:
-        #  enabled: true
+        resource_to_telemetry_conversion:
+          enabled: true
 
       # prometheusremotewrite:
       #   endpoint: "http://diracx-demo-prometheus-pushgateway:9091/api/v1/push"
@@ -561,6 +595,15 @@ grafana:
     type: NodePort
     port: 32004
     nodePort: 32004
+
+  # TODO: we currently cannot load the dashboards using the "dashboards" section, which would be much simpler,
+  # because of https://github.com/grafana/helm-charts/issues/27
+  sidecar:
+    dashboards:
+      enabled: true
+      label: grafana_dashboard
+      labelValue: "1"
+      folder: /var/lib/grafana/dashboards/default
 
   # data source jaeger with url http://diracx-demo-jaeger-query:16686
   # https://grafana.com/docs/grafana/latest/datasources/jaeger/#provision-the-data-source

@@ -40,7 +40,7 @@ spec:
       {{- if .Values.opensearch.enabled }}
       initContainers:
         - name: wait-for-opensearch
-          image: busybox:latest
+          image: {{ .Values.global.images.busybox.repository }}:{{ .Values.global.images.busybox.tag }}
           imagePullPolicy: IfNotPresent
           command: ['sh', '-c', 'until nc -vz  opensearch-cluster-master 9200; do echo "Waiting for opensearch..."; sleep 3; done;']
       {{ end }}
