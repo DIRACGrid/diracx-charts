@@ -18,7 +18,7 @@ spec:
       restartPolicy: OnFailure
       containers:
         - name: create-issuer
-          image: ghcr.io/diracgrid/diracx/secret-generation:latest
+          image: "{{ .Values.global.images.registry }}/{{ .Values.global.images.secret_generation }}:{{ .Values.global.images.tag | default .Chart.AppVersion }}"
           imagePullPolicy: {{ .Values.global.imagePullPolicy }}
           command: ['/bin/bash', '/scripts/create-issuer', '/scripts/issuer.yml']
           volumeMounts:

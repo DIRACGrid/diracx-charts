@@ -191,7 +191,7 @@ spec:
             {{- end }}
           {{- else }}
           # Start the node module in production mode
-          image: {{ .Values.global.images.web.repository }}:{{ .Values.global.images.web.tag }}
+          image: "{{ .Values.global.images.registry }}/{{ .Values.global.images.web.repository }}:{{ .Values.global.images.web.tag }}"
 
           {{ if .Values.diracxWeb.branch }}
           # Start it from the specified branch

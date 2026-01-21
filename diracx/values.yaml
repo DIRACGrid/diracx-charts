@@ -13,17 +13,22 @@ global:
   # What storage class should we use for DiracX volumes
   storageClassName: standard
   # -- timeout for job deadlines
+  # TODO: secret generation used latest
+  # TODO: need to be able to replace non-dirac images too
   activeDeadlineSeconds: 900
   images:
     tag: v0.0.9
-    services: ghcr.io/diracgrid/diracx/services
-    client: ghcr.io/diracgrid/diracx/client
+    dockerhub_registry: docker.io
+    registry: ghcr.io
+    services: diracgrid/diracx/services
+    client: diracgrid/diracx/client
+    secret_generation: diracgrid/diracx/secret-generation
     busybox:
       tag: "latest"
       repository: "busybox"
     web:
       tag: v0.1.0-a10
-      repository: ghcr.io/diracgrid/diracx-web/static
+      repository: diracgrid/diracx-web/static
 
 # Number of diracx pods
 replicaCount: 1
