@@ -25,6 +25,28 @@ jobs:
     - uses: pre-commit-ci/lite-action@v1.1.0
       if: always()
 
+  update-diagram:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: prefix-dev/setup-pixi@v0.9.3
+        with:
+          cache: false
+          environment: diagram
+      - name: Run generate-diagram
+        run: pixi run generate-diagram
+      - name: download-current
+        run: curl -L -o diagram-current.png https://diracx-docs-static.s3.cern.ch/assets/images/admin/explanations/architecture_diragram.png
+      - name: compare-diagrams
+        run: |
+          normalized=$(pixi run -e diagram magick compare -metric SSIM diagram-current.png architecture_diagram.png null 2>&1 | grep -oP '(?<=\()[\d.]+(?=\))')
+          if [ "$(echo "$normalized < 0.001" | bc -l)" -eq 1 ]; then
+            echo "Images are very similar"
+          else
+            echo "Images are different"
+            exit 1
+          fi
+
   run-demo:
     runs-on: ubuntu-latest
     steps:
