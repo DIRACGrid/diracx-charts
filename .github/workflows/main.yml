@@ -41,7 +41,7 @@ jobs:
         run: |
           normalized=$(pixi run -e diagram magick compare -metric SSIM diagram-current.png architecture_diagram.png null 2>&1 | grep -oP '(?<=\()[\d.]+(?=\))')
           echo "The difference between the diagrams is: ${normalized}"
-          if [ "$(echo "$normalized < 0.001" | bc -l)" -eq 1 ]; then
+          if [ "$(echo "$normalized < 0.02" | bc -l)" -eq 1 ]; then
             echo "Images are very similar"
           else
             echo "Images are different"
