@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ template "validateConfig.fullname" . }}
+  namespace: {{ .Release.Namespace }}
+  annotations:
+    "helm.sh/hook": post-install,pre-upgrade
+    "helm.sh/hook-weight": "-4"
+    "helm.sh/hook-delete-policy": hook-succeeded,before-hook-creation
+data:
+  validate-config: |
+    {{- include (print $.Template.BasePath "/diracx/validate-config/_validate-config.sh.tpl") . | nindent 4 }}

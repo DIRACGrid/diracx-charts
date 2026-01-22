@@ -1,0 +1,42 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{ template "validateConfig.jobname" . }}
+  namespace: {{ .Release.Namespace }}
+  annotations:
+    "helm.sh/hook": pre-upgrade
+spec:
+  backoffLimit: 2
+  ttlSecondsAfterFinished: {{ .Values.global.batchJobTTL }}
+  activeDeadlineSeconds: {{ .Values.global.activeDeadlineSeconds }}
+  template:
+    spec:
+      restartPolicy: Never
+      containers:
+        - name: {{ .Chart.Name }}
+          image: "{{ .Values.global.images.client }}:{{ .Values.global.images.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.global.imagePullPolicy }}
+          command: ["/bin/bash", "/entrypoint.sh"]
+          args: ["/bin/bash", "/scripts/validate-config"]
+          volumeMounts:
+            {{- if .Values.developer.enabled }}
+            - name: cs-store-mount
+              mountPath: /cs_store
+            {{- end }}
+            - name: scripts
+              mountPath: /scripts
+          envFrom:
+            - secretRef:
+                name: diracx-secrets
+      volumes:
+      {{- if .Values.developer.enabled }}
+      - name: cs-store-mount
+        persistentVolumeClaim:
+          claimName: pvc-cs-store
+      {{- end }}
+      - name: scripts
+        configMap:
+          name: {{ template "validateConfig.fullname" . }}
+      - name: container-entrypoint
+        configMap:
+          name: diracx-container-entrypoint
