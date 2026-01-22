@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
         - name: diracx-base
-          image: ghcr.io/diracgrid/diracx/base:latest
+          image: {{ .Values.global.images.ghcr_registry }}/{{ .Values.global.images.diracx_base_image }}:latest
           imagePullPolicy: {{ .Values.global.imagePullPolicy }}
           command: ["/bin/bash", "/entrypoint.sh"]
           args: ["python", "/scripts/init-iam.py"]
