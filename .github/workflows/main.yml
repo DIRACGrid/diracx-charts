@@ -61,6 +61,30 @@ jobs:
     - name: Start demo
       run: |
         ./run_demo.sh --exit-when-done
+    - name: Modify refresh token expiry and upgrade
+      run: |
+        # Modify the values.yaml to change the refresh token expiry
+        sed -i 's/DIRACX_SERVICE_AUTH_REFRESH_TOKEN_EXPIRE_MINUTES: "[0-9]*"/DIRACX_SERVICE_AUTH_REFRESH_TOKEN_EXPIRE_MINUTES: "12345"/' .demo/values.yaml
+
+        # Run helm upgrade to apply the changes
+        export KUBECONFIG=$PWD/.demo/kube.conf
+        export HELM_DATA_HOME=$PWD/.demo/helm_data
+        $PWD/.demo/helm upgrade --debug diracx-demo $PWD/diracx --values .demo/values.yaml
+    - name: Verify environment variable is set correctly
+      run: |
+        export KUBECONFIG=$PWD/.demo/kube.conf
+        # Wait for the deployment to be ready after upgrade
+        $PWD/.demo/kubectl rollout status deployment/diracx-demo --timeout=300s
+
+        # Get the environment variable value from the deployment
+        env_value=$(.demo/kubectl exec deployments/diracx-demo -c diracx -- env | grep DIRACX_SERVICE_AUTH_REFRESH_TOKEN_EXPIRE_MINUTES | awk -F '=' {'print $NF'})
+
+        if [ "$env_value" != "12345" ]; then
+          echo "ERROR: Environment variable DIRACX_SERVICE_AUTH_REFRESH_TOKEN_EXPIRE_MINUTES is not set to 12345, got: $env_value"
+          exit 1
+        fi
+
+        echo "SUCCESS: Environment variable DIRACX_SERVICE_AUTH_REFRESH_TOKEN_EXPIRE_MINUTES is correctly set to 12345"
     - name: Debugging information
       run: |
         export KUBECONFIG=$PWD/.demo/kube.conf
@@ -114,6 +138,30 @@ jobs:
     - name: Start demo
       run: |
         ./run_demo.sh --exit-when-done --ci-values demo/ci_values.yaml /tmp/diracx /tmp/DIRACCommon/ /tmp/diracx-web
+    - name: Modify refresh token expiry and upgrade
+      run: |
+        # Modify the values.yaml to change the refresh token expiry
+        sed -i 's/DIRACX_SERVICE_AUTH_REFRESH_TOKEN_EXPIRE_MINUTES: "[0-9]*"/DIRACX_SERVICE_AUTH_REFRESH_TOKEN_EXPIRE_MINUTES: "12345"/' .demo/values.yaml
+
+        # Run helm upgrade to apply the changes
+        export KUBECONFIG=$PWD/.demo/kube.conf
+        export HELM_DATA_HOME=$PWD/.demo/helm_data
+        $PWD/.demo/helm upgrade --debug diracx-demo $PWD/diracx --values .demo/values.yaml
+    - name: Verify environment variable is set correctly
+      run: |
+        export KUBECONFIG=$PWD/.demo/kube.conf
+        # Wait for the deployment to be ready after upgrade
+        $PWD/.demo/kubectl rollout status deployment/diracx-demo --timeout=300s
+
+        # Get the environment variable value from the deployment
+        env_value=$(.demo/kubectl exec deployments/diracx-demo -c diracx -- env | grep DIRACX_SERVICE_AUTH_REFRESH_TOKEN_EXPIRE_MINUTES | awk -F '=' {'print $NF'})
+
+        if [ "$env_value" != "12345" ]; then
+          echo "ERROR: Environment variable DIRACX_SERVICE_AUTH_REFRESH_TOKEN_EXPIRE_MINUTES is not set to 12345, got: $env_value"
+          exit 1
+        fi
+
+        echo "SUCCESS: Environment variable DIRACX_SERVICE_AUTH_REFRESH_TOKEN_EXPIRE_MINUTES is correctly set to 12345"
     - name: Debugging information
       run: |
         export KUBECONFIG=$PWD/.demo/kube.conf
