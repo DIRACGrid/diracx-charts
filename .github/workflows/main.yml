@@ -47,6 +47,12 @@ jobs:
             echo "Images are different"
             exit 1
           fi
+      - name: upload-image
+        uses: actions/upload-artifact@v4
+        with:
+          name: architeture-diagram
+          path: architecture_diagram.png
+        if: ${{ failure() }}
 
   run-demo:
     runs-on: ubuntu-latest
