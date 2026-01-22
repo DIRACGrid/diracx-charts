@@ -3,6 +3,67 @@ entries:
   diracx:
   - apiVersion: v2
     appVersion: v0.0.7
+    created: "2026-01-22T14:02:33.986473781Z"
+    dependencies:
+    - condition: opensearch.enabled
+      name: opensearch
+      repository: https://opensearch-project.github.io/helm-charts/
+      version: 2.13.1
+    - condition: elasticsearch.enabled
+      name: elasticsearch
+      repository: https://helm.elastic.co
+      version: 8.5.1
+    - condition: dex.enabled
+      name: dex
+      repository: https://charts.dexidp.io/
+      version: 0.14.2
+    - condition: minio.enabled
+      name: minio
+      repository: https://charts.min.io/
+      version: 5.0.11
+    - condition: rabbitmq.enabled
+      name: rabbitmq
+      repository: https://charts.bitnami.com/bitnami/
+      version: 12.0.10
+    - condition: mysql.enabled
+      name: mysql
+      repository: https://charts.bitnami.com/bitnami/
+      version: 9.11.0
+    - condition: cert-manager.enabled
+      name: cert-manager
+      repository: https://charts.jetstack.io
+      version: 1.13.1
+    - condition: cert-manager-issuer.enabled
+      name: cert-manager-issuer
+      repository: ""
+      version: '*.*.*'
+    - condition: opentelemetry-collector.enabled
+      name: opentelemetry-collector
+      repository: https://open-telemetry.github.io/opentelemetry-helm-charts
+      version: 0.68.0
+    - condition: jaeger.enabled
+      name: jaeger
+      repository: https://jaegertracing.github.io/helm-charts
+      version: 0.71.14
+    - condition: grafana.enabled
+      name: grafana
+      repository: https://grafana.github.io/helm-charts
+      version: 6.59.4
+    - condition: prometheus.enabled
+      name: prometheus
+      repository: https://prometheus-community.github.io/helm-charts
+      version: 25.0.0
+    description: 'This helm chart is intended to be used in two ways:   * Development:
+      The ./run_demo.sh script allows the infrastructure to be ran locally with docker+kind  *
+      Production: TODO '
+    digest: ea2bbda81962d9f9fdc56019d6971c0afacc43b5503365c22b877e9c030923c0
+    name: diracx
+    type: application
+    urls:
+    - https://github.com/DIRACGrid/diracx-charts/releases/download/diracx-1.0.7/diracx-1.0.7.tgz
+    version: 1.0.7
+  - apiVersion: v2
+    appVersion: v0.0.7
     created: "2026-01-20T08:52:53.061425352Z"
     dependencies:
     - condition: opensearch.enabled
@@ -550,4 +611,4 @@ entries:
     urls:
     - https://github.com/DIRACGrid/diracx-charts/releases/download/diracx-0.1.0-alpha.2/diracx-0.1.0-alpha.2.tgz
     version: 0.1.0-alpha.2
-generated: "2026-01-20T08:52:53.061460307Z"
+generated: "2026-01-22T14:02:33.986529335Z"
