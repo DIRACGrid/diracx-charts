@@ -77,6 +77,13 @@ Return the fullname template for the initCs job.
 {{- end -}}
 
 {{/*
+Return the fullname template for the validateConfig job.
+*/}}
+{{- define "validateConfig.fullname" -}}
+{{- printf "%s-validate-config" .Release.Name -}}
+{{- end -}}
+
+{{/*
 Create a default fully qualified job name for initCs.
 Due to the job only being allowed to run once, we add the chart revision so helm
 upgrades don't cause errors trying to create the already ran job.
@@ -85,6 +92,15 @@ reduce collisions.
 */}}
 {{- define "initCs.jobname" -}}
 {{- $name := include "initCs.fullname" . | trunc 55 | trimSuffix "-" -}}
+{{- $rand := randAlphaNum 3 | lower }}
+{{- printf "%s-%d-%s" $name .Release.Revision $rand | trunc 63 | trimSuffix "-" -}}
+{{- end -}}
+
+{{/*
+Create a default fully qualified job name for validateConfig.
+*/}}
+{{- define "validateConfig.jobname" -}}
+{{- $name := include "validateConfig.fullname" . | trunc 55 | trimSuffix "-" -}}
 {{- $rand := randAlphaNum 3 | lower }}
 {{- printf "%s-%d-%s" $name .Release.Revision $rand | trunc 63 | trimSuffix "-" -}}
 {{- end -}}

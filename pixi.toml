@@ -12,6 +12,8 @@ ipython = ">=9.2.0"
 [feature.diagram.dependencies]
 python = "*"
 kubernetes-helm = "*"
+graphviz = "*"
+imagemagick = "*"
 [feature.diagram.pypi-dependencies]
 KubeDiagrams = "*"
 [feature.diagram.tasks.generate-diagram]
