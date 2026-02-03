@@ -97,5 +97,10 @@ Generates the web image path
 Generates the node image path
 */}}
 {{- define "diracx.nodeImage" }}
+{{- $imageParts := splitList ":" .Values.developer.nodeImage }}
+{{- if ge (len $imageParts) 2 }}
+{{- include "diracx.image" (dict "registryType" "dockerhub" "repository" (index $imageParts 0) "root" . "tag" (index $imageParts 1) ) }}
+{{- else }}
 {{- include "diracx.image" (dict "registryType" "dockerhub" "repository" .Values.developer.nodeImage "root" . "tag" "latest" ) }}
+{{- end }}
 {{- end }}
