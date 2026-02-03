@@ -92,7 +92,6 @@ Generates the web image path
 {{- include "diracx.image" (dict "registryType" .Values.global.images.web.registryType "repository" .Values.global.images.web.repository "root" . "tag" .Values.global.images.web.tag ) }}
 {{- end }}
 
-# {{ .Values.developer.nodeImage }}
 
 {{/*
 Generates the node image path
