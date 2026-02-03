@@ -188,9 +188,9 @@ global:
       repository: ghcr.io/diracgrid/diracx-web/static
 ```
 
-It also is possible separately configure image registries for different components. Each image used in the chart is associated with a `registryType` (`ghcr` or `dockerhub`), which is then mapped to a registry URL defined in the global images section.
+It is also possible to separately configure image registries for different components. Each image used in the chart is associated with a `registryType` value (`ghcr` or `dockerhub`), which is then mapped to a registry URL defined in the `global.images` section.
 
-`busybox` and `web` images do not use the same tag as the main services, so they have their own `tag` fields in separate sub-sections of values
+`busybox` and `web` images do not use the same tag as the main services, so they have their own `tag` fields in separate sub-sections of the `values.yaml` file.
 
 For example:
 
