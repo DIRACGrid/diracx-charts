@@ -30,7 +30,7 @@ spec:
       serviceAccountName: {{ template "initSecrets.serviceAccountName" . }}
       initContainers:
         - name: {{ .Chart.Name }}-init-keystore
-          image: "{{ include "diracx.image" (dict "registryType" "ghcr" "imageName" "services" "root" . ) }}"
+          image: "{{ include "diracx.image" (dict "repository" .Values.global.images.services "root" . ) }}"
           imagePullPolicy: {{ .Values.global.imagePullPolicy }}
           command: ["/bin/bash", "/entrypoint.sh"]
           args: ["/bin/bash", "/scripts/init-keystore"]
@@ -43,7 +43,7 @@ spec:
 
       containers:
         - name: {{ .Chart.Name }}-load-keystore-as-secret
-          image: "{{ include "diracx.image" (dict "registryType" "ghcr" "imageName" "secret_generation" "root" . ) }}"
+          image: "{{ include "diracx.image" (dict "repository" .Values.global.images.secret_generation "root" . "tag" "latest" ) }}"
           imagePullPolicy: {{ .Values.global.imagePullPolicy }}
           args: ["/bin/bash", "/scripts/load-keystore-as-secret"]
           volumeMounts:
