@@ -191,7 +191,7 @@ spec:
             {{- end }}
           {{- else }}
           # Start the node module in production mode
-          image: {{ include "diracx.webImage" . }}
+          image: "{{ include "diracx.webImage" . }}"
 
           {{ if .Values.diracxWeb.branch }}
           # Start it from the specified branch
