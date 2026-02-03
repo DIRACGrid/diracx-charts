@@ -192,7 +192,7 @@ spec:
             {{- end }}
           {{- else }}
           # Start the node module in production mode
-          image: "{{ .Values.global.images.ghcr_registry }}/{{ .Values.global.images.web.repository }}:{{ .Values.global.images.web.tag }}"
+          image: {{ include "diracx.image" (dict "registryType" .Values.global.images.web.registryType "repository" .Values.global.images.web.repository "root" . "tag" .Values.global.images.web.tag ) }}
 
           {{ if .Values.diracxWeb.branch }}
           # Start it from the specified branch
