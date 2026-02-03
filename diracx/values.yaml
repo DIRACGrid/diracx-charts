@@ -26,7 +26,7 @@ global:
     services: diracgrid/diracx/services
     client: diracgrid/diracx/client
     secret_generation: diracgrid/diracx/secret-generation
-    diracx_base_image: diracx/base
+    diracx_base_image: diracgrid/diracx/base
 
     busybox:
       tag: "latest"
