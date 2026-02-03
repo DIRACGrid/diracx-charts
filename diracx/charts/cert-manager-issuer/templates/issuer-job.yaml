@@ -18,8 +18,7 @@ spec:
       restartPolicy: OnFailure
       containers:
         - name: create-issuer
-          # Note: it's not clear whether tag: latest is appropriate here
-          image: "{{ include "diracx.image" (dict "repository" .Values.global.images.secret_generation "root" . "tag" "latest" ) }}"
+          image: "{{ include "diracx.secretGenerationImage" . }}"
           imagePullPolicy: {{ .Values.global.imagePullPolicy }}
           command: ['/bin/bash', '/scripts/create-issuer', '/scripts/issuer.yml']
           volumeMounts:
