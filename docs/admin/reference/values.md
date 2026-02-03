@@ -95,7 +95,7 @@
 | global.images.busybox.repository | string | `"busybox"` |  |
 | global.images.busybox.tag | string | `"latest"` |  |
 | global.images.client | string | `"diracgrid/diracx/client"` |  |
-| global.images.diracx_base_image | string | `"diracx/base"` |  |
+| global.images.diracx_base_image | string | `"diracgrid/diracx/base"` |  |
 | global.images.dockerhub_registry | string | `"docker.io"` |  |
 | global.images.ghcr_registry | string | `"ghcr.io"` |  |
 | global.images.secret_generation | string | `"diracgrid/diracx/secret-generation"` |  |
