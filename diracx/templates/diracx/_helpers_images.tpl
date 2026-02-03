@@ -38,9 +38,65 @@ ghcr.io/diracgrid/diracx/services:v0.0.7
 {{- end -}}
 {{- end }}
 
+
+{{/*
+The following are helper functions to generate image paths for specific diracx images. These images are reused in multiple places.
+
+TODO: is it right that some of them use "latest" tag while others use the global tag or chart app version?
+*/}}
+
+
+{{/*
+Generates the diracx base image path
+*/}}
+
+{{- define "diracx.baseImage" }}
+{{- include "diracx.image" (dict "repository" .Values.global.images.diracx_base_image "root" .  ) }}
+{{- end }}
+
+
+{{/*
+Generates the services image path
+*/}}
+{{- define "diracx.servicesImage" }}
+{{- include "diracx.image" (dict "repository" .Values.global.images.services "root" .  ) }}
+{{- end }}
+
+
+{{/*
+Generates the client image path
+*/}}
+{{- define "diracx.clientImage" }}
+{{- include "diracx.image" (dict "repository" .Values.global.images.client "root" .  ) }}
+{{- end }}
+
+
+{{/*
+Generates the secret generation image path
+*/}}
+{{- define "diracx.secretGenerationImage" }}
+{{- include "diracx.image" (dict "repository" .Values.global.images.secret_generation "root" . "tag" "latest" ) }}
+{{- end }}
+
 {{/*
 Generates the busybox image path
 */}}
 {{- define "diracx.busyboxImage" }}
 {{- include "diracx.image" (dict "registryType" .Values.global.images.busybox.registryType "repository" .Values.global.images.busybox.repository "root" . "tag" .Values.global.images.busybox.tag ) }}
+{{- end }}
+
+{{/*
+Generates the web image path
+*/}}
+{{- define "diracx.webImage" }}
+{{- include "diracx.image" (dict "registryType" .Values.global.images.web.registryType "repository" .Values.global.images.web.repository "root" . "tag" .Values.global.images.web.tag ) }}
+{{- end }}
+
+# {{ .Values.developer.nodeImage }}
+
+{{/*
+Generates the node image path
+*/}}
+{{- define "diracx.nodeImage" }}
+{{- include "diracx.image" (dict "registryType" "dockerhub" "repository" .Values.developer.nodeImage "root" . "tag" "latest" ) }}
 {{- end }}
