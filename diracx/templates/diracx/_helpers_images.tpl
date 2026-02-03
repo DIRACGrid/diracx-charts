@@ -12,13 +12,13 @@ If tag, is not specified, it is taken from global images tag, defaulting to Char
 
 Can be used as follows:
 
-{{ include "diracx.image" (dict "registryType" "ghcr" "repository" "services" "root" . ) }}
+{{ include "diracx.image" (dict "registryType" "ghcr" "repository" .Values.global.images.services "root" . ) }}
 
 Or
 
-{{ include "diracx.image" (dict "repository" "client" "root" . ) }}
+{{ include "diracx.image" (dict "repository" .Values.global.images.client "root" . ) }}
 
-to produce an image path as:
+to produce an image path such as (assuming `.Values.global.images.ghcr_registry` is `ghcr.io` and `.Values.global.images.services` is `diracgrid/diracx/services`):
 
 ghcr.io/diracgrid/diracx/services:v0.0.7
 
