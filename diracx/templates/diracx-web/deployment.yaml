@@ -61,8 +61,7 @@ spec:
         {{- if and (not $nodeDevInstall) .Values.diracxWeb.branch }}
         # This init container is used to clone the specified diracx-web repository branch
         - name: clone-diracx-web
-          # image: ghcr.io/diracgrid/diracx/secret-generation:latest
-          image: "{{ .Values.global.images.ghcr_registry }}/{{ .Values.global.images.secret_generation.repository }}:{{ .Values.global.images.secret_generation.tag }}"
+          image: "{{ include "diracx.image" (dict "repository" .Values.global.images.secret_generation "root" . "tag" "latest" ) }}"
           imagePullPolicy: {{ .Values.global.imagePullPolicy }}
           command: ["/bin/sh", "-c"]
           args:
