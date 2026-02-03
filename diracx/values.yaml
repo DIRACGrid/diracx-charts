@@ -13,14 +13,16 @@ global:
   # What storage class should we use for DiracX volumes
   storageClassName: standard
   # -- timeout for job deadlines
-  # TODO: need to be able to replace non-dirac images too
   activeDeadlineSeconds: 900
   images:
     tag: v0.0.9
 
-    dockerhub_registry: docker.io
+    # Registries, can be overridden to use private cache/mirror registries
+    # note that images in dependent charts (e.g. mysql) are not affected by these settings
     ghcr_registry: ghcr.io
+    dockerhub_registry: docker.io
 
+    # Image repositories
     services: diracgrid/diracx/services
     client: diracgrid/diracx/client
     secret_generation: diracgrid/diracx/secret-generation
@@ -29,11 +31,12 @@ global:
     busybox:
       tag: "latest"
       repository: "busybox"
-      # TODO
-      registry: docker.io
+      registryType: dockerhub
+
     web:
       tag: v0.1.0-a10
       repository: diracgrid/diracx-web/static
+      registryType: ghcr
 
 # Number of diracx pods
 replicaCount: 1
