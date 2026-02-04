@@ -26,6 +26,7 @@ export HELM_DATA_HOME="${demo_dir}/helm_data"
 export REGISTRY_PROXY=${DOCKERHUB_URL:-""}
 export REGISTRY_PROXY_DOCKERHUB=${REGISTRY_PROXY_DOCKERHUB:-"${REGISTRY_PROXY}docker.io"}
 export REGISTRY_PROXY_GITHUB=${REGISTRY_PROXY_GITHUB:-"${REGISTRY_PROXY}ghcr.io"}
+export KINDEST_NODE_VERSION="v1.34.0"
 
 function cleanup(){
   trap - SIGTERM;
@@ -475,7 +476,7 @@ space_monitor_pid=$!
 # Create the cluster itself
 printf "%b Starting Kind cluster...\n" ${UNICORN_EMOJI}
 "${demo_dir}/kind" create cluster \
-  --image "${REGISTRY_PROXY_DOCKERHUB}/kindest/node:latest" \
+  --image "${REGISTRY_PROXY_DOCKERHUB}/kindest/node:${KINDEST_NODE_VERSION}" \
   --kubeconfig "${KUBECONFIG}" \
   --wait "1m" \
   --config "${demo_dir}/demo_cluster_conf.yaml" \
