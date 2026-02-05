@@ -44,8 +44,6 @@ ghcr.io/diracgrid/diracx/services:v0.0.7
 
 {{/*
 The following are helper functions to generate image paths for specific diracx images. These images are reused in multiple places.
-
-TODO: is it right that some of them use "latest" tag while others use the global tag or chart app version?
 */}}
 
 
