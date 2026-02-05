@@ -23,6 +23,7 @@ export KUBECONFIG="${demo_dir}/kube.conf"
 export HELM_DATA_HOME="${demo_dir}/helm_data"
 # Provide a mechanism to override use a proxy for accessing the registry
 # This is useful for either restricted environments or avoiding rate limits
+export REGISTRY_PROXY=${REGISTRY_PROXY:-""}
 export REGISTRY_PROXY_DOCKERHUB=${REGISTRY_PROXY_DOCKERHUB:-"${REGISTRY_PROXY}docker.io"}
 export REGISTRY_PROXY_GITHUB=${REGISTRY_PROXY_GITHUB:-"${REGISTRY_PROXY}ghcr.io"}
 export KINDEST_NODE_VERSION="v1.34.0"
