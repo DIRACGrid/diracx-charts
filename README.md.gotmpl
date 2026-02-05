@@ -206,3 +206,25 @@ To enable it, run ``run_demo.sh`` with ``enable-open-telemetry``
 Note that this configuration is trivial and does not follow production recommandations (like using batch processing)
 
 ![OTEL collector configuration](./demo/otel-collector.png)
+
+## Using container registry proxies
+
+Using container registry proxy such as [Harbor](https://goharbor.io/) can help you to:
+
+* Enable support for installation in environments with restricted network access
+* Avoid rate limiting issues with dockerhub
+* Speed up the deployment of the chart
+
+To do these when running the demo you can set:
+
+```bash
+export REGISTRY_PROXY=harbor.example.com
+```
+
+To do this when deploying the chart see the `global.images` option in the values.yaml file.
+
+{{ template "chart.requirementsSection" . }}
+
+{{ template "chart.valuesSection" . }}
+
+{{ template "helm-docs.versionFooter" . }}
