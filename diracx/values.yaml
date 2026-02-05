@@ -36,7 +36,6 @@ global:
     web:
       tag: v0.1.0-a10
       repository: diracgrid/diracx-web/static
-      registryType: ghcr
 
 # Number of diracx pods
 replicaCount: 1
