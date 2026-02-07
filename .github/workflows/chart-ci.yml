@@ -1,0 +1,160 @@
+name: Chart CI
+
+on:
+  pull_request:
+    branches:
+      - master
+  push:
+    branches:
+      - master
+
+jobs:
+  detect-chart-changes:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    outputs:
+      charts-changed: ${{ steps.check.outputs.charts-changed }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - name: Check for chart changes
+        id: check
+        run: |
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            BASE_BRANCH="${{ github.base_ref }}"
+            git fetch origin "$BASE_BRANCH"
+            CHANGED_FILES=$(git diff --name-only "origin/$BASE_BRANCH"...HEAD)
+          else
+            CHANGED_FILES=$(git diff --name-only HEAD~1)
+          fi
+
+          CHART_DIRS=$(find . -name "Chart.yaml" -not -path "*/charts/*" -type f -exec dirname {} \; | sed 's|^\./||')
+
+          CHART_CHANGED=false
+          for file in $CHANGED_FILES; do
+            for chart_dir in $CHART_DIRS; do
+              if [[ "$file" == "$chart_dir"/* ]]; then
+                CHART_CHANGED=true
+                break 2
+              fi
+            done
+          done
+
+          echo "charts-changed=$CHART_CHANGED" >> "$GITHUB_OUTPUT"
+
+  check-version-bump:
+    needs: detect-chart-changes
+    if: github.event_name == 'pull_request' && needs.detect-chart-changes.outputs.charts-changed == 'true'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - name: Check for version bumps
+        run: |
+          set -e
+
+          # Get the base branch
+          BASE_BRANCH="${{ github.base_ref }}"
+          echo "Base branch: $BASE_BRANCH"
+
+          # Fetch the base branch
+          git fetch origin "$BASE_BRANCH"
+
+          # Find all top-level Chart.yaml files (exclude subcharts in charts/ subdirectories)
+          # The chart-releaser only releases top-level charts, so we only check those
+          CHART_FILES=$(find . -name "Chart.yaml" -not -path "*/charts/*" -type f | grep -v "/\.")
+
+          echo "Checking Chart.yaml files for version bumps..."
+
+          FAILED=0
+
+          for CHART_FILE in $CHART_FILES; do
+            echo "---"
+            echo "Checking: $CHART_FILE"
+
+            # Get current version
+            CURRENT_VERSION=$(grep "^version:" "$CHART_FILE" | awk '{print $2}' | tr -d '"' | tr -d "'")
+            echo "Current version: $CURRENT_VERSION"
+
+            # Get base version (check if file exists in base branch)
+            if git cat-file -e "origin/$BASE_BRANCH:$CHART_FILE" 2>/dev/null; then
+              BASE_VERSION=$(git show "origin/$BASE_BRANCH:$CHART_FILE" | grep "^version:" | awk '{print $2}' | tr -d '"' | tr -d "'")
+              echo "Base version: $BASE_VERSION"
+
+              # Compare versions
+              if [ "$CURRENT_VERSION" == "$BASE_VERSION" ]; then
+                echo "ERROR: Version in $CHART_FILE has not been bumped!"
+                echo "   Current: $CURRENT_VERSION"
+                echo "   Base: $BASE_VERSION"
+                echo "   Please increment the version in $CHART_FILE"
+                FAILED=1
+              else
+                echo "Version bumped from $BASE_VERSION to $CURRENT_VERSION"
+              fi
+            else
+              echo "New chart file (not in base branch), skipping version check"
+            fi
+          done
+
+          echo "---"
+
+          if [ $FAILED -eq 1 ]; then
+            echo ""
+            echo "Version bump check FAILED"
+            echo "One or more Chart.yaml files need version updates."
+            echo "Please increment the version field according to semantic versioning."
+            exit 1
+          else
+            echo "All Chart.yaml files have been properly versioned"
+          fi
+
+  release:
+    needs: detect-chart-changes
+    if: github.event_name == 'push' && needs.detect-chart-changes.outputs.charts-changed == 'true'
+    # depending on default permission settings for your org (contents being read-only or read-write for workloads), you will have to add permissions
+    # see: https://docs.github.com/en/actions/security-guides/automatic-token-authentication#modifying-the-permissions-for-the-github_token
+    permissions:
+      contents: write
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - name: Configure Git
+        run: |
+          git config user.name "$GITHUB_ACTOR"
+          git config user.email "$GITHUB_ACTOR@users.noreply.github.com"
+
+      # Workaround for https://github.com/helm/chart-releaser-action/issues/228
+      # GitHub's immutable releases feature breaks the standard chart-releaser.
+      # This builds a patched version that creates releases as drafts first.
+      # TODO: Remove once https://github.com/helm/chart-releaser/pull/587 is released
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.21'
+
+      - name: Build patched chart-releaser
+        run: |
+          git clone --depth 1 -b fix/immutable-releases https://github.com/chrisburr/chart-releaser.git /tmp/chart-releaser
+          cd /tmp/chart-releaser
+          go build -o ${{ runner.tool_cache }}/cr/patched/cr ./cr
+
+      - name: Run chart-releaser
+        uses: helm/chart-releaser-action@v1.7.0
+        with:
+          charts_dir: .
+          install_dir: ${{ runner.tool_cache }}/cr/patched
+        env:
+          CR_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
