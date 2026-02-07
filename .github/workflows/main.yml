@@ -48,7 +48,7 @@ jobs:
             exit 1
           fi
       - name: upload-image
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: architeture-diagram
           path: architecture_diagram.png
