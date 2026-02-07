@@ -34,7 +34,7 @@ dependencies:
   condition: elasticsearch.enabled
 
 - name: dex
-  version: 0.14.2
+  version: 0.24.0
   repository: https://charts.dexidp.io/
   condition: dex.enabled
 
