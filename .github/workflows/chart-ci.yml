@@ -48,17 +48,19 @@ jobs:
 
   check-version-bump:
     needs: detect-chart-changes
-    if: github.event_name == 'pull_request' && needs.detect-chart-changes.outputs.charts-changed == 'true'
+    if: github.event_name == 'pull_request'
     runs-on: ubuntu-latest
     permissions:
       contents: read
     steps:
       - name: Checkout
+        if: needs.detect-chart-changes.outputs.charts-changed == 'true'
         uses: actions/checkout@v5
         with:
           fetch-depth: 0
 
       - name: Check for version bumps
+        if: needs.detect-chart-changes.outputs.charts-changed == 'true'
         run: |
           set -e
 
