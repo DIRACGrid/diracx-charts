@@ -143,7 +143,7 @@ jobs:
       # This builds a patched version that creates releases as drafts first.
       # TODO: Remove once https://github.com/helm/chart-releaser/pull/587 is released
       - name: Set up Go
-        uses: actions/setup-go@v5
+        uses: actions/setup-go@v6
         with:
           go-version: '1.21'
 
