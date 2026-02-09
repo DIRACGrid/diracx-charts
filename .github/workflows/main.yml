@@ -14,6 +14,42 @@ defaults:
     shell: bash -el {0}
 
 jobs:
+  detect-docs-only:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    outputs:
+      docs-only: ${{ steps.check.outputs.docs-only }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - name: Check for docs-only changes
+        id: check
+        run: |
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            BASE_BRANCH="${{ github.base_ref }}"
+            git fetch origin "$BASE_BRANCH"
+            CHANGED_FILES=$(git diff --name-only "origin/$BASE_BRANCH"...HEAD)
+          else
+            CHANGED_FILES=$(git diff --name-only HEAD~1)
+          fi
+
+          DOCS_ONLY=true
+          if [ -z "$CHANGED_FILES" ]; then
+            DOCS_ONLY=false
+          fi
+          while IFS= read -r file; do
+            if [[ "$file" != docs/* ]]; then
+              DOCS_ONLY=false
+              break
+            fi
+          done <<< "$CHANGED_FILES"
+
+          echo "docs-only=$DOCS_ONLY" >> "$GITHUB_OUTPUT"
+
   pre-commit:
     runs-on: ubuntu-latest
     steps:
@@ -26,6 +62,8 @@ jobs:
       if: always()
 
   update-diagram:
+    needs: detect-docs-only
+    if: needs.detect-docs-only.outputs.docs-only != 'true'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
@@ -55,6 +93,8 @@ jobs:
         if: ${{ failure() }}
 
   run-demo:
+    needs: detect-docs-only
+    if: needs.detect-docs-only.outputs.docs-only != 'true'
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v5
@@ -107,6 +147,8 @@ jobs:
 
   # Same as run-demo except mount the sources inside the container
   run-demo-mount-sources:
+    needs: detect-docs-only
+    if: needs.detect-docs-only.outputs.docs-only != 'true'
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v5
