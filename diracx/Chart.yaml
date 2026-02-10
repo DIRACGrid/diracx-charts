@@ -23,7 +23,7 @@ appVersion: v0.0.8
 dependencies:
 
 - name: opensearch
-  version: 2.13.1
+  version: 2.36.0
   repository:  https://opensearch-project.github.io/helm-charts/
   condition: opensearch.enabled
 
