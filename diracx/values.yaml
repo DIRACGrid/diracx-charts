@@ -16,14 +16,26 @@ global:
   activeDeadlineSeconds: 900
   images:
     tag: v0.0.9
-    services: ghcr.io/diracgrid/diracx/services
-    client: ghcr.io/diracgrid/diracx/client
+
+    # Registries, can be overridden to use private cache/mirror registries
+    # note that images in dependent charts (e.g. mysql) are not affected by these settings
+    ghcr_registry: ghcr.io
+    dockerhub_registry: docker.io
+
+    # Image repositories
+    services: diracgrid/diracx/services
+    client: diracgrid/diracx/client
+    secret_generation: diracgrid/diracx/secret-generation
+    diracx_base_image: diracgrid/diracx/base
+
     busybox:
       tag: "latest"
       repository: "busybox"
+      registryType: dockerhub
+
     web:
       tag: v0.1.0-a10
-      repository: ghcr.io/diracgrid/diracx-web/static
+      repository: diracgrid/diracx-web/static
 
 # Number of diracx pods
 replicaCount: 1

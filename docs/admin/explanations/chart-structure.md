@@ -188,6 +188,39 @@ global:
       repository: ghcr.io/diracgrid/diracx-web/static
 ```
 
+It is also possible to separately configure image registries for different components. Each image used in the chart is associated with a `registryType` value (`ghcr` or `dockerhub`), which is then mapped to a registry URL defined in the `global.images` section.
+
+`busybox` and `web` images do not use the same tag as the main services, so they have their own `tag` fields in separate sub-sections of the `values.yaml` file.
+
+For example:
+
+
+```yaml
+global:
+  batchJobTTL: 600                    # Job retention time
+  imagePullPolicy: Always             # Container image pull policy
+  storageClassName: standard          # Kubernetes storage class
+  activeDeadlineSeconds: 900          # Job timeout
+  images:                             # Container image specifications
+    tag: "dev"
+    ghcr_registry: ghcr.io
+    dockerhub_registry: docker.io
+    services: diracgrid/diracx/services
+    client: diracgrid/diracx/client
+    busybox:
+      tag: "latest"
+      repository: "busybox"
+      registryType: dockerhub
+    web:
+      tag: "dev"
+      repository: diracgrid/diracx-web/static
+      registryType: ghcr
+```
+
+In this case `global.images.services` should not include the registry prefix; the chart templates will prepend the appropriate registry URL based on the specified `registryType`.
+
+Dependency charts are not affected by these settings since they have their own image configuration, controlled by their respective values.
+
 ### Component Configuration
 Each component can be configured independently:
 

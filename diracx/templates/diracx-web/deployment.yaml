@@ -61,7 +61,7 @@ spec:
         {{- if and (not $nodeDevInstall) .Values.diracxWeb.branch }}
         # This init container is used to clone the specified diracx-web repository branch
         - name: clone-diracx-web
-          image: ghcr.io/diracgrid/diracx/secret-generation:latest
+          image: "{{ include "diracx.secretGenerationImage" . }}"
           imagePullPolicy: {{ .Values.global.imagePullPolicy }}
           command: ["/bin/sh", "-c"]
           args:
@@ -77,7 +77,7 @@ spec:
         {{- if or $nodeDevInstall .Values.diracxWeb.branch }}
         # This init container is used to install the node module
         - name: install-diracx-web
-          image: {{ .Values.developer.nodeImage }}
+          image: "{{ include "diracx.nodeImage" . }}"
           imagePullPolicy: {{ .Values.global.imagePullPolicy }}
 
           {{- if $nodeDevInstall }}
@@ -171,7 +171,7 @@ spec:
 
           {{- if $nodeDevInstall }}
           # Start the node module in development mode
-          image: {{ .Values.developer.nodeImage }}
+          image: "{{ include "diracx.nodeImage" . }}"
           command: ["npm", "run", "dev"]
           workingDir: "{{ $nodeMountedModulePath }}"
           env:
@@ -191,7 +191,7 @@ spec:
             {{- end }}
           {{- else }}
           # Start the node module in production mode
-          image: {{ .Values.global.images.web.repository }}:{{ .Values.global.images.web.tag }}
+          image: "{{ include "diracx.webImage" . }}"
 
           {{ if .Values.diracxWeb.branch }}
           # Start it from the specified branch

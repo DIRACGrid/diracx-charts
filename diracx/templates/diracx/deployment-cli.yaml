@@ -82,7 +82,7 @@ spec:
         - name: {{ .Chart.Name }}-cli
           securityContext:
             {{- toYaml .Values.securityContext | nindent 12 }}
-          image: "{{ .Values.global.images.client }}:{{ .Values.global.images.tag | default .Chart.AppVersion }}"
+          image: "{{ include "diracx.clientImage" . }}"
           imagePullPolicy: {{ .Values.global.imagePullPolicy }}
           command: ["bash", "/entrypoint.sh"]
           args:

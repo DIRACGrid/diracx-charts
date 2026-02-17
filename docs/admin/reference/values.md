@@ -91,12 +91,17 @@
 | global.activeDeadlineSeconds | int | `900` | timeout for job deadlines |
 | global.batchJobTTL | int | `600` | How long should batch jobs be retained after completing? |
 | global.imagePullPolicy | string | `"Always"` |  |
+| global.images.busybox.registryType | string | `"dockerhub"` |  |
 | global.images.busybox.repository | string | `"busybox"` |  |
 | global.images.busybox.tag | string | `"latest"` |  |
-| global.images.client | string | `"ghcr.io/diracgrid/diracx/client"` |  |
-| global.images.services | string | `"ghcr.io/diracgrid/diracx/services"` |  |
+| global.images.client | string | `"diracgrid/diracx/client"` |  |
+| global.images.diracx_base_image | string | `"diracgrid/diracx/base"` |  |
+| global.images.dockerhub_registry | string | `"docker.io"` |  |
+| global.images.ghcr_registry | string | `"ghcr.io"` |  |
+| global.images.secret_generation | string | `"diracgrid/diracx/secret-generation"` |  |
+| global.images.services | string | `"diracgrid/diracx/services"` |  |
 | global.images.tag | string | `"v0.0.9"` |  |
-| global.images.web.repository | string | `"ghcr.io/diracgrid/diracx-web/static"` |  |
+| global.images.web.repository | string | `"diracgrid/diracx-web/static"` |  |
 | global.images.web.tag | string | `"v0.1.0-a10"` |  |
 | global.storageClassName | string | `"standard"` |  |
 | grafana.datasources."datasources.yaml".apiVersion | int | `1` |  |
