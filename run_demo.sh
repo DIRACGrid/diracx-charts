@@ -21,12 +21,7 @@ demo_dir="${script_dir}/.demo"
 mkdir -p "${demo_dir}"
 export KUBECONFIG="${demo_dir}/kube.conf"
 export HELM_DATA_HOME="${demo_dir}/helm_data"
-# Provide a mechanism to override use a proxy for accessing the registry
-# This is useful for either restricted environments or avoiding rate limits
-export REGISTRY_PROXY=${REGISTRY_PROXY:-""}
-export REGISTRY_PROXY_DOCKERHUB=${REGISTRY_PROXY_DOCKERHUB:-"${REGISTRY_PROXY}docker.io"}
-export REGISTRY_PROXY_GITHUB=${REGISTRY_PROXY_GITHUB:-"${REGISTRY_PROXY}ghcr.io"}
-export KINDEST_NODE_VERSION="v1.34.0"
+KINDEST_NODE_VERSION="v1.34.0"
 
 function cleanup(){
   trap - SIGTERM;
@@ -83,7 +78,7 @@ function check_hostname(){
     printf "%b Hostname %s resolves to 127.0.0.1 but this is not supported\n" ${SKULL_EMOJI} "${1}"
     return 1
   fi
-  if ! docker_ip_address=$(docker run --rm "${REGISTRY_PROXY_DOCKERHUB}/library/alpine:latest" ping -c 1 "$1" | grep -Eo '([0-9]{1,3}\.){3}[0-9]{1,3}' | head -n 1); then
+  if ! docker_ip_address=$(docker run --rm "${registry_proxy_dockerhub}/library/alpine:latest" ping -c 1 "$1" | grep -Eo '([0-9]{1,3}\.){3}[0-9]{1,3}' | head -n 1); then
     printf "%b ping command exited with a non-zero exit code from within docker\n" ${SKULL_EMOJI}
     return 1
   fi
@@ -109,7 +104,7 @@ function element_not_in_array() {
   return $found
 }
 
-usage="${0##*/} [-h|--help] [--exit-when-done] [--offline] [--enable-coverage] [--no-mount-containerd] [--set-value key=value] [--ci-values=values.yaml] [--load-docker-image=<image_name:tag>] [--chart-path=path] [--only-download-deps] [--] [source directories]"
+usage="${0##*/} [-h|--help] [--exit-when-done] [--offline] [--enable-coverage] [--no-mount-containerd] [--set-value key=value] [--ci-values=values.yaml] [--load-docker-image=<image_name:tag>] [--chart-path=path] [--only-download-deps] [--registry-proxy=<url>] [--] [source directories]"
 usage+="\n\n"
 usage+="  -h|--help: Print this help message and exit\n"
 usage+="  --extension-chart-path: Path to a custom Helm chart to install instead of the default diracx chart\n"
@@ -130,6 +125,10 @@ usage+="             WARNING: This may result in some weird behaviour, see the d
 usage+="             Implies: --mount-containerd\n"
 usage+="  --only-download-deps: Only download kind/kubectl/helm binaries and helm plugins, then exit\n"
 usage+="                        Useful for preparing the environment before running other commands\n"
+usage+="  --registry-proxy: Use a registry proxy for pulling container images.\n"
+usage+="                    This is useful for restricted environments or to avoid rate limits.\n"
+usage+="                    For example: --registry-proxy harbor.example.com\n"
+usage+="                    This prefixes all image registries (DockerHub and GHCR) with the given URL.\n"
 usage+="  --set-value: Set a value in the Helm values file. This can be used to override the default values.\n"
 usage+="               For example, to enable coverage reporting pass: --set-value developer.enableCoverage=true\n"
 usage+="  source directories: A list of directories containing Python packages to mount in the demo cluster.\n"
@@ -146,6 +145,7 @@ declare -a ci_values_files=()
 declare -a docker_images_to_load=()
 chart_path=""
 only_download_deps=0
+registry_proxy=""
 
 while [ -n "${1:-}" ]; do case $1 in
   # Print a brief usage summary and exit
@@ -259,6 +259,16 @@ while [ -n "${1:-}" ]; do case $1 in
     shift
     continue ;;
 
+  --registry-proxy)
+    shift
+    if [[ -z "${1:-}" ]]; then
+      printf "%b Error: --registry-proxy requires an argument\n" ${SKULL_EMOJI}
+      exit 1
+    fi
+    registry_proxy="${1}"
+    shift
+    continue ;;
+
   --only-download-deps)
     only_download_deps=1
     shift
@@ -281,6 +291,15 @@ while [ -n "${1:-}" ]; do case $1 in
 esac; shift
 done
 
+# Derive registry proxy URLs for DockerHub and GHCR
+# When --registry-proxy is set, all image pulls go through the proxy
+if [[ -n "${registry_proxy}" ]]; then
+  registry_proxy_dockerhub="${registry_proxy}/docker.io"
+  registry_proxy_github="${registry_proxy}/ghcr.io"
+else
+  registry_proxy_dockerhub="docker.io"
+  registry_proxy_github="ghcr.io"
+fi
 
 # Remaining arguments are positional parameters that are used to specify which
 # source directories to mount in the demo cluster
@@ -476,7 +495,7 @@ space_monitor_pid=$!
 # Create the cluster itself
 printf "%b Starting Kind cluster...\n" ${UNICORN_EMOJI}
 "${demo_dir}/kind" create cluster \
-  --image "${REGISTRY_PROXY_DOCKERHUB}/kindest/node:${KINDEST_NODE_VERSION}" \
+  --image "${registry_proxy_dockerhub}/kindest/node:${KINDEST_NODE_VERSION}" \
   --kubeconfig "${KUBECONFIG}" \
   --wait "1m" \
   --config "${demo_dir}/demo_cluster_conf.yaml" \
@@ -657,6 +676,10 @@ if [ ${offline_mode} -eq 1 ]; then
 fi
 if [ ${enable_coverage} -eq 1 ]; then
   helm_arguments+=("--set" "${helm_arg_prefix}developer.enableCoverage=true")
+fi
+if [[ -n "${registry_proxy}" ]]; then
+  helm_arguments+=("--set" "${helm_arg_prefix}global.images.ghcr_registry=${registry_proxy_github}")
+  helm_arguments+=("--set" "${helm_arg_prefix}global.images.dockerhub_registry=${registry_proxy_dockerhub}")
 fi
 
 if ! "${demo_dir}/helm" install --debug diracx-demo "${chart_path}" "${helm_arguments[@]}"; then

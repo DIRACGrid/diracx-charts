@@ -215,10 +215,10 @@ Using container registry proxy such as [Harbor](https://goharbor.io/) can help y
 * Avoid rate limiting issues with dockerhub
 * Speed up the deployment of the chart
 
-To do these when running the demo you can set:
+To do these when running the demo you can pass:
 
 ```bash
-export REGISTRY_PROXY=harbor.example.com
+./run_demo.sh --registry-proxy harbor.example.com
 ```
 
 To do this when deploying the chart see the `global.images` option in the values.yaml file.
