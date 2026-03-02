@@ -22,7 +22,7 @@ spec:
       serviceAccountName: {{ template "initSecrets.serviceAccountName" . }}
       containers:
         - name: {{ .Chart.Name }}
-          image: ghcr.io/diracgrid/diracx/secret-generation:latest
+          image: "{{ include "diracx.secretGenerationImage" . }}"
           imagePullPolicy: {{ .Values.global.imagePullPolicy }}
           args: ["/bin/bash", "/scripts/init-secrets"]
           volumeMounts:

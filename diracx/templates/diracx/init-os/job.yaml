@@ -40,13 +40,13 @@ spec:
       {{- if .Values.opensearch.enabled }}
       initContainers:
         - name: wait-for-opensearch
-          image: {{ .Values.global.images.busybox.repository }}:{{ .Values.global.images.busybox.tag }}
+          image: "{{ include "diracx.busyboxImage" . }}"
           imagePullPolicy: IfNotPresent
           command: ['sh', '-c', 'until nc -vz  opensearch-cluster-master 9200; do echo "Waiting for opensearch..."; sleep 3; done;']
       {{ end }}
       containers:
         - name: {{ .Chart.Name }}
-          image: "{{ .Values.global.images.services }}:{{ .Values.global.images.tag | default .Chart.AppVersion }}"
+          image: "{{ include "diracx.servicesImage" . }}"
           imagePullPolicy: {{ .Values.global.imagePullPolicy }}
           command: ["/bin/bash", "/entrypoint.sh"]
           args: ["/bin/bash", "/scripts/init-os"]
