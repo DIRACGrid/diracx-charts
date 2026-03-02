@@ -12,13 +12,13 @@ If tag, is not specified, it is taken from global images tag, defaulting to Char
 
 Can be used as follows:
 
-{{ include "diracx.image" (dict "registryType" "ghcr" "repository" .Values.global.images.services "root" . ) }}
+{{ include "diracx.image" (dict "registryType" .Values.global.images.services.registryType "repository" .Values.global.images.services.repository "root" . ) }}
 
 Or
 
-{{ include "diracx.image" (dict "repository" .Values.global.images.client "root" . ) }}
+{{ include "diracx.image" (dict "repository" .Values.global.images.client.repository "root" . ) }}
 
-to produce an image path such as (assuming `.Values.global.images.ghcr_registry` is `ghcr.io` and `.Values.global.images.services` is `diracgrid/diracx/services`):
+to produce an image path such as (assuming `.Values.global.images.ghcr_registry` is `ghcr.io` and `.Values.global.images.services.repository` is `diracgrid/diracx/services`):
 
 ghcr.io/diracgrid/diracx/services:v0.0.7
 
@@ -52,7 +52,7 @@ Generates the diracx base image path
 */}}
 
 {{- define "diracx.baseImage" }}
-{{- include "diracx.image" (dict "repository" .Values.global.images.diracx_base_image "root" .  ) }}
+{{- include "diracx.image" (dict "registryType" .Values.global.images.diracx_base_image.registryType "repository" .Values.global.images.diracx_base_image.repository "root" .  ) }}
 {{- end }}
 
 
@@ -60,7 +60,7 @@ Generates the diracx base image path
 Generates the services image path
 */}}
 {{- define "diracx.servicesImage" }}
-{{- include "diracx.image" (dict "repository" .Values.global.images.services "root" .  ) }}
+{{- include "diracx.image" (dict "registryType" .Values.global.images.services.registryType "repository" .Values.global.images.services.repository "root" .  ) }}
 {{- end }}
 
 
@@ -68,7 +68,7 @@ Generates the services image path
 Generates the client image path
 */}}
 {{- define "diracx.clientImage" }}
-{{- include "diracx.image" (dict "repository" .Values.global.images.client "root" .  ) }}
+{{- include "diracx.image" (dict "registryType" .Values.global.images.client.registryType "repository" .Values.global.images.client.repository "root" .  ) }}
 {{- end }}
 
 
@@ -76,7 +76,7 @@ Generates the client image path
 Generates the secret generation image path
 */}}
 {{- define "diracx.secretGenerationImage" }}
-{{- include "diracx.image" (dict "repository" .Values.global.images.secret_generation "root" . "tag" "latest" ) }}
+{{- include "diracx.image" (dict "registryType" .Values.global.images.secret_generation.registryType "repository" .Values.global.images.secret_generation.repository "root" . "tag" "latest" ) }}
 {{- end }}
 
 {{/*
