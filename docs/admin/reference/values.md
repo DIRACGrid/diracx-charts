@@ -94,12 +94,12 @@
 | global.images.busybox.registryType | string | `"dockerhub"` |  |
 | global.images.busybox.repository | string | `"busybox"` |  |
 | global.images.busybox.tag | string | `"latest"` |  |
-| global.images.client | string | `"diracgrid/diracx/client"` |  |
-| global.images.diracx_base_image | string | `"diracgrid/diracx/base"` |  |
+| global.images.client.repository | string | `"diracgrid/diracx/client"` |  |
+| global.images.diracx_base_image.repository | string | `"diracgrid/diracx/base"` |  |
 | global.images.dockerhub_registry | string | `"docker.io"` |  |
 | global.images.ghcr_registry | string | `"ghcr.io"` |  |
-| global.images.secret_generation | string | `"diracgrid/diracx/secret-generation"` |  |
-| global.images.services | string | `"diracgrid/diracx/services"` |  |
+| global.images.secret_generation.repository | string | `"diracgrid/diracx/secret-generation"` |  |
+| global.images.services.repository | string | `"diracgrid/diracx/services"` |  |
 | global.images.tag | string | `"v0.0.10"` |  |
 | global.images.web.repository | string | `"diracgrid/diracx-web/static"` |  |
 | global.images.web.tag | string | `"v0.1.0-a10"` |  |

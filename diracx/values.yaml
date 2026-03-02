@@ -23,10 +23,14 @@ global:
     dockerhub_registry: docker.io
 
     # Image repositories
-    services: diracgrid/diracx/services
-    client: diracgrid/diracx/client
-    secret_generation: diracgrid/diracx/secret-generation
-    diracx_base_image: diracgrid/diracx/base
+    services:
+      repository: diracgrid/diracx/services
+    client:
+      repository: diracgrid/diracx/client
+    secret_generation:
+      repository: diracgrid/diracx/secret-generation
+    diracx_base_image:
+      repository: diracgrid/diracx/base
 
     busybox:
       tag: "latest"
