@@ -53,7 +53,7 @@ spec:
                   subPath: jwks.json
           volumes:
             - name: keystore
-              secret: 
+              secret:
                 secretName: diracx-jwks
                 items:
                   - key: jwks.json
