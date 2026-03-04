@@ -263,6 +263,14 @@ git add default.yml
 git commit -m 'Initial config'
 ```
 
+## AuthDB Cleanup CronJob
+
+Expired refresh tokens and device flows will accumulate in the AuthDB over time.
+This CronJob must be deployed to periodically remove them on the 1st of every month:
+```bash
+kubectl apply -f ./manifest/cleanup-authdb-cronjob.yaml
+```
+
 ## Post-install tips
 
 In case you would like to make us of the services installed (e.g. MySQL or OpenSearch) from outisde the kubernetes cluster, there are different solutions and configurations to make. LoadBalancer, NodePort, or Ingress are the options. One of these would need to be set out.

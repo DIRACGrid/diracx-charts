@@ -1,0 +1,60 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: diracx-cleanup-authdb
+  namespace: diracx
+spec:
+  schedule: "0 0 1 * *"
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          restartPolicy: OnFailure
+          containers:
+            - name: cleanup
+              image: ghcr.io/diracgrid/diracx/services:dev
+              command:
+                - /bin/sh
+                - -c
+                - |
+                  /opt/conda/bin/python -c "
+                  import asyncio
+                  import os
+                  from diracx.core.settings import AuthSettings
+                  from diracx.db.sql import AuthDB
+                  from diracx.logic.auth.token import cleanup_expired_data
+                  import logging
+
+                  logging.basicConfig(
+                    level=logging.INFO
+                  )
+
+                  async def main():
+                    db_url = os.getenv('DIRACX_DB_URL_AUTHDB')
+                    settings = AuthSettings()
+                    db = AuthDB(db_url)
+
+                    async with db.engine_context():
+                      async with db:
+                        await cleanup_expired_data(db, settings)
+
+                  asyncio.run(main())
+                  "
+              envFrom:
+                - secretRef:
+                    name: diracx-secrets
+                - secretRef:
+                    name: diracx-sql-connection-urls
+                - secretRef:
+                    name: diracx-dynamic-secrets
+              volumeMounts:
+                - name: keystore
+                  mountPath: /keystore/jwks.json
+                  subPath: jwks.json
+          volumes:
+            - name: keystore
+              secret: 
+                secretName: diracx-jwks
+                items:
+                  - key: jwks.json
+                    path: jwks.json
