@@ -34,7 +34,7 @@ global:
 
     busybox:
       tag: "latest"
-      repository: "busybox"
+      repository: "library/busybox"
       registryType: dockerhub
 
     web:
@@ -123,7 +123,7 @@ developer:
   # -- List of node workspace directories to manage in the diracx-web container (node_modules)
   nodeWorkspacesDirectories: []
   # -- Image to use for the webapp if nodeModuleToInstall is set
-  nodeImage: node:24-alpine
+  nodeImage: library/node:24-alpine
   # -- Enable collection of coverage reports (intended for CI usage only)
   enableCoverage: false
   # -- Enable automatic reloading inside uvicorn when the sources change
