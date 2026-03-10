@@ -425,7 +425,7 @@ if [[ ! -f "${demo_dir}/helm" ]]; then
 
   # Install helm plugins to ${HELM_DATA_HOME}
   # renovate: datasource=github-releases depName=databus23/helm-diff
-  HELM_DIFF_VERSION="v3.15.1"
+  HELM_DIFF_VERSION="v3.15.2"
   "${demo_dir}/helm" plugin install https://github.com/databus23/helm-diff --version ${HELM_DIFF_VERSION}
 fi
 
