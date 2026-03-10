@@ -363,11 +363,3 @@ helm install --timeout 3600s <release-name> ./diracx-charts/diracx/ -f my_values
 !!! success "Congrats, you have installed DiracX"
 
     However, it does not do anything so far... See the [following steps](register-the-admin-vo.md)
-
-## AuthDB Cleanup CronJob
-
-Expired refresh tokens and device flows will accumulate in the AuthDB over time.
-This CronJob must be deployed to periodically remove them on the 1st of every month:
-```bash
-kubectl apply -f ./diracx-charts/k3s/manifests/cleanup-authdb-cronjob.yaml
-```

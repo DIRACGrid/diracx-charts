@@ -263,13 +263,6 @@ git add default.yml
 git commit -m 'Initial config'
 ```
 
-## AuthDB Cleanup CronJob
-
-Expired refresh tokens and device flows will accumulate in the AuthDB over time.
-This CronJob must be deployed to periodically remove them on the 1st of every month:
-```bash
-kubectl apply -f ./manifest/cleanup-authdb-cronjob.yaml
-```
 
 ## Post-install tips
 
