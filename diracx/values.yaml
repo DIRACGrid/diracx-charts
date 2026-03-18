@@ -155,7 +155,7 @@ diracx:
     DIRACX_SERVICE_AUTH_ALLOWED_REDIRECTS: '["http://anything:8000/docs/oauth2-redirect"]'
 
     # -- Tune the AuthDB cleanup cronjob retention periods
-    # -- DIRACX_SERVICE_AUTH_REVOKED_REFRESH_TOKEN_RETENTION_DAYS: <days>
+    # -- DIRACX_SERVICE_AUTH_REVOKED_REFRESH_TOKEN_RETENTION_MINUTES: <minutes>
     # -- DIRACX_SERVICE_AUTH_COMPLETED_FLOW_RETENTION_MINUTES: <minutes>
 
     # -- legacy exchange key for DIRAC legacy (see https://github.com/DIRACGrid/diracx/blob/7f766158a674fde0eed011cd2745d359e507f846/diracx-routers/src/diracx/routers/auth/token.py#L264)

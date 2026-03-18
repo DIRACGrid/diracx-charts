@@ -20,7 +20,7 @@ metadata:
   name: {{ template "cleanupAuthDB.fullname" . }}
   namespace: {{ .Release.Namespace }}
 spec:
-  schedule: {{ $.Values.cleanupAuthDB.schedule }}
+  schedule: {{ $.Values.cleanupAuthDB.schedule | quote }}
   jobTemplate:
     spec:
       template:
@@ -45,6 +45,8 @@ spec:
                   subPath: jwks.json
                 - name: scripts
                   mountPath: /scripts
+              resources:
+                {{- toYaml .Values.cleanupAuthDB.resources | nindent 16 }}
           volumes:
           - name: keystore
             secret:
