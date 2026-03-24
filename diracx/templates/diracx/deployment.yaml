@@ -64,7 +64,11 @@ spec:
           persistentVolumeClaim:
             claimName: pvc-coverage
         {{- end }}
-
+        {{- if .Values.diracx.osDbs.default.useCRT }}
+        - name: os-secret-volume
+          secret:
+            secretName: os-certs
+        {{- end }}
       {{/* Define common volume mounts for reusability */}}
       {{- $commonVolumeMounts := list }}
       {{- if .Values.developer.enabled }}
@@ -156,6 +160,10 @@ spec:
             {{- end }}
           {{- end }}
           volumeMounts: {{ toYaml $commonVolumeMounts | nindent 12 }}
+          {{- if .Values.diracx.osDbs.default.useCRT }}
+            - name: os-secret-volume
+              mountPath: /etc/config-os
+          {{- end }}
           envFrom:
             # - configMapRef:
             #     name: diracx-env-config

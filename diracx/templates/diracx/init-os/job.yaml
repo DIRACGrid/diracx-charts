@@ -54,6 +54,13 @@ spec:
             {{ toYaml $commonVolumeMounts | nindent 12 }}
             - name: scripts
               mountPath: /scripts
+          {{- if .Values.diracx.osDbs.default.useCRT }}
+            - name: os-secret-volume
+              mountPath: /etc/config-os 
+          {{- end }}
+          envFrom:
+            - secretRef:
+                name: diracx-secrets
           env:
           {{- range $dbName,$dbSettings := .Values.diracx.osDbs.dbs }}
             - name: DIRACX_OS_DB_{{ $dbName | upper }}
@@ -65,6 +72,11 @@ spec:
           resources:
             {{- toYaml .Values.initOs.resources | nindent 12 }}
       volumes:
+      {{- if .Values.diracx.osDbs.default.useCRT }}
+      - name: os-secret-volume
+        secret: 
+          secretName: os-certs
+      {{- end }}
       - name: scripts
         configMap:
           name: {{ template "initOs.fullname" . }}

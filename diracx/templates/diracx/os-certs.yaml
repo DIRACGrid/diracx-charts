@@ -1,0 +1,15 @@
+{{- if .Values.diracx.osDbs.default.useCRT }}
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: os-certs
+  annotations:
+    "helm.sh/hook": pre-install,pre-upgrade
+    "helm.sh/hook-weight": "-1"
+type: kubernetes.io/tls
+data:
+  osca.crt: {{ index .Values.diracx.osDbs.default "osca.crt" | b64enc | quote }}
+  tls.crt: {{ index .Values.diracx.osDbs.default "tls.crt" | b64enc | quote }}
+  tls.key: {{ index .Values.diracx.osDbs.default "tls.key" | b64enc | quote }}
+{{- end }}
