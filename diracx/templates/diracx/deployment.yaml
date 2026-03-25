@@ -65,9 +65,23 @@ spec:
             claimName: pvc-coverage
         {{- end }}
         {{- if .Values.diracx.osDbs.default.useCRT }}
-        - name: os-secret-volume
+        {{- if and (hasKey .Values.diracx.osDbs.default "osca.crt") (hasKey .Values.diracx.osDbs.default "tls.crt") (hasKey .Values.diracx.osDbs.default "tls.key") }}
+        - name: os-secret-default-volume
           secret:
-            secretName: os-certs
+            secretName: os-certs-default
+        {{- end }}
+        {{- end }}
+        {{- range $dbName, $dbConfig := .Values.diracx.osDbs.dbs }}
+        {{- if kindIs "map" $dbConfig }}
+        {{- if and (hasKey $dbConfig "useCRT") ($dbConfig.useCRT) }}
+        {{- if and (hasKey $dbConfig "osca.crt") (hasKey $dbConfig "tls.crt") (hasKey $dbConfig "tls.key") }}
+        {{- $safeDbName := $dbName | lower | replace "_" "-" | replace "." "-" }}
+        - name: {{ printf "os-secret-%s-volume" $safeDbName }}
+          secret:
+            secretName: {{ printf "os-certs-%s" $safeDbName | quote }}
+        {{- end }}
+        {{- end }}
+        {{- end }}
         {{- end }}
       {{/* Define common volume mounts for reusability */}}
       {{- $commonVolumeMounts := list }}
@@ -161,9 +175,24 @@ spec:
           {{- end }}
           volumeMounts: {{ toYaml $commonVolumeMounts | nindent 12 }}
           {{- if .Values.diracx.osDbs.default.useCRT }}
-            - name: os-secret-volume
-              mountPath: /etc/config-os
-          {{- end }}
+            {{- if and (hasKey .Values.diracx.osDbs.default "osca.crt") (hasKey .Values.diracx.osDbs.default "tls.crt") (hasKey .Values.diracx.osDbs.default "tls.key") }}
+            - name: os-secret-default-volume
+              mountPath: /os-certs/default
+              readOnly: true
+            {{- end }}
+            {{- end }}
+            {{- range $dbName, $dbConfig := .Values.diracx.osDbs.dbs }}
+            {{- if kindIs "map" $dbConfig }}
+            {{- if and (hasKey $dbConfig "useCRT") ($dbConfig.useCRT) }}
+            {{- if and (hasKey $dbConfig "osca.crt") (hasKey $dbConfig "tls.crt") (hasKey $dbConfig "tls.key") }}
+            {{- $safeDbName := $dbName | lower | replace "_" "-" | replace "." "-" }}
+            - name: {{ printf "os-secret-%s-volume" $safeDbName }}
+              mountPath: {{ printf "os-certs/%s" $safeDbName }}
+              readOnly: true
+            {{- end }}
+            {{- end }}
+            {{- end }}
+            {{- end }}
           envFrom:
             # - configMapRef:
             #     name: diracx-env-config

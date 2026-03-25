@@ -164,27 +164,70 @@ generate_secret_if_needed diracx-os-root-connection-urls \
 {{- $defaultOsDbRootPassword := $.Values.diracx.osDbs.default.rootPassword }}
 {{- $defaultOsDbUser := $.Values.diracx.osDbs.default.user }}
 {{- $defaultOsDbPassword := $.Values.diracx.osDbs.default.password }}
+{{- $defaultUseCRT := $.Values.diracx.osDbs.default.useCRT | default false }}
+{{- $defaultOscaCrt := $.Values.diracx.osDbs.default.oscaCrt | default "" }}
+{{- $defaultTlsCrt := $.Values.diracx.osDbs.default.tlsCrt | default "" }}
+{{- $defaultTlsKey := $.Values.diracx.osDbs.default.tlsKey | default "" }}
+{{- $defaultCertPath := "/os-certs/default/" }}
 
 {{- range $osDbName, $osDbSettings := .Values.diracx.osDbs.dbs }}
+  {{- $useCRT := $defaultUseCRT }}
+  {{- $oscaCrt := $defaultOscaCrt }}
+  {{- $tlsCrt := $defaultTlsCrt }}
+  {{- $tlsKey := $defaultTlsKey }}
+  {{- $osDbHost := $defaultOsDbHost }}
+  {{- $connectionString := "" }}
+  {{- $rootConnectionString := "" }}
 
+  {{- $osDbRootUser := $defaultOsDbRootUser }}
+  {{- $osDbRootPassword := $defaultOsDbRootPassword }}
+  {{- $osDbUser := $defaultOsDbUser }}
+  {{- $osDbPassword := $defaultOsDbPassword }}
 
-{{- if kindIs "map" $osDbSettings }}
-{{- $osDbHost :=  $osDbSettings.host | default $defaultOsDbHost  }}
-{{- $osDbRootUser :=  $osDbSettings.rootUser | default $defaultOsDbRootUser  }}
-{{- $osDbRootPassword :=  $osDbSettings.rootPassword | default $defaultOsDbRootPassword  }}
-{{- $osDbUser := $osDbSettings.user | default $defaultOsDbUser }}
-{{- $osDbPassword :=  $osDbSettings.password | default $defaultOsDbPassword  }}
-generate_secret_if_needed diracx-os-connection-urls \
-  --from-literal=DIRACX_OS_DB_{{ $osDbName | upper }}='{"hosts": "{{ $osDbUser }}:{{ $osDbPassword }}@{{ $osDbHost }}", "use_ssl": true, "verify_certs": false}'
-generate_secret_if_needed diracx-os-root-connection-urls \
-  --from-literal=DIRACX_OS_DB_{{ $osDbName | upper }}='{"hosts": "{{ $osDbRootUser }}:{{ $osDbRootPassword }}@{{ $osDbHost }}", "use_ssl": true, "verify_certs": false}'
-{{- else }}
-generate_secret_if_needed diracx-os-connection-urls \
-  --from-literal=DIRACX_OS_DB_{{ $osDbName | upper }}='{"hosts": "{{ $defaultOsDbUser }}:{{ $defaultOsDbPassword }}@{{ $defaultOsDbHost }}", "use_ssl": true, "verify_certs": false}'
-generate_secret_if_needed diracx-os-root-connection-urls \
-  --from-literal=DIRACX_OS_DB_{{ $osDbName | upper }}='{"hosts": "{{ $defaultOsDbRootUser }}:{{ $defaultOsDbRootPassword }}@{{ $defaultOsDbHost }}", "use_ssl": true, "verify_certs": false}'
-{{- end }}
+  {{- $useCRTExplicitlySet := false }}
+  {{- if kindIs "map" $osDbSettings }}
+    {{- $osDbHost = $osDbSettings.host | default $defaultOsDbHost }}
+    {{- $osDbRootUser = $osDbSettings.rootUser | default $defaultOsDbRootUser }}
+    {{- $osDbRootPassword = $osDbSettings.rootPassword | default $defaultOsDbRootPassword }}
+    {{- $osDbUser = $osDbSettings.user | default $defaultOsDbUser }}
+    {{- $osDbPassword = $osDbSettings.password | default $defaultOsDbPassword }}
 
+    {{- /* Vérifie si useCRT est explicitement défini dans $osDbSettings */}}
+    {{- if hasKey $osDbSettings "useCRT" }}
+      {{- $useCRT = $osDbSettings.useCRT }}
+      {{- $useCRTExplicitlySet = true }}
+    {{- else }}
+      {{- $useCRT = $defaultUseCRT }}
+    {{- end }}
+
+    {{- $oscaCrt = $osDbSettings.oscaCrt | default $defaultOscaCrt }}
+    {{- $tlsCrt = $osDbSettings.tlsCrt | default $defaultTlsCrt }}
+    {{- $tlsKey = $osDbSettings.tlsKey | default $defaultTlsKey }}
+  {{- end }}
+  {{- $safeDbName := $osDbName | lower | replace "_" "-" | replace "." "-" }}
+  {{- $certPath := printf "/os-certs/%s/" $safeDbName }}
+
+  {{- $effectiveCertPath := "" }}
+
+  {{- /* Si useCRT est hérité de default, on force $effectiveCertPath à $defaultCertPath */}}
+  {{- if and $useCRT (not $useCRTExplicitlySet) }}
+    {{- $effectiveCertPath = $defaultCertPath }}
+  {{- else }}
+    {{- $effectiveCertPath = ternary $certPath $defaultCertPath (or (not $useCRT) (not $tlsCrt)) }}
+  {{- end }}
+
+  {{- if $useCRT }}
+    {{- $connectionString = printf "{\"hosts\": [\"%s\"], \"use_ssl\": true, \"verify_certs\": true, \"client_cert\": \"%stls.crt\", \"client_key\": \"%stls.key\", \"ca_certs\": \"%sosca.crt\"}" $osDbHost $effectiveCertPath $effectiveCertPath $effectiveCertPath }}
+    {{- $rootConnectionString = printf "{\"hosts\": [\"%s\"], \"use_ssl\": true, \"verify_certs\": true, \"client_cert\": \"%stls.crt\", \"client_key\": \"%stls.key\", \"ca_certs\": \"%sosca.crt\"}" $osDbHost $effectiveCertPath $effectiveCertPath $effectiveCertPath }}
+  {{- else }}
+    {{- $connectionString = printf "{\"hosts\": [\"%s:%s@%s\"], \"use_ssl\": true, \"verify_certs\": false}" $osDbUser $osDbPassword $osDbHost }}
+    {{- $rootConnectionString = printf "{\"hosts\": [\"%s:%s@%s\"], \"use_ssl\": true, \"verify_certs\": false}" $osDbRootUser $osDbRootPassword $osDbHost }}
+  {{- end }}
+
+  generate_secret_if_needed diracx-os-connection-urls \
+    --from-literal=DIRACX_OS_DB_{{ $osDbName | upper }}='{{ $connectionString }}'
+  generate_secret_if_needed diracx-os-root-connection-urls \
+    --from-literal=DIRACX_OS_DB_{{ $osDbName | upper }}='{{ $rootConnectionString }}'
 {{- end }}
 {{- end }}
 {{- end }}
