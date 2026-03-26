@@ -64,6 +64,9 @@ spec:
           persistentVolumeClaim:
             claimName: pvc-coverage
         {{- end }}
+        {{- with .Values.diracx.extraVolumes }}
+        {{- . | toYaml | nindent  8 }}
+        {{- end}}
 
       {{/* Define common volume mounts for reusability */}}
       {{- $commonVolumeMounts := list }}
@@ -155,7 +158,11 @@ spec:
             - "--reload-dir={{ .Values.developer.sourcePath }}"
             {{- end }}
           {{- end }}
-          volumeMounts: {{ toYaml $commonVolumeMounts | nindent 12 }}
+          volumeMounts:
+            {{- toYaml $commonVolumeMounts | nindent 12 }}
+            {{- with .Values.diracx.extraVolumeMounts }}
+            {{- . | toYaml | nindent  12 }}
+            {{- end}}
           envFrom:
             # - configMapRef:
             #     name: diracx-env-config
