@@ -65,6 +65,14 @@ Generates the services image path
 
 
 {{/*
+Generates the tasks image path
+*/}}
+{{- define "diracx.tasksImage" }}
+{{- include "diracx.image" (dict "registryType" .Values.global.images.tasks.registryType "repository" .Values.global.images.tasks.repository "root" .  ) }}
+{{- end }}
+
+
+{{/*
 Generates the client image path
 */}}
 {{- define "diracx.clientImage" }}
@@ -84,6 +92,13 @@ Generates the busybox image path
 */}}
 {{- define "diracx.busyboxImage" }}
 {{- include "diracx.image" (dict "registryType" .Values.global.images.busybox.registryType "repository" .Values.global.images.busybox.repository "root" . "tag" .Values.global.images.busybox.tag ) }}
+{{- end }}
+
+{{/*
+Generates the redis task image path
+*/}}
+{{- define "diracx.redisTasksImage" }}
+{{- include "diracx.image" (dict "registryType" .Values.global.images.redisTasks.registryType "repository" .Values.global.images.redisTasks.repository "root" . "tag" .Values.global.images.redisTasks.tag ) }}
 {{- end }}
 
 {{/*

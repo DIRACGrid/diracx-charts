@@ -1,0 +1,18 @@
+{{- if .Values.redisTasks.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "diracx.taskRedisServiceName" . }}
+  labels:
+    {{- include "diracx.labels" . | nindent 4 }}
+    app.kubernetes.io/component: task-redis
+spec:
+  clusterIP: None
+  ports:
+    - name: redis
+      port: {{ .Values.redisTasks.port }}
+      targetPort: redis
+      protocol: TCP
+  selector:
+    {{- include "diracxTaskRedis.selectorLabels" . | nindent 4 }}
+{{- end }}

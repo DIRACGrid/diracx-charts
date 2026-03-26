@@ -89,6 +89,11 @@ spec:
             - sleep
             - "2592000" # one month
           volumeMounts: {{ toYaml $commonVolumeMounts | nindent 12 }}
+          {{- if .Values.taskWorkers.enabled }}
+          envFrom:
+            - secretRef:
+                name: diracx-task-redis-url
+          {{- end }}
           env:
             - name: DIRACX_URL
               value: {{ .Values.developer.urls.diracx }}
