@@ -146,6 +146,7 @@ jobs:
         fi
 
   # Same as run-demo except mount the sources inside the container
+  # Uses ci_values.yaml to override image tags to "dev"
   run-demo-mount-sources:
     needs: detect-docs-only
     if: needs.detect-docs-only.outputs.docs-only != 'true'
@@ -188,7 +189,7 @@ jobs:
         # Run helm upgrade to apply the changes
         export KUBECONFIG=$PWD/.demo/kube.conf
         export HELM_DATA_HOME=$PWD/.demo/helm_data
-        $PWD/.demo/helm upgrade --debug diracx-demo $PWD/diracx --values .demo/values.yaml
+        $PWD/.demo/helm upgrade --debug diracx-demo $PWD/diracx --values .demo/values.yaml --values demo/ci_values.yaml
     - name: Verify environment variable is set correctly
       run: |
         export KUBECONFIG=$PWD/.demo/kube.conf
