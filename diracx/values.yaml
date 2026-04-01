@@ -105,7 +105,9 @@ initKeyStore:
   enabled: true
 
 cleanupAuthDB:
+  # -- Enable the AuthDB cleanup CronJob
   enabled: true
+  # -- Cron schedule for AuthDB cleanup (default: monthly on the 1st)
   schedule: "0 0 1 * *"
 
 developer:

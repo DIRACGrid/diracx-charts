@@ -3,6 +3,10 @@
 {{/* Define common volume mounts for reusability */}}
 {{- $commonVolumeMounts := list }}
 {{- $commonVolumeMounts = append $commonVolumeMounts (dict "mountPath" "/entrypoint.sh" "name" "container-entrypoint" "subPath" "entrypoint.sh") }}
+{{- if and .Values.developer.enabled .Values.developer.enableCoverage }}
+{{- $commonVolumeMounts = append $commonVolumeMounts (dict "mountPath" "/diracx-coveragerc" "name" "container-entrypoint" "subPath" "coveragerc") }}
+{{- $commonVolumeMounts = append $commonVolumeMounts (dict "mountPath" "/coverage-reports" "name" "coverage-data" "readOnly" false) }}
+{{- end }}
 {{- if and .Values.developer.enabled .Values.developer.mountedPythonModulesToInstall }}
 {{- $commonVolumeMounts = append $commonVolumeMounts (dict "mountPath" .Values.developer.sourcePath "name" "diracx-code-mount" "readOnly" true) }}
 {{- range $module := .Values.developer.mountedPythonModulesToInstall }}
@@ -29,6 +33,7 @@ spec:
           containers:
             - name: {{ .Chart.Name }}-cleanup
               image: "{{ include "diracx.servicesImage" . }}"
+              imagePullPolicy: {{ .Values.global.imagePullPolicy }}
               command: ["/bin/bash", "/entrypoint.sh"]
               args: ["/bin/bash", "/scripts/cleanup-authdb"]
               envFrom:
@@ -66,6 +71,11 @@ spec:
             emptyDir:
               sizeLimit: 5Mi
           {{- end }}
+          {{- end }}
+          {{- if and .Values.developer.enabled .Values.developer.enableCoverage }}
+          - name: coverage-data
+            persistentVolumeClaim:
+              claimName: pvc-coverage
           {{- end }}
           - name: container-entrypoint
             configMap:
