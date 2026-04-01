@@ -15,7 +15,7 @@ global:
   # -- timeout for job deadlines
   activeDeadlineSeconds: 900
   images:
-    tag: v0.0.11
+    tag: v0.0.12
 
     # Registries, can be overridden to use private cache/mirror registries
     # note that images in dependent charts (e.g. mysql) are not affected by these settings
