@@ -1,0 +1,83 @@
+{{- if .Values.cleanupAuthDB.enabled -}}
+
+{{/* Define common volume mounts for reusability */}}
+{{- $commonVolumeMounts := list }}
+{{- $commonVolumeMounts = append $commonVolumeMounts (dict "mountPath" "/entrypoint.sh" "name" "container-entrypoint" "subPath" "entrypoint.sh") }}
+{{- if and .Values.developer.enabled .Values.developer.enableCoverage }}
+{{- $commonVolumeMounts = append $commonVolumeMounts (dict "mountPath" "/diracx-coveragerc" "name" "container-entrypoint" "subPath" "coveragerc") }}
+{{- $commonVolumeMounts = append $commonVolumeMounts (dict "mountPath" "/coverage-reports" "name" "coverage-data" "readOnly" false) }}
+{{- end }}
+{{- if and .Values.developer.enabled .Values.developer.mountedPythonModulesToInstall }}
+{{- $commonVolumeMounts = append $commonVolumeMounts (dict "mountPath" .Values.developer.sourcePath "name" "diracx-code-mount" "readOnly" true) }}
+{{- range $module := .Values.developer.mountedPythonModulesToInstall }}
+{{- if $.Values.developer.editableMountedPythonModules }}
+{{- $commonVolumeMounts = append $commonVolumeMounts (dict "mountPath" (printf "%s/%s/src/%s.egg-info" $.Values.developer.sourcePath $module (replace "-" "_" (base $module))) "name" (printf "%s-editable-install" (base $module | lower)) "readOnly" false) }}
+{{- else }}
+{{- $commonVolumeMounts = append $commonVolumeMounts (dict "mountPath" (printf "%s/%s/build" $.Values.developer.sourcePath $module (replace "-" "_" (base $module))) "name" (printf "%s-editable-install" (base $module | lower)) "readOnly" false) }}
+{{- end }}
+{{- end }}
+{{- end }}
+
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: {{ template "cleanupAuthDB.fullname" . }}
+  namespace: {{ .Release.Namespace }}
+spec:
+  schedule: {{ $.Values.cleanupAuthDB.schedule | quote }}
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          restartPolicy: OnFailure
+          containers:
+            - name: {{ .Chart.Name }}-cleanup
+              image: "{{ include "diracx.servicesImage" . }}"
+              imagePullPolicy: {{ .Values.global.imagePullPolicy }}
+              command: ["/bin/bash", "/entrypoint.sh"]
+              args: ["/bin/bash", "/scripts/cleanup-authdb"]
+              envFrom:
+                - secretRef:
+                    name: diracx-secrets
+                - secretRef:
+                    name: diracx-sql-connection-urls
+                - secretRef:
+                    name: diracx-dynamic-secrets
+              volumeMounts:
+                {{ toYaml $commonVolumeMounts | nindent 16 }}
+                - name: keystore
+                  mountPath: /keystore/jwks.json
+                  subPath: jwks.json
+                - name: scripts
+                  mountPath: /scripts
+              resources:
+                {{- toYaml .Values.cleanupAuthDB.resources | nindent 16 }}
+          volumes:
+          - name: keystore
+            secret:
+              secretName: diracx-jwks
+              items:
+                - key: jwks.json
+                  path: jwks.json
+          - name: scripts
+            configMap:
+              name: {{ template "cleanupAuthDB.fullname" . }}
+          {{- if and .Values.developer.enabled .Values.developer.mountedPythonModulesToInstall }}
+          - name: diracx-code-mount
+            persistentVolumeClaim:
+              claimName: pvc-diracx-code
+          {{- range $module := .Values.developer.mountedPythonModulesToInstall }}
+          - name: {{ base $module | lower }}-editable-install
+            emptyDir:
+              sizeLimit: 5Mi
+          {{- end }}
+          {{- end }}
+          {{- if and .Values.developer.enabled .Values.developer.enableCoverage }}
+          - name: coverage-data
+            persistentVolumeClaim:
+              claimName: pvc-coverage
+          {{- end }}
+          - name: container-entrypoint
+            configMap:
+              name: diracx-container-entrypoint
+{{- end -}}

@@ -5,13 +5,15 @@ config:
 flowchart TD
 
     subgraph k8s_instance ["K8s Instance: diracx"]
-        subgraph helm_chart ["Helm Chart: diracx 1.0.19"]
+        subgraph helm_chart ["Helm Chart: diracx 1.0.20"]
             subgraph k8s_app ["K8s Application: diracx"]
                 ing_diracx{{"ing: diracx"}}
                 svc_diracx(("svc: diracx"))
                 svc_diracx_web(("svc: diracx-web"))
                 deploy_diracx["deploy: diracx"]
                 deploy_diracx_web["deploy: diracx-web"]
+                cronjob_diracx_cleanup_authdb(["cronjob: diracx-cleanup-authdb"])
+                cm_diracx_cleanup_authdb[("cm: diracx-cleanup-authdb")]
                 cm_mysql_init_diracx_dbs[("cm: mysql-init-diracx-dbs")]
                 secret_diracx_secrets>"secret: diracx-secrets"]
                 sa_diracx[["sa: diracx"]]
@@ -51,6 +53,9 @@ flowchart TD
     job_diracx_validate_config -->|"mounts"| cm_diracx_validate_config
     job_diracx_validate_config -->|"mounts"| cm_diracx_container_entrypoint
     job_diracx_validate_config -->|"env"| secret_diracx_secrets
+    cronjob_diracx_cleanup_authdb -->|"mounts"| cm_diracx_cleanup_authdb
+    cronjob_diracx_cleanup_authdb -->|"mounts"| cm_diracx_container_entrypoint
+    cronjob_diracx_cleanup_authdb -->|"env"| secret_diracx_secrets
 
     %% Styling
     classDef ing fill:#4a90d9,stroke:#2563eb,color:#ffffff
@@ -62,10 +67,12 @@ flowchart TD
     classDef cm fill:#7ec8e3,stroke:#2563eb,color:#1a1a2e
     classDef secret fill:#a78bfa,stroke:#2563eb,color:#ffffff
     classDef sa fill:#94a3b8,stroke:#2563eb,color:#ffffff
+    class cm_diracx_cleanup_authdb cm
     class cm_diracx_container_entrypoint cm
     class cm_diracx_init_keystore cm
     class cm_diracx_validate_config cm
     class cm_mysql_init_diracx_dbs cm
+    class cronjob_diracx_cleanup_authdb cronjob
     class deploy_diracx deploy
     class deploy_diracx_web deploy
     class ing_diracx ing
