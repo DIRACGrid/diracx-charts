@@ -102,7 +102,7 @@
 | global.images.ghcr_registry | string | `"ghcr.io"` |  |
 | global.images.secret_generation.repository | string | `"diracgrid/diracx/secret-generation"` |  |
 | global.images.services.repository | string | `"diracgrid/diracx/services"` |  |
-| global.images.tag | string | `"v0.0.12"` |  |
+| global.images.tag | string | `"v0.0.13"` |  |
 | global.images.web.repository | string | `"diracgrid/diracx-web/static"` |  |
 | global.images.web.tag | string | `"v0.1.0-a10"` |  |
 | global.storageClassName | string | `"standard"` |  |
