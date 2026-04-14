@@ -409,11 +409,11 @@ if [[ ! -f "${demo_dir}/helm" ]]; then
   # renovate: datasource=github-releases depName=kubernetes-sigs/kind
   KIND_VERSION="v0.31.0"
   # renovate: datasource=github-releases depName=kubernetes/kubernetes
-  KUBECTL_VERSION="v1.35.2"
+  KUBECTL_VERSION="v1.35.3"
   # renovate: datasource=github-releases depName=helm/helm versioning=loose
-  HELM_VERSION="v3.20.0"
+  HELM_VERSION="v3.20.1"
   # renovate: datasource=github-releases depName=mikefarah/yq
-  YQ_VERSION="v4.52.4"
+  YQ_VERSION="v4.52.5"
 
   printf "%b Downloading kind, kubectl, helm and yq using arkade\n" ${UNICORN_EMOJI}
   "${demo_dir}/arkade" get \
@@ -425,7 +425,7 @@ if [[ ! -f "${demo_dir}/helm" ]]; then
 
   # Install helm plugins to ${HELM_DATA_HOME}
   # renovate: datasource=github-releases depName=databus23/helm-diff
-  HELM_DIFF_VERSION="v3.15.2"
+  HELM_DIFF_VERSION="v3.15.4"
   "${demo_dir}/helm" plugin install https://github.com/databus23/helm-diff --version ${HELM_DIFF_VERSION}
 fi
 

@@ -12,13 +12,11 @@ ipython = ">=9.2.0"
 [feature.diagram.dependencies]
 python = "*"
 kubernetes-helm = "*"
-graphviz = "*"
-imagemagick = "*"
 [feature.diagram.pypi-dependencies]
-KubeDiagrams = "*"
+pyyaml = "*"
 [feature.diagram.tasks.generate-diagram]
-cmd = "helm-diagrams ./diracx --set diracx.hostname=diracx.io --set cert-manager.enabled=false --set opensearch.enabled=false --set initSecrets.enabled=False --set rabbitmq.enabled=false --set mysql.enabled=false --set dex.enabled=false --set minio.enabled=false --set cert-manager-issuer.enabled=false --set initSql.enbled=False --set initOs.enabled=false -o architecture_diagram.png && echo Do not forget to upload the generated plot following https://diracx.diracgrid.org/en/latest/dev/tutorials/write-docs/#step-6-storing-images-and-other-large-files"
-description = "Generate the architecture diagram"
+cmd = "helm template diracx ./diracx --set diracx.hostname=diracx.io --set cert-manager.enabled=false --set opensearch.enabled=false --set initSecrets.enabled=False --set rabbitmq.enabled=false --set mysql.enabled=false --set dex.enabled=false --set minio.enabled=false --set cert-manager-issuer.enabled=false --set initSql.enabled=False --set initOs.enabled=false | python scripts/generate_mermaid_diagram.py -o docs/admin/explanations/architecture_diagram.md"
+description = "Generate the architecture diagram as a Mermaid flowchart"
 
 
 # Features for running pre-commit hooks
