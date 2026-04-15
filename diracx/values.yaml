@@ -178,6 +178,12 @@ diracx:
     DIRACX_OTEL_GRPC_ENDPOINT: "diracx-demo-opentelemetry-collector:4317"
     DIRACX_OTEL_GRPC_INSECURE: "true"
 
+  # -- Additional volumes for the diracx pod, e.g. to mount CA certificates
+  extraVolumes:
+
+  # -- Additional volumeMounts for the diracx pod, e.g. to mount CA certificates
+  extraVolumeMounts:
+
   # If mysql is enabled, you are not allowed
   # to set the username passwords
   sqlDbs:

@@ -62,6 +62,8 @@
 | dex.service.ports.http.nodePort | int | `32002` |  |
 | dex.service.ports.http.port | int | `8000` |  |
 | dex.service.type | string | `"NodePort"` |  |
+| diracx.extraVolumeMounts | string | `nil` | Additional volumeMounts for the diracx pod, e.g. to mount CA certificates |
+| diracx.extraVolumes | string | `nil` | Additional volumes for the diracx pod, e.g. to mount CA certificates |
 | diracx.hostname | string | `""` | Required: The hostname where the webapp/API is running |
 | diracx.osDbs.dbs | string | `nil` | Which DiracX OpenSearch DBs are used? |
 | diracx.osDbs.default | string | `nil` |  |
