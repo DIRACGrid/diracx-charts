@@ -205,3 +205,10 @@ reduce collisions.
 {{- $rand := randAlphaNum 3 | lower }}
 {{- printf "%s-%d-%s" $name .Release.Revision $rand | trunc 63 | trimSuffix "-" -}}
 {{- end -}}
+
+{{/*
+Return the fullname template for the cleanupAuthDB cronjob.
+*/}}
+{{- define "cleanupAuthDB.fullname" -}}
+{{- printf "%s-cleanup-authdb" .Release.Name -}}
+{{- end -}}

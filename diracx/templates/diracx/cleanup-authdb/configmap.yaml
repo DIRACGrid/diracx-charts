@@ -1,0 +1,10 @@
+{{- if .Values.cleanupAuthDB.enabled -}}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ template "cleanupAuthDB.fullname" . }}
+  namespace: {{ .Release.Namespace }}
+data:
+  cleanup-authdb: |
+    {{- include (print $.Template.BasePath "/diracx/cleanup-authdb/_cleanup-authdb.sh.tpl") . | nindent 4 }}
+{{- end -}}

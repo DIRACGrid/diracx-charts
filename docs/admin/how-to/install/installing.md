@@ -301,8 +301,18 @@ In all the example below, we assume your Helm release is called `<release-name>`
     acme:
         enabled: true
         server: https://acme-staging-v02.api.letsencrypt.org/director
+    ```
 
+=== "ExternalDNS"
 
+    If your cluster provides [external-dns](https://github.com/kubernetes-sigs/external-dns) to expose ingresses and services, you can configure the ingress using a preferred IP (e.g. provided by [kube-vip](https://kube-vip.io/)). Setting the IP on the ingress and externalDNS should automatically create the entry. Otherwise you can add the following annotations:
+
+    ```yaml
+    ingress:
+    annotations:
+        external-dns.alpha.kubernetes.io/hostname: "my.hostname"
+        external-dns.alpha.kubernetes.io/target: "my.preferred.ip"
+    loadBalancerIP: "my.preferred.ip"
     ```
 
 ## Deploy diracx on your cluster

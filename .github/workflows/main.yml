@@ -67,30 +67,24 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
-      - uses: prefix-dev/setup-pixi@v0.9.4
+      - uses: prefix-dev/setup-pixi@v0.9.5
         with:
           cache: false
           environments: diagram
-      - name: Run generate-diagram
+      - name: Regenerate diagram
         run: pixi run generate-diagram
-      - name: download-current
-        run: curl -L -o diagram-current.png https://diracx-docs-static.s3.cern.ch/assets/images/admin/explanations/architecture_diragram.png
-      - name: compare-diagrams
+      - name: Check diagram is up to date
         run: |
-          normalized=$(pixi run -e diagram magick compare -metric SSIM diagram-current.png architecture_diagram.png null 2>&1 | grep -oP '(?<=\()[\d.]+(?=\))')
-          echo "The difference between the diagrams is: ${normalized}"
-          if [ "$(echo "$normalized < 0.02" | bc -l)" -eq 1 ]; then
-            echo "Images are very similar"
-          else
-            echo "Images are different"
+          if ! git diff --exit-code docs/admin/explanations/architecture_diagram.md; then
+            echo "::error::architecture_diagram.md is out of date. Run 'pixi run generate-diagram' and commit the result."
             exit 1
           fi
-      - name: upload-image
+      - name: Upload diagram on failure
         uses: actions/upload-artifact@v7
         with:
-          name: architeture-diagram
-          path: architecture_diagram.png
-        if: ${{ failure() }}
+          name: architecture-diagram
+          path: docs/admin/explanations/architecture_diagram.md
+        if: failure()
 
   run-demo:
     needs: detect-docs-only
@@ -146,6 +140,7 @@ jobs:
         fi
 
   # Same as run-demo except mount the sources inside the container
+  # Uses ci_values.yaml to override image tags to "dev"
   run-demo-mount-sources:
     needs: detect-docs-only
     if: needs.detect-docs-only.outputs.docs-only != 'true'
@@ -188,7 +183,7 @@ jobs:
         # Run helm upgrade to apply the changes
         export KUBECONFIG=$PWD/.demo/kube.conf
         export HELM_DATA_HOME=$PWD/.demo/helm_data
-        $PWD/.demo/helm upgrade --debug diracx-demo $PWD/diracx --values .demo/values.yaml
+        $PWD/.demo/helm upgrade --debug diracx-demo $PWD/diracx --values .demo/values.yaml --values demo/ci_values.yaml
     - name: Verify environment variable is set correctly
       run: |
         export KUBECONFIG=$PWD/.demo/kube.conf

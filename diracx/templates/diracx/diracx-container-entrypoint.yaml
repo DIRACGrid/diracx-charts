@@ -13,7 +13,11 @@ data:
     IFS=$'\n\t'
 
     ulimit -n 8192
-    eval "$(micromamba shell hook --shell=posix)" && micromamba activate base
+    if [ -f "/activate.sh" ]; then
+      source /activate.sh
+    else
+      eval "$(micromamba shell hook --shell=posix)" && micromamba activate base
+    fi
 
     {{ if .Values.diracx.pythonModulesToInstall }}
     pip install{{ if .Values.developer.offline }} --no-build-isolation{{ end }} {{- range $moduleSpec := .Values.diracx.pythonModulesToInstall }} {{ $moduleSpec | quote }} {{- end }}

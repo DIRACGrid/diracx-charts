@@ -24,6 +24,8 @@
 | cert-manager.enabled | bool | `true` |  |
 | cert-manager.installCRDs | bool | `true` |  |
 | cert-manager.startupapicheck.enabled | bool | `true` |  |
+| cleanupAuthDB.enabled | bool | `true` | Enable the AuthDB cleanup CronJob |
+| cleanupAuthDB.schedule | string | `"0 0 1 * *"` | Cron schedule for AuthDB cleanup (default: monthly on the 1st) |
 | developer.autoReload | bool | `true` | Enable automatic reloading inside uvicorn when the sources change Used by the integration tests for running closer to prod setup |
 | developer.editableMountedPythonModules | bool | `true` | Use pip install -e for mountedPythonModulesToInstall This is used by the integration tests because editable install might behave differently |
 | developer.enableCoverage | bool | `false` | Enable collection of coverage reports (intended for CI usage only) |
@@ -100,7 +102,7 @@
 | global.images.ghcr_registry | string | `"ghcr.io"` |  |
 | global.images.secret_generation.repository | string | `"diracgrid/diracx/secret-generation"` |  |
 | global.images.services.repository | string | `"diracgrid/diracx/services"` |  |
-| global.images.tag | string | `"v0.0.10"` |  |
+| global.images.tag | string | `"v0.0.14"` |  |
 | global.images.web.repository | string | `"diracgrid/diracx-web/static"` |  |
 | global.images.web.tag | string | `"v0.1.0-a10"` |  |
 | global.storageClassName | string | `"standard"` |  |
