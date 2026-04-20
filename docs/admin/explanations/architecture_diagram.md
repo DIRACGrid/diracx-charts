@@ -5,7 +5,7 @@ config:
 flowchart TD
 
     subgraph k8s_instance ["K8s Instance: diracx"]
-        subgraph helm_chart ["Helm Chart: diracx 1.0.22"]
+        subgraph helm_chart ["Helm Chart: diracx 1.0.26"]
             subgraph k8s_app ["K8s Application: diracx"]
                 ing_diracx{{"ing: diracx"}}
                 svc_diracx(("svc: diracx"))
@@ -15,12 +15,12 @@ flowchart TD
                 cronjob_diracx_cleanup_authdb(["cronjob: diracx-cleanup-authdb"])
                 cm_diracx_cleanup_authdb[("cm: diracx-cleanup-authdb")]
                 cm_mysql_init_diracx_dbs[("cm: mysql-init-diracx-dbs")]
-                secret_diracx_secrets>"secret: diracx-secrets"]
                 sa_diracx[["sa: diracx"]]
             end
 
             subgraph hook_post_install_pre_upgrade ["post-install,pre-upgrade"]
                 cm_diracx_validate_config[("cm: diracx-validate-config")]
+                job_diracx_validate_config(["job: diracx-validate-config"])
             end
 
             subgraph hook_pre_install ["pre-install"]
@@ -30,10 +30,7 @@ flowchart TD
 
             subgraph hook_pre_install_pre_upgrade ["pre-install,pre-upgrade"]
                 cm_diracx_container_entrypoint[("cm: diracx-container-entrypoint")]
-            end
-
-            subgraph hook_pre_upgrade ["pre-upgrade"]
-                job_diracx_validate_config(["job: diracx-validate-config"])
+                secret_diracx_secrets>"secret: diracx-secrets"]
             end
         end
     end
@@ -88,4 +85,3 @@ flowchart TD
     style hook_post_install_pre_upgrade fill:#10b98110,stroke:#10b981,stroke-width:1px,color:#10b981
     style hook_pre_install fill:#10b98110,stroke:#10b981,stroke-width:1px,color:#10b981
     style hook_pre_install_pre_upgrade fill:#10b98110,stroke:#10b981,stroke-width:1px,color:#10b981
-    style hook_pre_upgrade fill:#10b98110,stroke:#10b981,stroke-width:1px,color:#10b981
