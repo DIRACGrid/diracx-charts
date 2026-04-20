@@ -104,7 +104,7 @@
 | global.images.services.repository | string | `"diracgrid/diracx/services"` |  |
 | global.images.tag | string | `"v0.0.14"` |  |
 | global.images.web.repository | string | `"diracgrid/diracx-web/static"` |  |
-| global.images.web.tag | string | `"v0.1.0-a10"` |  |
+| global.images.web.tag | string | `"v0.1.0-a11"` |  |
 | global.storageClassName | string | `"standard"` |  |
 | grafana.datasources."datasources.yaml".apiVersion | int | `1` |  |
 | grafana.datasources."datasources.yaml".datasources[0].name | string | `"Jaeger"` |  |
