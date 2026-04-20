@@ -38,7 +38,7 @@ global:
       registryType: dockerhub
 
     web:
-      tag: v0.1.0-a10
+      tag: v0.1.0-a11
       repository: diracgrid/diracx-web/static
 
 # Number of diracx pods
