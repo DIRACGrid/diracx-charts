@@ -22,7 +22,9 @@ metadata:
   name: {{ template "validateConfig.jobname" . }}
   namespace: {{ .Release.Namespace }}
   annotations:
-    "helm.sh/hook": pre-upgrade
+    "helm.sh/hook": post-install,pre-upgrade
+    "helm.sh/hook-weight": "-4"
+    "helm.sh/hook-delete-policy": hook-succeeded,before-hook-creation
 spec:
   backoffLimit: 2
   ttlSecondsAfterFinished: {{ .Values.global.batchJobTTL }}
