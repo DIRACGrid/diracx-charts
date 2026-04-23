@@ -94,7 +94,7 @@ spec:
         - name: wait-for-task-redis
           image: "{{ include "diracx.busyboxImage" . }}"
           imagePullPolicy: IfNotPresent
-          command: ['sh', '-c', 'until nc -vz {{ include "diracx.taskRedisServiceName" . }} {{ .Values.redisTasks.port }}; do echo "Waiting for task redis..."; sleep 3; done;']
+          command: ['sh', '-c', 'until nc -vz {{ include "diracx.taskRedisName" . }} {{ .Values.redisTasks.port }}; do echo "Waiting for task redis..."; sleep 3; done;']
         {{- end }}
       containers:
         - name: {{ .Chart.Name }}-task-scheduler

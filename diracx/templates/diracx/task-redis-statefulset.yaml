@@ -7,7 +7,7 @@ metadata:
     {{- include "diracx.labels" . | nindent 4 }}
     app.kubernetes.io/component: task-redis
 spec:
-  serviceName: {{ include "diracx.taskRedisServiceName" . }}
+  serviceName: {{ include "diracx.taskRedisName" . }}
   replicas: 1
   selector:
     matchLabels:

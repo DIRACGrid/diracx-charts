@@ -66,10 +66,6 @@ app.kubernetes.io/instance: {{ .Release.Name }}-task-redis
 {{- printf "%s-task-redis" (include "diracx.fullname" .) | trunc 63 | trimSuffix "-" -}}
 {{- end -}}
 
-{{- define "diracx.taskRedisServiceName" -}}
-{{- include "diracx.taskRedisName" . -}}
-{{- end -}}
-
 {{- define "diracx.taskWorkerName" -}}
 {{- $root := .root -}}
 {{- $size := .size -}}

@@ -136,7 +136,7 @@ generate_secret_if_needed diracx-sql-root-connection-urls \
 # Generate the Redis URL secret for the task broker
 {{- if .Values.redisTasks.enabled }}
 generate_secret_if_needed diracx-task-redis-url \
-  --from-literal=DIRACX_TASKS_REDIS_URL="redis://{{ include "diracx.taskRedisServiceName" . }}:{{ .Values.redisTasks.port }}"
+  --from-literal=DIRACX_TASKS_REDIS_URL="redis://{{ include "diracx.taskRedisName" . }}:{{ .Values.redisTasks.port }}"
 {{- else if .Values.diracx.tasks.redis_url }}
 generate_secret_if_needed diracx-task-redis-url \
   --from-literal=DIRACX_TASKS_REDIS_URL="{{ .Values.diracx.tasks.redis_url }}"
