@@ -57,6 +57,36 @@ app.kubernetes.io/instance: {{ .Release.Name }}-web
 app.kubernetes.io/name: {{ include "diracx.name" . }}-cli
 app.kubernetes.io/instance: {{ .Release.Name }}-cli
 {{- end }}
+{{- define "diracxTaskRedis.selectorLabels" -}}
+app.kubernetes.io/name: {{ include "diracx.name" . }}-task-redis
+app.kubernetes.io/instance: {{ .Release.Name }}-task-redis
+{{- end }}
+
+{{- define "diracx.taskRedisName" -}}
+{{- printf "%s-task-redis" (include "diracx.fullname" .) | trunc 63 | trimSuffix "-" -}}
+{{- end -}}
+
+{{- define "diracx.taskWorkerName" -}}
+{{- $root := .root -}}
+{{- $size := .size -}}
+{{- printf "%s-task-worker-%s" (include "diracx.fullname" $root) $size | trunc 63 | trimSuffix "-" -}}
+{{- end -}}
+
+{{- define "diracxTaskWorker.selectorLabels" -}}
+{{- $root := .root -}}
+{{- $size := .size -}}
+app.kubernetes.io/name: {{ include "diracx.name" $root }}-task-worker-{{ $size }}
+app.kubernetes.io/instance: {{ $root.Release.Name }}-task-worker-{{ $size }}
+{{- end }}
+
+{{- define "diracx.taskSchedulerName" -}}
+{{- printf "%s-task-scheduler" (include "diracx.fullname" .) | trunc 63 | trimSuffix "-" -}}
+{{- end -}}
+
+{{- define "diracxTaskScheduler.selectorLabels" -}}
+app.kubernetes.io/name: {{ include "diracx.name" . }}-task-scheduler
+app.kubernetes.io/instance: {{ .Release.Name }}-task-scheduler
+{{- end }}
 
 {{/*
 Create the name of the service account to use

@@ -25,6 +25,8 @@ global:
     # Image repositories
     services:
       repository: diracgrid/diracx/services
+    tasks:
+      repository: diracgrid/diracx/tasks
     client:
       repository: diracgrid/diracx/client
     secret_generation:
@@ -37,6 +39,11 @@ global:
       repository: "library/busybox"
       registryType: dockerhub
 
+    redisTasks:
+      tag: "7.4.2-alpine"
+      repository: "library/redis"
+      registryType: dockerhub
+
     web:
       tag: v0.1.0-a11
       repository: diracgrid/diracx-web/static
@@ -45,6 +52,50 @@ global:
 replicaCount: 1
 # Number of web pods
 replicaCountWeb: 1
+
+redisTasks:
+  enabled: true
+  port: 6379
+  resources: {}
+
+taskWorkers:
+  enabled: true
+  scheduler:
+    resources: {}
+  workers:
+    small:
+      replicaCount: 1
+      maxConcurrentTasks: 10
+      resources:
+        {}
+        # limits:
+        #   cpu: 100m
+        #   memory: 128Mi
+        # requests:
+        #   cpu: 100m
+        #   memory: 128Mi
+    medium:
+      replicaCount: 1
+      maxConcurrentTasks: 10
+      resources:
+        {}
+        # limits:
+        #   cpu: 500m
+        #   memory: 512Mi
+        # requests:
+        #   cpu: 500m
+        #   memory: 512Mi
+    large:
+      replicaCount: 1
+      maxConcurrentTasks: 10
+      resources:
+        {}
+        # limits:
+        #   cpu: 2000m
+        #   memory: 2Gi
+        # requests:
+        #   cpu: 2000m
+        #   memory: 2Gi
 
 # Created with
 # kubectl create secret generic regcred \
@@ -143,6 +194,12 @@ developer:
 diracx:
   # -- Required: The hostname where the webapp/API is running
   hostname: ""
+
+  # -- Task worker configuration
+  tasks:
+    # -- Redis URL used when redisTasks.enabled is false and an external Redis is needed
+    # redis_url: "redis://my-external-redis:6379"
+
   # -- Settings to inject into the API container via environment variables
   # @default -- "e.g. DIRACX_CONFIG_BACKEND_URL=..."
   settings:

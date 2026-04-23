@@ -1,14 +1,18 @@
+{{- if .Values.taskWorkers.enabled }}
+---
 apiVersion: apps/v1
-kind: Deployment
+kind: StatefulSet
 metadata:
-  name: {{ include "diracx.fullname" . }}
+  name: {{ include "diracx.taskSchedulerName" . }}
   labels:
     {{- include "diracx.labels" . | nindent 4 }}
+    app.kubernetes.io/component: task-scheduler
+    app.kubernetes.io/part-of: diracx-tasks
 spec:
-  replicas: {{ .Values.replicaCount }}
+  replicas: 1
   selector:
     matchLabels:
-      {{- include "diracx.selectorLabels" . | nindent 6 }}
+      {{- include "diracxTaskScheduler.selectorLabels" . | nindent 6 }}
   template:
     metadata:
       annotations:
@@ -19,17 +23,13 @@ spec:
         checksum/init-settings: {{ include (print $.Template.BasePath "/diracx/init-secrets/configmap.yaml") . | sha256sum }}
         checksum/entrypoint: {{ include (print $.Template.BasePath "/diracx/diracx-container-entrypoint.yaml") . | sha256sum }}
       labels:
-        {{- include "diracx.selectorLabels" . | nindent 8 }}
+        {{- include "diracxTaskScheduler.selectorLabels" . | nindent 8 }}
+        app.kubernetes.io/component: task-scheduler
+        app.kubernetes.io/part-of: diracx-tasks
     spec:
       {{- with .Values.imagePullSecrets }}
       imagePullSecrets:
         {{- toYaml . | nindent 8 }}
-      {{- end }}
-      {{- if .Values.developer.ipAlias }}
-      hostAliases:
-        - ip: {{ .Values.developer.ipAlias }}
-          hostnames:
-          - {{ required "diracx.hostname must be set!" .Values.diracx.hostname }}
       {{- end }}
       serviceAccountName: {{ include "diracx.serviceAccountName" . }}
       securityContext:
@@ -65,7 +65,6 @@ spec:
             claimName: pvc-coverage
         {{- end }}
 
-      {{/* Define common volume mounts for reusability */}}
       {{- $commonVolumeMounts := list }}
       {{- if .Values.developer.enabled }}
       {{- $commonVolumeMounts = append $commonVolumeMounts (dict "mountPath" "/cs_store" "name" "cs-store-mount" "readOnly" false) }}
@@ -76,7 +75,7 @@ spec:
       {{- $commonVolumeMounts = append $commonVolumeMounts (dict "mountPath" "/diracx-coveragerc" "name" "container-entrypoint" "subPath" "coveragerc") }}
       {{- $commonVolumeMounts = append $commonVolumeMounts (dict "mountPath" "/coverage-reports" "name" "coverage-data" "readOnly" false) }}
       {{- end }}
-      {{- if .Values.developer.mountedPythonModulesToInstall }}
+      {{- if and .Values.developer.enabled .Values.developer.mountedPythonModulesToInstall }}
       {{- $commonVolumeMounts = append $commonVolumeMounts (dict "mountPath" .Values.developer.sourcePath "name" "diracx-code-mount" "readOnly" true) }}
       {{- range $module := .Values.developer.mountedPythonModulesToInstall }}
       {{- if $.Values.developer.editableMountedPythonModules }}
@@ -86,79 +85,29 @@ spec:
       {{- end }}
       {{- end }}
       {{- end }}
-      {{- if or .Values.mysql.enabled .Values.opensearch.enabled .Values.minio.enabled }}
       initContainers:
-      {{- end }}
-        {{- if .Values.mysql.enabled }}
-        - name: wait-for-mysql
+        - name: wait-for-diracx
           image: "{{ include "diracx.busyboxImage" . }}"
           imagePullPolicy: IfNotPresent
-          command: ['sh', '-c', 'until nc -vz {{ .Release.Name }}-mysql 3306; do echo "Waiting for mysql..."; sleep 3; done;']
-        {{- end }}
-        {{- if .Values.opensearch.enabled }}
-        - name: wait-for-opensearch
+          command: ['sh', '-c', 'until nc -vz {{ include "diracx.fullname" . }} {{ .Values.diracx.service.port }}; do echo "Waiting for diracx..."; sleep 3; done;']
+        {{- if .Values.redisTasks.enabled }}
+        - name: wait-for-task-redis
           image: "{{ include "diracx.busyboxImage" . }}"
           imagePullPolicy: IfNotPresent
-          command: ['sh', '-c', 'until nc -vz  opensearch-cluster-master 9200; do echo "Waiting for opensearch..."; sleep 3; done;']
-        {{- end }}
-        {{- if .Values.minio.enabled }}
-        - name: wait-for-minio
-          image: "{{ include "diracx.busyboxImage" . }}"
-          imagePullPolicy: IfNotPresent
-          command: ['sh', '-c', 'until echo -e "HEAD /minio/health/live HTTP/1.1\nHost: {{ .Release.Name }}-minio\nConnection: close\n" | nc {{ .Release.Name }}-minio:9000 | grep "HTTP/1.1 200 OK"; do echo "Waiting for minio..."; sleep 3; done;']
+          command: ['sh', '-c', 'until nc -vz {{ include "diracx.taskRedisName" . }} {{ .Values.redisTasks.port }}; do echo "Waiting for task redis..."; sleep 3; done;']
         {{- end }}
       containers:
-        - name: {{ .Chart.Name }}
+        - name: {{ .Chart.Name }}-task-scheduler
           securityContext:
             {{- toYaml .Values.securityContext | nindent 12 }}
-          image: "{{ include "diracx.servicesImage" . }}"
+          image: "{{ include "diracx.tasksImage" . }}"
           imagePullPolicy: {{ .Values.global.imagePullPolicy }}
-          ports:
-            - name: http
-              containerPort: {{ .Values.diracx.service.port }}
-              protocol: TCP
-          livenessProbe:
-            httpGet:
-              path: /api/health/live
-              port: http
-            timeoutSeconds: 15
-            periodSeconds: 20
-            successThreshold: 1
-            failureThreshold: 3
-          readinessProbe:
-            httpGet:
-              path: /api/health/ready
-              port: http
-            timeoutSeconds: 15
-            periodSeconds: 20
-            successThreshold: 1
-            failureThreshold: 3
-          startupProbe:
-            httpGet:
-              path: /api/health/startup
-              port: http
-            timeoutSeconds: 5
-            periodSeconds: 5
-            failureThreshold: 30
           command: [ "/usr/local/bin/_entrypoint.sh", "tini", "--", "bash", "/entrypoint.sh" ]
           args:
-            - uvicorn
-            - --factory
-            - diracx.routers:create_app
-            - --host=0.0.0.0
-            - --port={{ .Values.diracx.service.port }}
-            - "--proxy-headers"
-            - "--forwarded-allow-ips=*"
-          {{- if and .Values.developer.enabled .Values.developer.autoReload }}
-            - "--reload"
-            {{- if .Values.developer.mountedPythonModulesToInstall }}
-            - "--reload-dir={{ .Values.developer.sourcePath }}"
-            {{- end }}
-          {{- end }}
+            - diracx-task-run
+            - scheduler
           volumeMounts: {{ toYaml $commonVolumeMounts | nindent 12 }}
           envFrom:
-            # - configMapRef:
-            #     name: diracx-env-config
             - secretRef:
                 name: diracx-secrets
             - secretRef:
@@ -171,12 +120,10 @@ spec:
             - secretRef:
                 name: diracx-os-connection-urls
             {{- end }}
-            {{- if .Values.taskWorkers.enabled }}
             - secretRef:
                 name: diracx-task-redis-url
-            {{- end }}
           resources:
-            {{- toYaml .Values.resources | nindent 12 }}
+            {{- toYaml (.Values.taskWorkers.scheduler.resources | default .Values.resources | default dict) | nindent 12 }}
       {{- with .Values.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}
@@ -189,3 +136,4 @@ spec:
       tolerations:
         {{- toYaml . | nindent 8 }}
       {{- end }}
+{{- end }}
