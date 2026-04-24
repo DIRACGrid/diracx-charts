@@ -197,6 +197,10 @@ generate_secret_if_needed diracx-os-root-connection-urls \
 {{- $osConnectionString := "" }}
 {{- $osRootConnectionString := "" }}
 
+{{- if or (not $osDbSettings) }}
+{{- $osDbSettings = $.Values.diracx.osDbs.default }}
+{{- end }}
+
 {{- if kindIs "map" $osDbSettings }}
 {{- $osSafeDbName := $osDbName | lower | replace "_" "-" | replace "." "-" }}
 {{- if and (hasKey $osDbSettings "ca.crt") (hasKey $osDbSettings "tls.crt") (hasKey $osDbSettings "tls.key") }}
