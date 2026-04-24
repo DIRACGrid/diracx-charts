@@ -64,7 +64,21 @@ spec:
           persistentVolumeClaim:
             claimName: pvc-coverage
         {{- end }}
-
+        {{- if and (hasKey .Values.diracx.osDbs.default "ca.crt") (hasKey .Values.diracx.osDbs.default "tls.crt") (hasKey .Values.diracx.osDbs.default "tls.key") }}
+        - name: os-secret-default-volume
+          secret:
+            secretName: os-certs-default
+        {{- end }}
+        {{- range $dbName, $dbConfig := .Values.diracx.osDbs.dbs }}
+        {{- if kindIs "map" $dbConfig }}
+        {{- if and (hasKey $dbConfig "ca.crt") (hasKey $dbConfig "tls.crt") (hasKey $dbConfig "tls.key") }}
+        {{- $safeDbName := $dbName | lower | replace "_" "-" | replace "." "-" }}
+        - name: {{ printf "os-secret-%s-volume" $safeDbName }}
+          secret:
+            secretName: {{ printf "os-certs-%s" $safeDbName | quote }}
+        {{- end }}
+        {{- end }}
+        {{- end }}
       {{/* Define common volume mounts for reusability */}}
       {{- $commonVolumeMounts := list }}
       {{- if .Values.developer.enabled }}
@@ -156,6 +170,21 @@ spec:
             {{- end }}
           {{- end }}
           volumeMounts: {{ toYaml $commonVolumeMounts | nindent 12 }}
+            {{- if and (hasKey .Values.diracx.osDbs.default "ca.crt") (hasKey .Values.diracx.osDbs.default "tls.crt") (hasKey .Values.diracx.osDbs.default "tls.key") }}
+            - name: os-secret-default-volume
+              mountPath: /os-certs/default
+              readOnly: true
+            {{- end }}
+            {{- range $dbName, $dbConfig := .Values.diracx.osDbs.dbs }}
+            {{- if kindIs "map" $dbConfig }}
+            {{- if and (hasKey $dbConfig "ca.crt") (hasKey $dbConfig "tls.crt") (hasKey $dbConfig "tls.key") }}
+            {{- $safeDbName := $dbName | lower | replace "_" "-" | replace "." "-" }}
+            - name: {{ printf "os-secret-%s-volume" $safeDbName }}
+              mountPath: {{ printf "os-certs/%s" $safeDbName }}
+              readOnly: true
+            {{- end }}
+            {{- end }}
+            {{- end }}
           envFrom:
             # - configMapRef:
             #     name: diracx-env-config
