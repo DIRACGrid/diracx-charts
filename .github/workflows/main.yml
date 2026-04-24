@@ -54,37 +54,13 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v6
-    - uses: actions/setup-python@v6
+    - uses: prefix-dev/setup-pixi@v0.9.5
       with:
-        python-version: 3.x
+        cache: false
+        environments: pre-commit
     - uses: pre-commit/action@v3.0.1
     - uses: pre-commit-ci/lite-action@v1.1.0
       if: always()
-
-  update-diagram:
-    needs: detect-docs-only
-    if: needs.detect-docs-only.outputs.docs-only != 'true'
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v6
-      - uses: prefix-dev/setup-pixi@v0.9.5
-        with:
-          cache: false
-          environments: diagram
-      - name: Regenerate diagram
-        run: pixi run generate-diagram
-      - name: Check diagram is up to date
-        run: |
-          if ! git diff --exit-code docs/admin/explanations/architecture_diagram.md; then
-            echo "::error::architecture_diagram.md is out of date. Run 'pixi run generate-diagram' and commit the result."
-            exit 1
-          fi
-      - name: Upload diagram on failure
-        uses: actions/upload-artifact@v7
-        with:
-          name: architecture-diagram
-          path: docs/admin/explanations/architecture_diagram.md
-        if: failure()
 
   run-demo:
     needs: detect-docs-only
@@ -120,17 +96,8 @@ jobs:
 
         echo "SUCCESS: Environment variable DIRACX_SERVICE_AUTH_REFRESH_TOKEN_EXPIRE_MINUTES is correctly set to 12345"
     - name: Debugging information
-      run: |
-        export KUBECONFIG=$PWD/.demo/kube.conf
-        .demo/kubectl get pods
-        for pod_name in $(.demo/kubectl get pods -o json | jq -r '.items[] | .metadata.name' | grep -vE '(dex|minio|mysql|rabbitmq|opensearch)'); do
-          echo "${pod_name}"
-          .demo/kubectl describe pod/"${pod_name}" || true
-          for container_name in $(.demo/kubectl get pods $pod_name -o jsonpath='{.spec.initContainers[*].name} {.spec.containers[*].name}'); do
-            echo $pod_name $container_name
-            .demo/kubectl logs "${pod_name}" -c "${container_name}" || true
-          done
-        done
+      if: always()
+      run: curl https://raw.githubusercontent.com/DIRACGrid/diracx/refs/heads/main/.github/scripts/collect-k8s-debug-info.sh | bash -s -- "$PWD/.demo"
     - name: Check for success
       run: |
         if [ ! -f ".demo/.success" ]; then

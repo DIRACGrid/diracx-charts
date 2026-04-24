@@ -73,6 +73,7 @@
 | diracx.settings.DIRACX_SERVICE_AUTH_TOKEN_KEYSTORE | string | `"file:///keystore/jwks.json"` | path storing the token key |
 | diracx.sqlDbs.dbs | string | `nil` | Which DiracX MySQL DBs are used? |
 | diracx.sqlDbs.default | string | `nil` | default credentials |
+| diracx.tasks | string | `nil` | Task worker configuration |
 | diracxWeb.branch | string | `""` |  |
 | diracxWeb.repoURL | string | `""` | install specification to pass to npm before launching container |
 | diracxWeb.service.port | int | `8080` |  |
@@ -100,11 +101,15 @@
 | global.images.diracx_base_image.repository | string | `"diracgrid/diracx/base"` |  |
 | global.images.dockerhub_registry | string | `"docker.io"` |  |
 | global.images.ghcr_registry | string | `"ghcr.io"` |  |
+| global.images.redisTasks.registryType | string | `"dockerhub"` |  |
+| global.images.redisTasks.repository | string | `"library/redis"` |  |
+| global.images.redisTasks.tag | string | `"7.4.2-alpine"` |  |
 | global.images.secret_generation.repository | string | `"diracgrid/diracx/secret-generation"` |  |
 | global.images.services.repository | string | `"diracgrid/diracx/services"` |  |
 | global.images.tag | string | `"v0.0.14"` |  |
+| global.images.tasks.repository | string | `"diracgrid/diracx/tasks"` |  |
 | global.images.web.repository | string | `"diracgrid/diracx-web/static"` |  |
-| global.images.web.tag | string | `"v0.1.0-a10"` |  |
+| global.images.web.tag | string | `"v0.1.0-a11"` |  |
 | global.storageClassName | string | `"standard"` |  |
 | grafana.datasources."datasources.yaml".apiVersion | int | `1` |  |
 | grafana.datasources."datasources.yaml".datasources[0].name | string | `"Jaeger"` |  |
@@ -241,12 +246,26 @@
 | rabbitmq.containerSecurityContext.enabled | bool | `false` |  |
 | rabbitmq.enabled | bool | `false` |  |
 | rabbitmq.podSecurityContext.enabled | bool | `false` |  |
+| redisTasks.enabled | bool | `true` |  |
+| redisTasks.port | int | `6379` |  |
+| redisTasks.resources | object | `{}` |  |
 | replicaCount | int | `1` |  |
 | replicaCountWeb | int | `1` |  |
 | securityContext | object | `{}` |  |
 | serviceAccount.annotations | object | `{}` | Annotations to add to the service account |
 | serviceAccount.create | bool | `true` | Specifies whether a service account should be created |
 | serviceAccount.name | string | `""` | The name of the service account to use. If not set and create is true, a name is generated using the fullname template |
+| taskWorkers.enabled | bool | `true` |  |
+| taskWorkers.scheduler.resources | object | `{}` |  |
+| taskWorkers.workers.large.maxConcurrentTasks | int | `10` |  |
+| taskWorkers.workers.large.replicaCount | int | `1` |  |
+| taskWorkers.workers.large.resources | object | `{}` |  |
+| taskWorkers.workers.medium.maxConcurrentTasks | int | `10` |  |
+| taskWorkers.workers.medium.replicaCount | int | `1` |  |
+| taskWorkers.workers.medium.resources | object | `{}` |  |
+| taskWorkers.workers.small.maxConcurrentTasks | int | `10` |  |
+| taskWorkers.workers.small.replicaCount | int | `1` |  |
+| taskWorkers.workers.small.resources | object | `{}` |  |
 | tolerations | list | `[]` |  |
 
 ----------------------------------------------
