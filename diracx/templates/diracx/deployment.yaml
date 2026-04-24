@@ -64,10 +64,12 @@ spec:
           persistentVolumeClaim:
             claimName: pvc-coverage
         {{- end }}
+        {{- if kindIs "map" .Values.diracx.osDbs.default }}
         {{- if and (hasKey .Values.diracx.osDbs.default "ca.crt") (hasKey .Values.diracx.osDbs.default "tls.crt") (hasKey .Values.diracx.osDbs.default "tls.key") }}
         - name: os-secret-default-volume
           secret:
             secretName: os-certs-default
+        {{- end }}
         {{- end }}
         {{- range $dbName, $dbConfig := .Values.diracx.osDbs.dbs }}
         {{- if kindIs "map" $dbConfig }}
@@ -170,10 +172,12 @@ spec:
             {{- end }}
           {{- end }}
           volumeMounts: {{ toYaml $commonVolumeMounts | nindent 12 }}
+            {{- if kindIs "map" .Values.diracx.osDbs.default }}
             {{- if and (hasKey .Values.diracx.osDbs.default "ca.crt") (hasKey .Values.diracx.osDbs.default "tls.crt") (hasKey .Values.diracx.osDbs.default "tls.key") }}
             - name: os-secret-default-volume
               mountPath: /os-certs/default
               readOnly: true
+            {{- end }}
             {{- end }}
             {{- range $dbName, $dbConfig := .Values.diracx.osDbs.dbs }}
             {{- if kindIs "map" $dbConfig }}
