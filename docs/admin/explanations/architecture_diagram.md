@@ -5,7 +5,7 @@ config:
 flowchart TD
 
     subgraph k8s_instance ["K8s Instance: diracx"]
-        subgraph helm_chart ["Helm Chart: diracx-1.1.0 beta.1"]
+        subgraph helm_chart ["Helm Chart: diracx-1.1.0 beta.2"]
             subgraph k8s_app ["K8s Application: diracx"]
                 ing_diracx{{"ing: diracx"}}
                 svc_diracx(("svc: diracx"))
@@ -21,6 +21,7 @@ flowchart TD
                 cronjob_diracx_cleanup_authdb(["cronjob: diracx-cleanup-authdb"])
                 cm_diracx_cleanup_authdb[("cm: diracx-cleanup-authdb")]
                 cm_mysql_init_diracx_dbs[("cm: mysql-init-diracx-dbs")]
+                secret_diracx_secrets>"secret: diracx-secrets"]
                 sa_diracx[["sa: diracx"]]
             end
 
@@ -36,7 +37,7 @@ flowchart TD
 
             subgraph hook_pre_install_pre_upgrade ["pre-install,pre-upgrade"]
                 cm_diracx_container_entrypoint[("cm: diracx-container-entrypoint")]
-                secret_diracx_secrets>"secret: diracx-secrets"]
+                secret_diracx_validate_config_secrets>"secret: diracx-validate-config-secrets"]
             end
         end
     end
@@ -69,7 +70,7 @@ flowchart TD
     job_diracx_init_keystore -->|"mounts"| cm_diracx_container_entrypoint
     job_diracx_validate_config -->|"mounts"| cm_diracx_validate_config
     job_diracx_validate_config -->|"mounts"| cm_diracx_container_entrypoint
-    job_diracx_validate_config -->|"env"| secret_diracx_secrets
+    job_diracx_validate_config -->|"env"| secret_diracx_validate_config_secrets
     cronjob_diracx_cleanup_authdb -->|"mounts"| cm_diracx_cleanup_authdb
     cronjob_diracx_cleanup_authdb -->|"mounts"| cm_diracx_container_entrypoint
     cronjob_diracx_cleanup_authdb -->|"env"| secret_diracx_secrets
@@ -99,6 +100,7 @@ flowchart TD
     class job_diracx_init_keystore job
     class job_diracx_validate_config job
     class secret_diracx_secrets secret
+    class secret_diracx_validate_config_secrets secret
     class svc_diracx svc
     class svc_diracx_task_redis svc
     class svc_diracx_web svc
