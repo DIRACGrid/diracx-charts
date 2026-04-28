@@ -55,7 +55,7 @@ spec:
             - name: scripts
               mountPath: /scripts
             {{- $defaultOsDbs := .Values.diracx.osDbs.default | default (dict) }}
-            {{- if (kindIs "map" $defaultOsDbs) }} 
+            {{- if (kindIs "map" $defaultOsDbs) }}
             {{- if and (hasKey $defaultOsDbs "ca.crt") (hasKey $defaultOsDbs "tls.crt") (hasKey $defaultOsDbs "tls.key") }}
             - name: os-secret-default-volume
               mountPath: /os-certs/default
@@ -86,7 +86,7 @@ spec:
           resources:
             {{- toYaml .Values.initOs.resources | nindent 12 }}
       volumes:
-      {{- if (kindIs "map" $defaultOsDbs) }} 
+      {{- if (kindIs "map" $defaultOsDbs) }}
       {{- if and (hasKey $defaultOsDbs "ca.crt") (hasKey $defaultOsDbs "tls.crt") (hasKey $defaultOsDbs "tls.key") }}
       - name: os-secret-default-volume
         secret:
