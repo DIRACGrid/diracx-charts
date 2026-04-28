@@ -54,10 +54,13 @@ spec:
             {{ toYaml $commonVolumeMounts | nindent 12 }}
             - name: scripts
               mountPath: /scripts
-            {{- if and (hasKey .Values.diracx.osDbs.default "ca.crt") (hasKey .Values.diracx.osDbs.default "tls.crt") (hasKey .Values.diracx.osDbs.default "tls.key") }}
+            {{- $defaultOsDbs := .Values.diracx.osDbs.default | default (dict) }}
+            {{- if (kindIs "map" $defaultOsDbs) }} 
+            {{- if and (hasKey $defaultOsDbs "ca.crt") (hasKey $defaultOsDbs "tls.crt") (hasKey $defaultOsDbs "tls.key") }}
             - name: os-secret-default-volume
               mountPath: /os-certs/default
               readOnly: true
+            {{- end }}
             {{- end }}
             {{- range $dbName, $dbConfig := .Values.diracx.osDbs.dbs }}
             {{- if kindIs "map" $dbConfig }}
@@ -83,10 +86,12 @@ spec:
           resources:
             {{- toYaml .Values.initOs.resources | nindent 12 }}
       volumes:
-      {{- if and (hasKey .Values.diracx.osDbs.default "ca.crt") (hasKey .Values.diracx.osDbs.default "tls.crt") (hasKey .Values.diracx.osDbs.default "tls.key") }}
+      {{- if (kindIs "map" $defaultOsDbs) }} 
+      {{- if and (hasKey $defaultOsDbs "ca.crt") (hasKey $defaultOsDbs "tls.crt") (hasKey $defaultOsDbs "tls.key") }}
       - name: os-secret-default-volume
         secret:
           secretName: os-certs-default
+      {{- end }}
       {{- end }}
       {{- range $dbName, $dbConfig := .Values.diracx.osDbs.dbs }}
       {{- if kindIs "map" $dbConfig }}
