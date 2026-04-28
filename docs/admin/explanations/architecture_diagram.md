@@ -28,6 +28,7 @@ flowchart TD
             subgraph hook_post_install_pre_upgrade ["post-install,pre-upgrade"]
                 cm_diracx_validate_config[("cm: diracx-validate-config")]
                 job_diracx_validate_config(["job: diracx-validate-config"])
+                secret_diracx_validate_config_secrets>"secret: diracx-validate-config-secrets"]
             end
 
             subgraph hook_pre_install ["pre-install"]
@@ -37,7 +38,6 @@ flowchart TD
 
             subgraph hook_pre_install_pre_upgrade ["pre-install,pre-upgrade"]
                 cm_diracx_container_entrypoint[("cm: diracx-container-entrypoint")]
-                secret_diracx_validate_config_secrets>"secret: diracx-validate-config-secrets"]
             end
         end
     end
