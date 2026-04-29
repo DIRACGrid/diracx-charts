@@ -48,7 +48,7 @@ spec:
               mountPath: /scripts
           envFrom:
             - secretRef:
-                name: diracx-secrets
+                name: diracx-validate-config-secrets
       volumes:
       {{- if .Values.developer.enabled }}
       - name: cs-store-mount
