@@ -1,0 +1,103 @@
+{{- if .Values.seaweedfs.enabled }}
+---
+# Service
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Release.Name }}-seaweedfs
+  labels:
+    app: seaweedfs
+    release: {{ .Release.Name }}
+spec:
+  selector:
+    app: seaweedfs
+    release: {{ .Release.Name }}
+  ports:
+    - name: s3
+      port: 8333
+      targetPort: 8333
+      nodePort: 32000
+    - name: adminui
+      port: 23646
+      targetPort: 23646
+      nodePort: 32001
+  type: NodePort
+---
+# PersistentVolumeClaim
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ .Release.Name }}-seaweedfs-data
+  labels:
+    app: seaweedfs
+    release: {{ .Release.Name }}
+spec:
+  accessModes:
+    - {{ .Values.seaweedfs.persistence.accessModes | first | quote }}
+  resources:
+    requests:
+      storage: {{ .Values.seaweedfs.persistence.size | quote }}
+  {{- if .Values.seaweedfs.persistence.storageClass }}
+  storageClassName: {{ .Values.seaweedfs.persistence.storageClass | quote }}
+  {{- end }}
+
+---
+# Deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Release.Name }}-seaweedfs
+  labels:
+    app: seaweedfs
+    release: {{ .Release.Name }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: seaweedfs
+      release: {{ .Release.Name }}
+  template:
+    metadata:
+      labels:
+        app: seaweedfs
+        release: {{ .Release.Name }}
+    spec:
+      containers:
+        - name: seaweedfs
+          image: "chrislusf/seaweedfs:4.23"
+          imagePullPolicy: IfNotPresent
+          args: [
+            {{ .Values.seaweedfs.mode | quote }},
+            "-dir",
+            "/data",
+            "-s3.config=/etc/seaweedfs/seaweedfs-s3.json"
+          ]
+          env:
+            - name: S3_BUCKET
+              value: {{ .Values.seaweedfs.config.bucket }}
+          ports:
+            - containerPort: 8333
+              name: s3
+            - containerPort: 23646
+              name: adminui
+          volumeMounts:
+            - name: seaweedfs-data
+              mountPath: /data
+            - name: seaweedfs-config
+              mountPath: /etc/seaweedfs/seaweedfs-s3.json
+              subPath: seaweedfs-s3.json
+          resources:
+            requests:
+              cpu: "500m"
+              memory: "512Mi"
+            limits:
+              cpu: "1000m"
+              memory: "1Gi"
+      volumes:
+        - name: seaweedfs-data
+          persistentVolumeClaim:
+            claimName: {{ .Release.Name }}-seaweedfs-data
+        - name: seaweedfs-config
+          configMap:
+            name: {{ .Values.seaweedfs.config.configMap.name }}
+{{- end }}
