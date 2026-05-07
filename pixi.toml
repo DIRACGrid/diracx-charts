@@ -15,7 +15,7 @@ kubernetes-helm = "*"
 [feature.diagram.pypi-dependencies]
 pyyaml = "*"
 [feature.diagram.tasks.generate-diagram]
-cmd = "helm template diracx ./diracx --set diracx.hostname=diracx.io --set cert-manager.enabled=false --set opensearch.enabled=false --set initSecrets.enabled=False --set rabbitmq.enabled=false --set mysql.enabled=false --set dex.enabled=false --set minio.enabled=false --set cert-manager-issuer.enabled=false --set initSql.enabled=False --set initOs.enabled=false | python scripts/generate_mermaid_diagram.py -o docs/admin/explanations/architecture_diagram.md"
+cmd = "helm template diracx ./diracx --set diracx.hostname=diracx.io --set cert-manager.enabled=false --set opensearch.enabled=false --set initSecrets.enabled=False --set rabbitmq.enabled=false --set mysql.enabled=false --set dex.enabled=false --set seaweedfs.enabled=false --set cert-manager-issuer.enabled=false --set initSql.enabled=False --set initOs.enabled=false | python scripts/generate_mermaid_diagram.py -o docs/admin/explanations/architecture_diagram.md"
 description = "Generate the architecture diagram as a Mermaid flowchart"
 
 

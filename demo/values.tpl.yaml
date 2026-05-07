@@ -9,7 +9,7 @@ developer:
   enabled: true
   urls:
     diracx: https://{{ hostname }}:8000
-    minio: http://{{ hostname }}:32000
+    seaweedfs: http://{{ hostname }}:8333
     dex: http://{{ hostname }}:32002
     iam: http://{{ hostname }}:32003
     grafana: http://{{ hostname }}:32004
@@ -25,8 +25,8 @@ diracx:
     DIRACX_SERVICE_AUTH_TOKEN_ISSUER: "https://{{ hostname }}:8000"
     DIRACX_CONFIG_BACKEND_URL: "git+file:///cs_store/initialRepo"
     DIRACX_SERVICE_AUTH_ALLOWED_REDIRECTS: '["https://{{ hostname }}:8000/api/docs/oauth2-redirect", "https://{{ hostname }}:8000/#authentication-callback"]'
-    DIRACX_SANDBOX_STORE_BUCKET_NAME: demo-sandboxes
-    DIRACX_SANDBOX_STORE_S3_CLIENT_KWARGS: '{"endpoint_url": "http://{{ hostname }}:32000", "aws_access_key_id": "console", "aws_secret_access_key": "console123"}'
+    DIRACX_SANDBOX_STORE_BUCKET_NAME: "demo-sandboxes"
+    DIRACX_SANDBOX_STORE_S3_CLIENT_KWARGS: '{"endpoint_url": "http://diracx-demo-seaweedfs:8333", "aws_access_key_id": "console", "aws_secret_access_key": "console123"}'
     DIRACX_SANDBOX_STORE_AUTO_CREATE_BUCKET: "true"
     DIRACX_OTEL_ENABLED: "{{ open_telemetry }}"
     DIRACX_OTEL_GRPC_ENDPOINT: "diracx-demo-opentelemetry-collector:4317"
@@ -46,9 +46,26 @@ diracx:
       JobParametersDB:
       PilotLogsDB:
 
-minio:
-  environment:
-    MINIO_BROWSER_REDIRECT_URL: http://{{ hostname }}:32001/
+seaweedfs:
+  enabled: true
+  image:
+    repository: chrislusf/seaweedfs
+    tag: 4.23
+    pullPolicy: IfNotPresent
+  mode: "mini"
+  s3Port: 8333
+  masterPort: 9333
+  volumePort: 9340
+  filerPort: 8889
+  adminuiPort: 23646
+  persistence:
+    size: 1Gi
+    storageClass: "standard"
+    accessModes: ["ReadWriteOnce"]
+  s3:
+    accessKey: "console"
+    secretKey: "console123"
+    bucket: "demo-sandboxes"
 
 dex:
   config:
