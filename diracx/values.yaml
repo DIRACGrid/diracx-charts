@@ -165,7 +165,7 @@ developer:
   enabled: false
   # -- Make it possible to launch the demo without having an internet connection
   offline: false
-  # -- URLs which can be used to access various components of the demo (diracx, minio, dex, etc).
+  # -- URLs which can be used to access various components of the demo (diracx, seaweedfs, dex, etc).
   # They are used by the diracx tests
   urls: {}
   # -- Path from which to mount source of DIRACX
@@ -224,7 +224,7 @@ diracx:
 
     # -- Name of the bucket for the sandbox
     DIRACX_SANDBOX_STORE_BUCKET_NAME: sandboxes-store
-    DIRACX_SANDBOX_STORE_S3_CLIENT_KWARGS: '{"endpoint_url": "http://minio.invalid:32000", "aws_access_key_id": "my-access-key", "aws_secret_access_key": "my-secret-key-123"}'
+    DIRACX_SANDBOX_STORE_S3_CLIENT_KWARGS: '{"endpoint_url": "http://seaweedfs.invalid:8888", "aws_access_key_id": "my-access-key", "aws_secret_access_key": "my-secret-key-123"}'
     DIRACX_SANDBOX_STORE_AUTO_CREATE_BUCKET: "true"
 
     ###
@@ -369,28 +369,27 @@ opensearch:
 
 ##########################
 
-minio:
+seaweedfs:
   enabled: true
-  service:
-    type: NodePort
-  consoleService:
-    type: NodePort
-  ingress:
-    enabled: false
-  consoleIngress:
-    enabled: false
-  resources:
-    requests:
-      memory: 512Mi
-  replicas: 1
+  image:
+    repository: chrislusf/seaweedfs
+    tag: 4.23
+    pullPolicy: IfNotPresent
+  mode: "mini"
+  s3Port: 8333
+  masterPort: 9333
+  volumePort: 9340
+  filerPort: 8889
+  adminuiPort: 23646
   persistence:
-    enabled: false
-  mode: standalone
-  #TODO switch to secret if we can ?
-  rootUser: rootuser
-  rootPassword: rootpass123
-  environment:
-    MINIO_BROWSER_REDIRECT_URL: http://anything:32001/
+    enabled: true
+    size: 1Gi
+    storageClass: "standard"
+    accessModes: ["ReadWriteOnce"]
+  s3:
+    accessKey: "console"
+    secretKey: "console123"
+    bucket: "demo-sandboxes"
 
 ##########################
 

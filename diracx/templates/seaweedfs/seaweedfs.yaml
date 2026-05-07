@@ -1,0 +1,113 @@
+{{- if .Values.seaweedfs.enabled }}
+---
+# Service
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Release.Name }}-seaweedfs
+  labels:
+    app: seaweedfs
+    release: {{ .Release.Name }}
+spec:
+  selector:
+    app: seaweedfs
+    release: {{ .Release.Name }}
+  ports:
+    - name: s3
+      port: {{ .Values.seaweedfs.s3Port }}
+      targetPort: {{ .Values.seaweedfs.s3Port }}
+    - name: master
+      port: {{ .Values.seaweedfs.masterPort }}
+      targetPort: {{ .Values.seaweedfs.masterPort }}
+    - name: volume
+      port: {{ .Values.seaweedfs.volumePort }}
+      targetPort: {{ .Values.seaweedfs.volumePort }}
+    - name: filer
+      port: {{ .Values.seaweedfs.filerPort }}
+      targetPort: 8888
+    - name: adminui
+      port: {{ .Values.seaweedfs.adminuiPort }}
+      targetPort: {{ .Values.seaweedfs.adminuiPort }}
+  type: ClusterIP
+---
+# PersistentVolumeClaim
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ .Release.Name }}-seaweedfs-data
+  labels:
+    app: seaweedfs
+    release: {{ .Release.Name }}
+spec:
+  accessModes:
+    - {{ .Values.seaweedfs.persistence.accessModes | first | quote }}
+  resources:
+    requests:
+      storage: {{ .Values.seaweedfs.persistence.size | quote }}
+  {{- if .Values.seaweedfs.persistence.storageClass }}
+  storageClassName: {{ .Values.seaweedfs.persistence.storageClass | quote }}
+  {{- end }}
+
+---
+# Deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Release.Name }}-seaweedfs
+  labels:
+    app: seaweedfs
+    release: {{ .Release.Name }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: seaweedfs
+      release: {{ .Release.Name }}
+  template:
+    metadata:
+      labels:
+        app: seaweedfs
+        release: {{ .Release.Name }}
+    spec:
+      containers:
+        - name: seaweedfs
+          image: "{{ .Values.seaweedfs.image.repository }}:{{ .Values.seaweedfs.image.tag }}"
+          imagePullPolicy: {{ .Values.seaweedfs.image.pullPolicy | quote }}
+          args: [
+            {{ .Values.seaweedfs.mode | quote }},
+            "-dir",
+            "/data"
+          ]
+          env:
+            - name: AWS_ACCESS_KEY_ID
+              value: {{ .Values.seaweedfs.s3.accessKey | quote }}
+            - name: AWS_SECRET_ACCESS_KEY
+              value: {{ .Values.seaweedfs.s3.secretKey | quote }}
+            - name: S3_BUCKET
+              value: {{ .Values.seaweedfs.s3.bucket | quote }}
+          ports:
+            - containerPort: {{ .Values.seaweedfs.s3Port }}
+              name: s3
+            - containerPort: {{ .Values.seaweedfs.masterPort }}
+              name: master
+            - containerPort: {{ .Values.seaweedfs.volumePort }}
+              name: volume
+            - containerPort: 8888
+              name: filer
+            - containerPort: {{ .Values.seaweedfs.adminuiPort }}
+              name: adminui
+          volumeMounts:
+            - name: seaweedfs-data
+              mountPath: /data
+          resources:
+            requests:
+              cpu: "500m"
+              memory: "512Mi"
+            limits:
+              cpu: "1000m"
+              memory: "1Gi"
+      volumes:
+        - name: seaweedfs-data
+          persistentVolumeClaim:
+            claimName: {{ .Release.Name }}-seaweedfs-data
+{{- end }}

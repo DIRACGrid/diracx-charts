@@ -34,7 +34,7 @@ The chart includes the following external dependencies, all conditionally enable
   - `elasticsearch`: Alternative search engine option
 
 ### Storage
-- **MinIO** (`minio`): S3-compatible object storage for files and artifacts
+- **SeaweedFS** (`seaweedfs`): S3-compatible object storage for files and artifacts
 
 ### Authentication & Security
 - **Dex** (`dex`): OpenID Connect identity provider for authentication

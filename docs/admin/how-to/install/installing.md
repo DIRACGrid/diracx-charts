@@ -172,7 +172,7 @@ The file generated looks like the following
         enabled: true
     initSql:
         enabled: false
-    minio:
+    seaweedfs:
         enabled: false
     mysql:
         enabled: false
