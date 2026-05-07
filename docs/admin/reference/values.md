@@ -7,7 +7,6 @@
 | https://charts.bitnami.com/bitnami/ | rabbitmq | 12.0.10 |
 | https://charts.dexidp.io/ | dex | 0.14.2 |
 | https://charts.jetstack.io | cert-manager | 1.13.1 |
-| https://charts.min.io/ | minio | 5.0.11 |
 | https://grafana.github.io/helm-charts | grafana | 6.59.4 |
 | https://helm.elastic.co | elasticsearch | 8.5.1 |
 | https://jaegertracing.github.io/helm-charts | jaeger | 0.71.14 |
@@ -38,7 +37,7 @@
 | developer.nodeWorkspacesDirectories | list | `[]` | List of node workspace directories to manage in the diracx-web container (node_modules) |
 | developer.offline | bool | `false` | Make it possible to launch the demo without having an internet connection |
 | developer.sourcePath | string | `"/diracx_source"` | Path from which to mount source of DIRACX |
-| developer.urls | object | `{}` | URLs which can be used to access various components of the demo (diracx, minio, dex, etc). They are used by the diracx tests |
+| developer.urls | object | `{}` | URLs which can be used to access various components of the demo (diracx, seaweedfs, dex, etc). They are used by the diracx tests |
 | dex."https.enabled" | bool | `false` |  |
 | dex.config.enablePasswordDB | bool | `true` |  |
 | dex.config.expiry.authRequests | string | `"24h"` |  |
@@ -169,18 +168,6 @@
 | jaeger.provisionDataStore.cassandra | bool | `false` |  |
 | jaeger.query.enabled | bool | `false` |  |
 | jaeger.storage.type | string | `"none"` |  |
-| minio.consoleIngress.enabled | bool | `false` |  |
-| minio.consoleService.type | string | `"NodePort"` |  |
-| minio.enabled | bool | `true` |  |
-| minio.environment.MINIO_BROWSER_REDIRECT_URL | string | `"http://anything:32001/"` |  |
-| minio.ingress.enabled | bool | `false` |  |
-| minio.mode | string | `"standalone"` |  |
-| minio.persistence.enabled | bool | `false` |  |
-| minio.replicas | int | `1` |  |
-| minio.resources.requests.memory | string | `"512Mi"` |  |
-| minio.rootPassword | string | `"rootpass123"` |  |
-| minio.rootUser | string | `"rootuser"` |  |
-| minio.service.type | string | `"NodePort"` |  |
 | mysql.auth.createDatabase | bool | `false` |  |
 | mysql.auth.existingSecret | string | `"mysql-secret"` |  |
 | mysql.auth.username | string | `"sqldiracx"` |  |
@@ -251,6 +238,13 @@
 | redisTasks.resources | object | `{}` |  |
 | replicaCount | int | `1` |  |
 | replicaCountWeb | int | `1` |  |
+| seaweedfs.enabled | bool | `true` |  |
+| seaweedfs.ingress.enabled | bool | `false` |  |
+| seaweedfs.persistence.enabled | bool | `false` |  |
+| seaweedfs.replicas | int | `1` |  |
+| seaweedfs.resources.requests.memory | string | `"512Mi"` |  |
+| seaweedfs.rootPassword | string | `"rootpass123"` |  |
+| seaweedfs.rootUser | string | `"rootuser"` |  |
 | securityContext | object | `{}` |  |
 | serviceAccount.annotations | object | `{}` | Annotations to add to the service account |
 | serviceAccount.create | bool | `true` | Specifies whether a service account should be created |

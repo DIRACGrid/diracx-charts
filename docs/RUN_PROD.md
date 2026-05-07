@@ -127,14 +127,14 @@ The connections parameters are controlled with
 diracx:
   settings:
     DIRACX_SANDBOX_STORE_BUCKET_NAME: sandboxes-store
-    DIRACX_SANDBOX_STORE_S3_CLIENT_KWARGS: '{"endpoint_url": "http://minio.invalid:32000", "aws_access_key_id": "my-access-key", "aws_secret_access_key": "my-secret-key-123"}'
+    DIRACX_SANDBOX_STORE_S3_CLIENT_KWARGS: '{"endpoint_url": "http://seaweedfs.invalid:8888", "aws_access_key_id": "my-access-key", "aws_secret_access_key": "my-secret-key-123"}'
     DIRACX_SANDBOX_STORE_AUTO_CREATE_BUCKET: "true"
 ```
 
-To avoid running minio:
+To avoid running seaweedfs:
 
 ```yaml
-minio:
+seaweedfs:
   enabled: false
 ```
 
