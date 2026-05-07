@@ -106,7 +106,7 @@
 | global.images.redisTasks.tag | string | `"7.4.2-alpine"` |  |
 | global.images.secret_generation.repository | string | `"diracgrid/diracx/secret-generation"` |  |
 | global.images.services.repository | string | `"diracgrid/diracx/services"` |  |
-| global.images.tag | string | `"v0.0.14"` |  |
+| global.images.tag | string | `"v0.1.0"` |  |
 | global.images.tasks.repository | string | `"diracgrid/diracx/tasks"` |  |
 | global.images.web.repository | string | `"diracgrid/diracx-web/static"` |  |
 | global.images.web.tag | string | `"v0.1.0-a11"` |  |
