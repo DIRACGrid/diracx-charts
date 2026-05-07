@@ -251,7 +251,6 @@ To do this when deploying the chart see the `global.images` option in the values
 | seaweedfs.volumePort | int | `9340` |  |
 | seaweedfs.filerPort | int | `8888` |  |
 | seaweedfs.adminuiPort | int | `23646` |  |
-| seaweedfs.rootPassword | string | `"rootpass123"` |  |
 | seaweedfs.s3.accessKey | string | `"console"` |  |
 | seaweedfs.s3.secretKey | string | `"console123"` |  |
 | seaweedfs.s3.bucket | string | `"demo-sandboxes"` |  |
