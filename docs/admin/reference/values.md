@@ -238,13 +238,15 @@
 | redisTasks.resources | object | `{}` |  |
 | replicaCount | int | `1` |  |
 | replicaCountWeb | int | `1` |  |
-| seaweedfs.enabled | bool | `true` |  |
-| seaweedfs.ingress.enabled | bool | `false` |  |
-| seaweedfs.persistence.enabled | bool | `false` |  |
-| seaweedfs.replicas | int | `1` |  |
-| seaweedfs.resources.requests.memory | string | `"512Mi"` |  |
-| seaweedfs.rootPassword | string | `"rootpass123"` |  |
-| seaweedfs.rootUser | string | `"rootuser"` |  |
+| seaweedfs.mode | string | `mini` |  |
+| seaweedfs.s3Port | int | `8333` |  |
+| seaweedfs.masterPort | int | `9333` |  |
+| seaweedfs.volumePort | int | `9340` |  |
+| seaweedfs.filerPort | int | `8888` |  |
+| seaweedfs.adminuiPort | int | `23646` |  |
+| seaweedfs.s3.accessKey | string | `"console"` |  |
+| seaweedfs.s3.secretKey | string | `"console123"` |  |
+| seaweedfs.s3.bucket | string | `"demo-sandboxes"` |  |
 | securityContext | object | `{}` |  |
 | serviceAccount.annotations | object | `{}` | Annotations to add to the service account |
 | serviceAccount.create | bool | `true` | Specifies whether a service account should be created |
