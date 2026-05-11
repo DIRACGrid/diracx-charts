@@ -239,11 +239,8 @@
 | replicaCount | int | `1` |  |
 | replicaCountWeb | int | `1` |  |
 | seaweedfs.adminuiPort | int | `23646` |  |
-| seaweedfs.enabled | bool | `true` |  |
+| seaweedfs.enabled | bool | `false` |  |
 | seaweedfs.filerPort | int | `8889` |  |
-| seaweedfs.image.pullPolicy | string | `"IfNotPresent"` |  |
-| seaweedfs.image.repository | string | `"chrislusf/seaweedfs"` |  |
-| seaweedfs.image.tag | float | `4.23` |  |
 | seaweedfs.masterPort | int | `9333` |  |
 | seaweedfs.mode | string | `"mini"` |  |
 | seaweedfs.persistence.accessModes[0] | string | `"ReadWriteOnce"` |  |
