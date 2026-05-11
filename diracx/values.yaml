@@ -370,11 +370,7 @@ opensearch:
 ##########################
 
 seaweedfs:
-  enabled: true
-  image:
-    repository: chrislusf/seaweedfs
-    tag: 4.23
-    pullPolicy: IfNotPresent
+  enabled: false
   mode: "mini"
   s3Port: 8333
   masterPort: 9333
