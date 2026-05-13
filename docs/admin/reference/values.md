@@ -63,16 +63,16 @@
 | dex.service.ports.http.port | int | `8000` |  |
 | dex.service.type | string | `"NodePort"` |  |
 | diracx.hostname | string | `""` | Required: The hostname where the webapp/API is running |
-| diracx.osDbs.dbs | object | `{}` | Which DiracX OpenSearch DBs are used? |
-| diracx.osDbs.default | object | `{}` | default OpenSearch credentials |
+| diracx.osDbs.dbs | string | `nil` | Which DiracX OpenSearch DBs are used? |
+| diracx.osDbs.default | string | `nil` | default credentials |
 | diracx.pythonModulesToInstall | list | `[]` | List of install specifications to pass to pip before launching each container |
 | diracx.service.port | int | `8000` |  |
 | diracx.settings | object | "e.g. DIRACX_CONFIG_BACKEND_URL=..." | Settings to inject into the API container via environment variables |
 | diracx.settings.DIRACX_CONFIG_BACKEND_URL | string | `"git+https://gitlab.invalid/myvo/diracx-config"` | URL to get the diracx config |
 | diracx.settings.DIRACX_SANDBOX_STORE_BUCKET_NAME | string | `"sandboxes-store"` | Name of the bucket for the sandbox |
 | diracx.settings.DIRACX_SERVICE_AUTH_TOKEN_KEYSTORE | string | `"file:///keystore/jwks.json"` | path storing the token key |
-| diracx.sqlDbs.dbs | object | `{}` | Which DiracX MySQL DBs are used? |
-| diracx.sqlDbs.default | object | `{}` | default MySQL credentials |
+| diracx.sqlDbs.dbs | string | `nil` | Which DiracX MySQL DBs are used? |
+| diracx.sqlDbs.default | string | `nil` | default credentials |
 | diracx.tasks | string | `nil` | Task worker configuration |
 | diracxWeb.branch | string | `""` |  |
 | diracxWeb.repoURL | string | `""` | install specification to pass to npm before launching container |
