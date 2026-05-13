@@ -180,7 +180,6 @@ generate_secret_if_needed diracx-os-root-connection-urls \
 {{- $defaultOsCaCrt := index $.Values.diracx.osDbs.default "ca.crt" | default "" }}
 {{- $defaultOsTlsCrt := index $.Values.diracx.osDbs.default "tls.crt" | default "" }}
 {{- $defaultOsTlsKey := index $.Values.diracx.osDbs.default "tls.key" | default "" }}
-{{- $defaultOsIndexPrefix := $.Values.diracx.osDbs.default.indexPrefix | default "" }}
 {{- $defaultOsCertPath := "/os-certs/default/" }}
 
 {{- range $osDbName, $osDbSettings := .Values.diracx.osDbs.dbs }}
@@ -192,7 +191,6 @@ generate_secret_if_needed diracx-os-root-connection-urls \
 {{- $osCaCrt := $defaultOsCaCrt }}
 {{- $osTlsCrt := $defaultOsTlsCrt }}
 {{- $osTlsKey := $defaultOsTlsKey }}
-{{- $osIndexPrefix := $defaultOsIndexPrefix }}
 {{- $osCertPath := $defaultOsCertPath }}
 {{- $osConnectionString := "" }}
 {{- $osRootConnectionString := "" }}
@@ -217,7 +215,6 @@ generate_secret_if_needed diracx-os-root-connection-urls \
 {{- $osCaCrt = index $osDbSettings "ca.crt" | default $defaultOsCaCrt }}
 {{- $osTlsCrt = index $osDbSettings "tls.crt" | default $defaultOsTlsCrt }}
 {{- $osTlsKey = index $osDbSettings "tls.key" | default $defaultOsTlsKey }}
-{{- $osIndexPrefix = $osDbSettings.indexPrefix | default $defaultOsIndexPrefix }}
 
 {{- /* Vérifie si useCRT est défini dans $osDbSettings */}}
 {{- if and (hasKey $osDbSettings "useCRT") (eq $osDbSettings.useCRT true) }}
