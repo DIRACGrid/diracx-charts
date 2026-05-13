@@ -72,8 +72,8 @@
 | diracx.settings.DIRACX_LOG_FORMAT | string | `"text"` | Format of the logs: json (one JSON object per line, for log collectors) or text |
 | diracx.settings.DIRACX_SANDBOX_STORE_BUCKET_NAME | string | `"sandboxes-store"` | Name of the bucket for the sandbox |
 | diracx.settings.DIRACX_SERVICE_AUTH_TOKEN_KEYSTORE | string | `"file:///keystore/jwks.json"` | path storing the token key |
-| diracx.sqlDbs.dbs | object | `{}` | Which DiracX MySQL DBs are used? |
-| diracx.sqlDbs.default | object | `{}` | default MySQL credentials |
+| diracx.sqlDbs.dbs | string | `nil` | Which DiracX MySQL DBs are used? |
+| diracx.sqlDbs.default | string | `nil` | default credentials |
 | diracx.tasks | string | `nil` | Task worker configuration |
 | diracxWeb.branch | string | `""` |  |
 | diracxWeb.repoURL | string | `""` | install specification to pass to npm before launching container |
