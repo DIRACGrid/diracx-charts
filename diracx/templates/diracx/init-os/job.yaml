@@ -62,6 +62,10 @@ spec:
                   name: diracx-os-root-connection-urls
                   key: DIRACX_OS_DB_{{ $dbName | upper }}
           {{- end }}
+          {{- if .Values.diracx.osDbs.GlobalIndexPrefix }}
+            - name: DIRACX_FACTORY_OS_GLOBAL_PREFIX
+              value: {{ .Values.diracx.osDbs.GlobalIndexPrefix | quote }}
+          {{- end }}
           resources:
             {{- toYaml .Values.initOs.resources | nindent 12 }}
       volumes:
