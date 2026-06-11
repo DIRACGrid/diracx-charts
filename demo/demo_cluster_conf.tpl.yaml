@@ -24,11 +24,11 @@ nodes:
   - containerPort: 443
     hostPort: 8000
     protocol: TCP
-  # Minio
+  # SeaweedFS
   - containerPort: 32000
     hostPort: 32000
     protocol: TCP
-  # Minio web interface
+  # SeaweedFS AdminUI
   - containerPort: 32001
     hostPort: 32001
     protocol: TCP
