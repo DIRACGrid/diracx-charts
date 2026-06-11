@@ -266,11 +266,33 @@ diracx:
   # If opensearch is enabled, you are not allowed
   # to set the username passwords
   osDbs:
+    # -- default credentials
     default:
+    #  rootUser: admin
+    #  rootPassword: hunter123
+    #  user: dirac
+    #  password: password123
+    #  host: osHost:123
+    #  ca.crt: |
+    #    -----BEGIN CERTIFICATE-----
+    #    -----END CERTIFICATE-----
+    #  tls.crt: |
+    #    -----BEGIN CERTIFICATE-----
+    #    -----END CERTIFICATE-----
+    #  tls.key: |
+    #    -----BEGIN PRIVATE KEY-----
+    #    -----END PRIVATE KEY-----
+
 
     # -- Which DiracX OpenSearch DBs are used?
     dbs:
+      # All DBs used should be configured here.
+      # If they use the default configuration
+      # they should have a null value.
+      # If they use a certificate (defined in default or for the current DB)
+      # they set 'useCRT' parameter to true. The 'useCRT' parameter is set to false by default, so access via login/password is prioritized.
       # JobParametersDB:
+      #   useCRT: true
       # PilotLogsDB:
 
   # -- List of install specifications to pass to pip before launching each container

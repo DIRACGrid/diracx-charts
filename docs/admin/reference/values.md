@@ -64,7 +64,7 @@
 | dex.service.type | string | `"NodePort"` |  |
 | diracx.hostname | string | `""` | Required: The hostname where the webapp/API is running |
 | diracx.osDbs.dbs | string | `nil` | Which DiracX OpenSearch DBs are used? |
-| diracx.osDbs.default | string | `nil` |  |
+| diracx.osDbs.default | string | `nil` | default credentials |
 | diracx.pythonModulesToInstall | list | `[]` | List of install specifications to pass to pip before launching each container |
 | diracx.service.port | int | `8000` |  |
 | diracx.settings | object | "e.g. DIRACX_CONFIG_BACKEND_URL=..." | Settings to inject into the API container via environment variables |
