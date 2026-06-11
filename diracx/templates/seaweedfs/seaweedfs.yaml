@@ -16,6 +16,11 @@ spec:
     - name: s3
       port: {{ .Values.seaweedfs.s3Port }}
       targetPort: {{ .Values.seaweedfs.s3Port }}
+      nodePort: 32000
+    - name: adminui
+      port: {{ .Values.seaweedfs.adminuiPort }}
+      targetPort: {{ .Values.seaweedfs.adminuiPort }}
+      nodePort: 32001
     - name: master
       port: {{ .Values.seaweedfs.masterPort }}
       targetPort: {{ .Values.seaweedfs.masterPort }}
@@ -25,10 +30,7 @@ spec:
     - name: filer
       port: {{ .Values.seaweedfs.filerPort }}
       targetPort: 8888
-    - name: adminui
-      port: {{ .Values.seaweedfs.adminuiPort }}
-      targetPort: {{ .Values.seaweedfs.adminuiPort }}
-  type: ClusterIP
+  type: NodePort
 ---
 # PersistentVolumeClaim
 apiVersion: v1

@@ -25,8 +25,12 @@ nodes:
     hostPort: 8000
     protocol: TCP
   # SeaweedFS
-  - containerPort: 8333
-    hostPort: 8333
+  - containerPort: 32000
+    hostPort: 32000
+    protocol: TCP
+  # SeaweedFS AdminUI
+  - containerPort: 32001
+    hostPort: 32001
     protocol: TCP
   # Dex web interface
   - containerPort: 32002
