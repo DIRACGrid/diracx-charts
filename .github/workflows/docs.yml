@@ -1,0 +1,73 @@
+name: Docs
+
+# The DiracX documentation site lives in the diracx repo and is built with
+# `mkdocs build --strict`, merging in the docs from this repo via the
+# mkdocs-diracx-plugin. A broken link or reference added here therefore only
+# surfaces when the diracx site is (re)built. This job reproduces that merged
+# strict build with the charts checkout substituted in, so such breakage is
+# caught on the charts PR instead of after merge.
+
+on:
+  push:
+    branches:
+      - master
+    paths:
+      - 'docs/**'
+      - '.github/workflows/docs.yml'
+  pull_request:
+    branches:
+      - master
+    paths:
+      - 'docs/**'
+      - '.github/workflows/docs.yml'
+
+defaults:
+  run:
+    shell: bash -el {0}
+
+jobs:
+  docs-build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout diracx-charts (PR under test)
+        uses: actions/checkout@v6
+        with:
+          path: diracx-charts
+
+      - name: Checkout diracx (docs site source)
+        uses: actions/checkout@v6
+        with:
+          repository: DIRACGrid/diracx
+          ref: main
+          path: diracx
+
+      # The plugin treats a local-directory `url` as a copytree source instead of
+      # a git clone, so this makes the merged build use this PR's charts docs
+      # while diracx-web is still cloned from GitHub. The grep guard fails loudly
+      # if a future mkdocs.yml reformat stops the substitution from matching
+      # (which would silently fall back to cloning charts master and stop testing
+      # the PR).
+      - name: Point the charts repo at the local checkout
+        working-directory: diracx
+        run: |
+          CHARTS_DIR="${GITHUB_WORKSPACE}/diracx-charts"
+          sed -i "s#^\(\s*- url:\s*\)https://github.com/DIRACGrid/diracx-charts\s*\$#\1${CHARTS_DIR}#" mkdocs.yml
+          grep -qF -- "- url: ${CHARTS_DIR}" mkdocs.yml \
+            || { echo "ERROR: charts url override did not apply; mkdocs.yml format may have changed"; exit 1; }
+
+      - name: Set up pixi (diracx mkdocs environment)
+        uses: prefix-dev/setup-pixi@v0.9.6
+        with:
+          manifest-path: diracx/pixi.toml
+          environments: mkdocs
+          cache: false
+
+      # cwd MUST be the diracx checkout: the plugin captures the process working
+      # directory at import time and copies it as the docs site base. Do not
+      # collapse this to run from the charts dir with --manifest-path.
+      - name: Build merged docs (strict)
+        working-directory: diracx
+        run: |
+          pixi run -e mkdocs mkdocs-build --site-dir "${RUNNER_TEMP}/diracx-docs-site"
