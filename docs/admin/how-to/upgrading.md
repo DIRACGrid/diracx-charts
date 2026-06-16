@@ -29,4 +29,4 @@ Some tools can assist you managing clusters. There are two main tools: ``ArgoCD`
 
 ### Gitlab automation
 
-The steps involved into automating the release process using gitlab CI are easy, and are described in the [installation how-to](../../dev//how-to/make-a-release.md)
+The steps involved into automating the release process using gitlab CI are easy, and are described in the [release how-to](make-a-release.md)
