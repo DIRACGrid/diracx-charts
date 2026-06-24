@@ -22,7 +22,7 @@ jobs:
       docs-only: ${{ steps.check.outputs.docs-only }}
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
         with:
           fetch-depth: 0
 
@@ -53,7 +53,7 @@ jobs:
   pre-commit:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v6
+    - uses: actions/checkout@v7
     - uses: prefix-dev/setup-pixi@v0.9.6
       with:
         cache: false
@@ -67,7 +67,7 @@ jobs:
     if: needs.detect-docs-only.outputs.docs-only != 'true'
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v6
+    - uses: actions/checkout@v7
     - name: Start demo
       run: |
         ./run_demo.sh --exit-when-done
@@ -113,7 +113,7 @@ jobs:
     if: needs.detect-docs-only.outputs.docs-only != 'true'
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v6
+    - uses: actions/checkout@v7
     - name: Clone source
       run: |
         git clone https://github.com/DIRACGrid/diracx.git /tmp/diracx
