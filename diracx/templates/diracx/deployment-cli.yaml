@@ -62,7 +62,7 @@ spec:
       {{- $commonVolumeMounts := list }}
       {{- $commonVolumeMounts = append $commonVolumeMounts (dict "mountPath" "/cs_store" "name" "cs-store-mount" "readOnly" false) }}
       {{- $commonVolumeMounts = append $commonVolumeMounts (dict "mountPath" "/ca" "name" "ca-mount" "readOnly" false) }}
-      {{- $commonVolumeMounts = append $commonVolumeMounts (dict "mountPath" "/entrypoint.sh" "name" "container-entrypoint" "subPath" "entrypoint.sh") }}
+      {{- $commonVolumeMounts = append $commonVolumeMounts (dict "mountPath" "/pre-run-hook.sh" "name" "container-entrypoint" "subPath" "pre-run-hook.sh") }}
       {{- if .Values.developer.enableCoverage }}
       {{- $commonVolumeMounts = append $commonVolumeMounts (dict "mountPath" "/diracx-coveragerc" "name" "container-entrypoint" "subPath" "coveragerc") }}
       {{- $commonVolumeMounts = append $commonVolumeMounts (dict "mountPath" "/coverage-reports" "name" "coverage-data" "readOnly" false) }}
