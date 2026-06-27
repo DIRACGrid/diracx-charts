@@ -409,9 +409,9 @@ if [[ ! -f "${demo_dir}/helm" ]]; then
   # renovate: datasource=github-releases depName=kubernetes-sigs/kind
   KIND_VERSION="v0.32.0"
   # renovate: datasource=github-releases depName=kubernetes/kubernetes
-  KUBECTL_VERSION="v1.36.1"
+  KUBECTL_VERSION="v1.36.2"
   # renovate: datasource=github-releases depName=helm/helm versioning=loose
-  HELM_VERSION="v3.21.0"
+  HELM_VERSION="v3.21.2"
   # renovate: datasource=github-releases depName=mikefarah/yq
   YQ_VERSION="v4.53.3"
 
@@ -425,7 +425,7 @@ if [[ ! -f "${demo_dir}/helm" ]]; then
 
   # Install helm plugins to ${HELM_DATA_HOME}
   # renovate: datasource=github-releases depName=databus23/helm-diff
-  HELM_DIFF_VERSION="v3.15.8"
+  HELM_DIFF_VERSION="v3.15.10"
   "${demo_dir}/helm" plugin install https://github.com/databus23/helm-diff --version ${HELM_DIFF_VERSION}
 fi
 
