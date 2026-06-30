@@ -170,7 +170,7 @@ jobs:
       run: |
         export KUBECONFIG=$PWD/.demo/kube.conf
         .demo/kubectl get pods
-        for pod_name in $(.demo/kubectl get pods -o json | jq -r '.items[] | .metadata.name' | grep -vE '(dex|minio|mysql|rabbitmq|opensearch)'); do
+        for pod_name in $(.demo/kubectl get pods -o json | jq -r '.items[] | .metadata.name' | grep -vE '(dex|seaweedfs|mysql|rabbitmq|opensearch)'); do
           echo "${pod_name}"
           .demo/kubectl describe pod/"${pod_name}" || true
           for container_name in $(.demo/kubectl get pods $pod_name -o jsonpath='{.spec.initContainers[*].name} {.spec.containers[*].name}'); do
