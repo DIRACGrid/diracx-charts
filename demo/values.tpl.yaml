@@ -74,7 +74,7 @@ seaweedfs:
             ]
           }
     bucket: "demo-sandboxes"
-  
+
 
 dex:
   config:
