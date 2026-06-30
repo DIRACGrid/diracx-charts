@@ -238,20 +238,15 @@
 | redisTasks.resources | object | `{}` |  |
 | replicaCount | int | `1` |  |
 | replicaCountWeb | int | `1` |  |
-| seaweedfs.adminuiPort | int | `23646` |  |
 | seaweedfs.enabled | bool | `false` |  |
-| seaweedfs.filerPort | int | `8889` |  |
-| seaweedfs.masterPort | int | `9333` |  |
 | seaweedfs.mode | string | `"mini"` |  |
 | seaweedfs.persistence.accessModes[0] | string | `"ReadWriteOnce"` |  |
 | seaweedfs.persistence.enabled | bool | `true` |  |
 | seaweedfs.persistence.size | string | `"1Gi"` |  |
 | seaweedfs.persistence.storageClass | string | `"standard"` |  |
-| seaweedfs.s3.accessKey | string | `"console"` |  |
-| seaweedfs.s3.bucket | string | `"demo-sandboxes"` |  |
-| seaweedfs.s3.secretKey | string | `"console123"` |  |
-| seaweedfs.s3Port | int | `8333` |  |
-| seaweedfs.volumePort | int | `9340` |  |
+| seaweedfs.config.name | string | `"seaweedfs-s3-config"` |  |
+| seaweedfs.config.configmap.data.seaweedfs-s3-config | object | `{}` |  |
+| seaweedfs.config.bucket | string | `"demo-sandboxes"` |  |
 | securityContext | object | `{}` |  |
 | serviceAccount.annotations | object | `{}` | Annotations to add to the service account |
 | serviceAccount.create | bool | `true` | Specifies whether a service account should be created |

@@ -370,21 +370,31 @@ opensearch:
 ##########################
 
 seaweedfs:
-  enabled: false
+  enabled: true
   mode: "mini"
-  s3Port: 8333
-  masterPort: 9333
-  volumePort: 9340
-  filerPort: 8889
-  adminuiPort: 23646
   persistence:
-    enabled: true
     size: 1Gi
     storageClass: "standard"
     accessModes: ["ReadWriteOnce"]
-  s3:
-    accessKey: "console"
-    secretKey: "console123"
+  config:
+    configMap:
+      name: seaweedfs-s3-config
+      data:
+        seaweedfs-s3.json: |
+          {
+            "identities": [
+              {
+                "name": "admin",
+                "credentials": [
+                  {
+                    "accessKey": "console",
+                    "secretKey": "console123"
+                  }
+                ],
+                "actions": ["Admin", "Read", "Write", "List", "Tagging"]
+              }
+            ]
+          }
     bucket: "demo-sandboxes"
 
 ##########################
