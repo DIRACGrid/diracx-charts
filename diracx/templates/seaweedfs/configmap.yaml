@@ -1,0 +1,8 @@
+{{- if .Values.seaweedfs.enabled }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .Values.seaweedfs.config.configMap.name }}
+data:
+  {{- toYaml .Values.seaweedfs.config.configMap.data | nindent 2 }}
+{{- end }}
