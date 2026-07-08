@@ -58,7 +58,7 @@ jobs:
             || { echo "ERROR: charts url override did not apply; mkdocs.yml format may have changed"; exit 1; }
 
       - name: Set up pixi (diracx mkdocs environment)
-        uses: prefix-dev/setup-pixi@v0.9.6
+        uses: prefix-dev/setup-pixi@v0.10.0
         with:
           manifest-path: diracx/pixi.toml
           environments: mkdocs
