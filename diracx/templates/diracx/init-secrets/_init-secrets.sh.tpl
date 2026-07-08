@@ -145,7 +145,6 @@ generate_secret_if_needed diracx-task-redis-url \
 {{- end }}
 {{- end }}
 
-{{- if .Values.initOs.enabled }}
 # If we deploy opensearch ourselves
 {{- if .Values.opensearch.enabled }}
 
@@ -196,8 +195,6 @@ generate_secret_if_needed diracx-os-connection-urls \
   --from-literal=DIRACX_OS_DB_{{ $osDbName | upper }}='{"hosts": "{{ $defaultOsDbUser }}:{{ $defaultOsDbPassword }}@{{ $defaultOsDbHost }}", "use_ssl": true, "verify_certs": false}'
 generate_secret_if_needed diracx-os-root-connection-urls \
   --from-literal=DIRACX_OS_DB_{{ $osDbName | upper }}='{"hosts": "{{ $defaultOsDbRootUser }}:{{ $defaultOsDbRootPassword }}@{{ $defaultOsDbHost }}", "use_ssl": true, "verify_certs": false}'
-{{- end }}
-
 {{- end }}
 {{- end }}
 {{- end }}
