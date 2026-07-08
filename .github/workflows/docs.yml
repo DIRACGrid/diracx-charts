@@ -32,12 +32,12 @@ jobs:
       contents: read
     steps:
       - name: Checkout diracx-charts (PR under test)
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
         with:
           path: diracx-charts
 
       - name: Checkout diracx (docs site source)
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
         with:
           repository: DIRACGrid/diracx
           ref: main
