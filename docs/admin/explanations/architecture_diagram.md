@@ -5,7 +5,7 @@ config:
 flowchart TD
 
     subgraph k8s_instance ["K8s Instance: diracx"]
-        subgraph helm_chart ["Helm Chart: diracx 1.1.5"]
+        subgraph helm_chart ["Helm Chart: diracx 1.1.6"]
             subgraph k8s_app ["K8s Application: diracx"]
                 ing_diracx{{"ing: diracx"}}
                 svc_diracx(("svc: diracx"))
