@@ -411,7 +411,7 @@ if [[ ! -f "${demo_dir}/helm" ]]; then
   # renovate: datasource=github-releases depName=kubernetes/kubernetes
   KUBECTL_VERSION="v1.36.2"
   # renovate: datasource=github-releases depName=helm/helm versioning=loose
-  HELM_VERSION="v3.21.2"
+  HELM_VERSION="v3.21.3"
   # renovate: datasource=github-releases depName=mikefarah/yq
   YQ_VERSION="v4.53.3"
 
