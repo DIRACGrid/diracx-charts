@@ -242,6 +242,7 @@
 | seaweedfs.config.configMap.data."seaweedfs-s3.json" | string | `"{\n  \"identities\": [\n    {\n      \"name\": \"admin\",\n      \"credentials\": [\n        {\n          \"accessKey\": \"console\",\n          \"secretKey\": \"console123\"\n        }\n      ],\n      \"actions\": [\"Admin\", \"Read\", \"Write\", \"List\", \"Tagging\"]\n    }\n  ]\n}\n"` |  |
 | seaweedfs.config.configMap.name | string | `"seaweedfs-s3-config"` |  |
 | seaweedfs.enabled | bool | `false` |  |
+| seaweedfs.image.tag | float | `4.23` |  |
 | seaweedfs.mode | string | `"mini"` |  |
 | seaweedfs.persistence.accessModes[0] | string | `"ReadWriteOnce"` |  |
 | seaweedfs.persistence.size | string | `"1Gi"` |  |
