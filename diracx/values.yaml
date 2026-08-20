@@ -372,6 +372,8 @@ opensearch:
 seaweedfs:
   enabled: false
   mode: "mini"
+  image:
+    tag: 4.23
   persistence:
     size: 1Gi
     storageClass: "standard"
