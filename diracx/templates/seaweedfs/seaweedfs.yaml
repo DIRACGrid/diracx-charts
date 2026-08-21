@@ -14,13 +14,13 @@ spec:
     release: {{ .Release.Name }}
   ports:
     - name: s3
-      port: {{ default 8333 .Values.seaweedfs.s3Port }}
-      targetPort: {{ default 8333 .Values.seaweedfs.s3TargetPort }}
-      nodePort: {{ default 32000 .Values.seaweedfs.s3NodePort }}
+      port: {{ .Values.seaweedfs.s3Port | default 8333 }}
+      targetPort: {{ .Values.seaweedfs.s3TargetPort | default 8333 }}
+      nodePort: {{ .Values.seaweedfs.s3NodePort | default 32000 }}
     - name: adminui
-      port: {{ default 23646 .Values.seaweedfs.adminuiPort }}
-      targetPort: {{ default 23646 .Values.seaweedfs.adminuiTargetPort }}
-      nodePort: {{ default 32001 .Values.seaweedfs.adminuiNodePort }}
+      port: {{ .Values.seaweedfs.adminuiPort | default 23646 }}
+      targetPort: {{ .Values.seaweedfs.adminuiTargetPort | default 23646 }}
+      nodePort: {{ .Values.seaweedfs.adminuiNodePort | default 32001 }}
   type: NodePort
 ---
 # PersistentVolumeClaim
@@ -76,9 +76,9 @@ spec:
             - name: S3_BUCKET
               value: {{ .Values.seaweedfs.config.bucket }}
           ports:
-            - containerPort: {{ default 8333 .Values.seaweedfs.s3Port }}
+            - containerPort: {{ .Values.seaweedfs.s3Port | default 8333 }}
               name: s3
-            - containerPort: {{ default 23646 .Values.seaweedfs.adminuiPort }}
+            - containerPort: {{ .Values.seaweedfs.adminuiPort | default 23646 }}
               name: adminui
           volumeMounts:
             - name: seaweedfs-data
