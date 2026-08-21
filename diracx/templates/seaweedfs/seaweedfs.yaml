@@ -64,7 +64,7 @@ spec:
     spec:
       containers:
         - name: seaweedfs
-          image: "chrislusf/seaweedfs:{{ .Values.seaweedfs.image.tag }}"
+          image: "{{ .Values.seaweedfs.image.repository }}:{{ .Values.seaweedfs.image.tag }}"
           imagePullPolicy: IfNotPresent
           args: [
             {{ .Values.seaweedfs.mode | quote }},
