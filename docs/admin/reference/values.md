@@ -196,8 +196,8 @@
 | opentelemetry-collector.config.exporters.prometheus.resource_to_telemetry_conversion.enabled | bool | `true` |  |
 | opentelemetry-collector.config.exporters.prometheus.send_timestamps | bool | `true` |  |
 | opentelemetry-collector.config.receivers.jaeger | string | `nil` |  |
-| opentelemetry-collector.config.receivers.otlp.protocols.grpc | string | `nil` |  |
-| opentelemetry-collector.config.receivers.otlp.protocols.http | string | `nil` |  |
+| opentelemetry-collector.config.receivers.otlp.protocols.grpc | object | `{}` |  |
+| opentelemetry-collector.config.receivers.otlp.protocols.http | object | `{}` |  |
 | opentelemetry-collector.config.receivers.prometheus | string | `nil` |  |
 | opentelemetry-collector.config.service.pipelines.logs.exporters[0] | string | `"elasticsearch/log"` |  |
 | opentelemetry-collector.config.service.pipelines.logs.exporters[1] | string | `"logging"` |  |
