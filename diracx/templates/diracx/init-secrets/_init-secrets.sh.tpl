@@ -215,7 +215,7 @@ generate_secret_if_needed diracx-os-root-connection-urls \
 {{- $osTlsCrt = index $osDbSettings "tls.crt" | default $defaultOsTlsCrt }}
 {{- $osTlsKey = index $osDbSettings "tls.key" | default $defaultOsTlsKey }}
 
-{{- /* Vérifie si useCRT est défini dans $osDbSettings */}}
+{{- /* Check if useCRT is defined in $osDbSettings */}}
 {{- if and (hasKey $osDbSettings "useCRT") (eq $osDbSettings.useCRT true) }}
 {{- $osConnectionString = printf "{\"hosts\": [\"%s\"], \"use_ssl\": true, \"verify_certs\": true, \"client_cert\": \"%stls.crt\", \"client_key\": \"%stls.key\", \"ca_certs\": \"%sca.crt\"}" $osDbHost $osCertPath $osCertPath $osCertPath }}
 {{- $osRootConnectionString = printf "{\"hosts\": [\"%s\"], \"use_ssl\": true, \"verify_certs\": true, \"client_cert\": \"%stls.crt\", \"client_key\": \"%stls.key\", \"ca_certs\": \"%sca.crt\"}" $osDbHost $osCertPath $osCertPath $osCertPath }}
@@ -227,7 +227,6 @@ generate_secret_if_needed diracx-os-connection-urls \
   --from-literal=DIRACX_OS_DB_{{ $osDbName | upper }}='{{ $osConnectionString }}'
 generate_secret_if_needed diracx-os-root-connection-urls \
   --from-literal=DIRACX_OS_DB_{{ $osDbName | upper }}='{{ $osRootConnectionString }}'
-{{- end }}
 {{- end }}
 {{- end }}
 {{- end }}
