@@ -100,7 +100,7 @@ To do this when deploying the chart see the `global.images` option in the values
 | https://charts.bitnami.com/bitnami/ | rabbitmq | 12.0.10 |
 | https://charts.dexidp.io/ | dex | 0.14.2 |
 | https://charts.jetstack.io | cert-manager | 1.13.1 |
-| https://grafana.github.io/helm-charts | grafana | 6.59.4 |
+| https://grafana.github.io/helm-charts | grafana | 6.61.2 |
 | https://helm.elastic.co | elasticsearch | 8.5.1 |
 | https://jaegertracing.github.io/helm-charts | jaeger | 0.71.14 |
 | https://open-telemetry.github.io/opentelemetry-helm-charts | opentelemetry-collector | 0.68.0 |
