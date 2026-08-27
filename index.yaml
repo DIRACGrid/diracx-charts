@@ -3,6 +3,63 @@ entries:
   diracx:
   - apiVersion: v2
     appVersion: v0.3.0
+    created: "2026-08-27T13:52:43.63235181Z"
+    dependencies:
+    - condition: opensearch.enabled
+      name: opensearch
+      repository: https://opensearch-project.github.io/helm-charts/
+      version: 2.13.1
+    - condition: elasticsearch.enabled
+      name: elasticsearch
+      repository: https://helm.elastic.co
+      version: 8.5.1
+    - condition: dex.enabled
+      name: dex
+      repository: https://charts.dexidp.io/
+      version: 0.14.2
+    - condition: rabbitmq.enabled
+      name: rabbitmq
+      repository: https://charts.bitnami.com/bitnami/
+      version: 12.0.10
+    - condition: mysql.enabled
+      name: mysql
+      repository: https://charts.bitnami.com/bitnami/
+      version: 9.11.0
+    - condition: cert-manager.enabled
+      name: cert-manager
+      repository: https://charts.jetstack.io
+      version: 1.13.1
+    - condition: cert-manager-issuer.enabled
+      name: cert-manager-issuer
+      repository: ""
+      version: '*.*.*'
+    - condition: opentelemetry-collector.enabled
+      name: opentelemetry-collector
+      repository: https://open-telemetry.github.io/opentelemetry-helm-charts
+      version: 0.68.0
+    - condition: jaeger.enabled
+      name: jaeger
+      repository: https://jaegertracing.github.io/helm-charts
+      version: 0.71.14
+    - condition: grafana.enabled
+      name: grafana
+      repository: https://grafana.github.io/helm-charts
+      version: 6.61.2
+    - condition: prometheus.enabled
+      name: prometheus
+      repository: https://prometheus-community.github.io/helm-charts
+      version: 25.0.0
+    description: 'This helm chart is intended to be used in two ways:   * Development:
+      The ./run_demo.sh script allows the infrastructure to be ran locally with docker+kind  *
+      Production: TODO '
+    digest: 474b9146af1a9876adb7e864a78c0c8255931fc7d8ad8eeab1553fcab72ddc2d
+    name: diracx
+    type: application
+    urls:
+    - https://github.com/DIRACGrid/diracx-charts/releases/download/diracx-1.1.9/diracx-1.1.9.tgz
+    version: 1.1.9
+  - apiVersion: v2
+    appVersion: v0.3.0
     created: "2026-08-27T08:08:14.555025676Z"
     dependencies:
     - condition: opensearch.enabled
@@ -2421,4 +2478,4 @@ entries:
     urls:
     - https://github.com/DIRACGrid/diracx-charts/releases/download/diracx-0.1.0-alpha.2/diracx-0.1.0-alpha.2.tgz
     version: 0.1.0-alpha.2
-generated: "2026-08-27T08:08:14.55539258Z"
+generated: "2026-08-27T13:52:43.632689033Z"
