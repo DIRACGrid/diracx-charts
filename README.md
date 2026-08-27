@@ -280,8 +280,8 @@ To do this when deploying the chart see the `global.images` option in the values
 | opentelemetry-collector.config.exporters.prometheus.metric_expiration | string | `"180m"` |  |
 | opentelemetry-collector.config.exporters.prometheus.send_timestamps | bool | `true` |  |
 | opentelemetry-collector.config.receivers.jaeger | string | `nil` |  |
-| opentelemetry-collector.config.receivers.otlp.protocols.grpc | string | `nil` |  |
-| opentelemetry-collector.config.receivers.otlp.protocols.http | string | `nil` |  |
+| opentelemetry-collector.config.receivers.otlp.protocols.grpc | string | `{}` |  |
+| opentelemetry-collector.config.receivers.otlp.protocols.http | string | `{}` |  |
 | opentelemetry-collector.config.receivers.prometheus | string | `nil` |  |
 | opentelemetry-collector.config.service.pipelines.logs.exporters[0] | string | `"elasticsearch/log"` |  |
 | opentelemetry-collector.config.service.pipelines.logs.exporters[1] | string | `"logging"` |  |
