@@ -285,7 +285,7 @@ diracx:
     # -- Global prefix to be applied to all OpenSearch indices
     # When set, this will add DIRACX_FACTORY_OS_GLOBAL_PREFIX to the secrets
     GlobalIndexPrefix:
-    
+
     # -- Which DiracX OpenSearch DBs are used?
     dbs:
       # All DBs used should be configured here.
