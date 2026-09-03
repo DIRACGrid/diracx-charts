@@ -109,7 +109,7 @@ spec:
           imagePullPolicy: {{ $.Values.global.imagePullPolicy }}
           command: [ "/usr/local/bin/_entrypoint.sh", "tini", "--", "bash", "/entrypoint.sh" ]
           args:
-            - dirac-task
+            - dirac-tasks
             - worker
             - --worker-size={{ $size }}
             - --max-concurrent-tasks={{ $worker.maxConcurrentTasks }}
