@@ -54,6 +54,27 @@ spec:
             {{ toYaml $commonVolumeMounts | nindent 12 }}
             - name: scripts
               mountPath: /scripts
+            {{- $defaultOsDbs := .Values.diracx.osDbs.default | default (dict) }}
+            {{- if (kindIs "map" $defaultOsDbs) }}
+            {{- if and (hasKey $defaultOsDbs "ca.crt") (hasKey $defaultOsDbs "tls.crt") (hasKey $defaultOsDbs "tls.key") }}
+            - name: os-secret-default-volume
+              mountPath: /os-certs/default
+              readOnly: true
+            {{- end }}
+            {{- end }}
+            {{- range $dbName, $dbConfig := .Values.diracx.osDbs.dbs }}
+            {{- if kindIs "map" $dbConfig }}
+            {{- if and (hasKey $dbConfig "ca.crt") (hasKey $dbConfig "tls.crt") (hasKey $dbConfig "tls.key") }}
+            {{- $safeDbName := $dbName | lower | replace "_" "-" | replace "." "-" }}
+            - name: {{ printf "os-secret-%s-volume" $safeDbName }}
+              mountPath: {{ printf "os-certs/%s" $safeDbName }}
+              readOnly: true
+            {{- end }}
+            {{- end }}
+            {{- end }}
+          envFrom:
+            - secretRef:
+                name: diracx-secrets
           env:
           {{- range $dbName,$dbSettings := .Values.diracx.osDbs.dbs }}
             - name: DIRACX_OS_DB_{{ $dbName | upper }}
@@ -65,6 +86,23 @@ spec:
           resources:
             {{- toYaml .Values.initOs.resources | nindent 12 }}
       volumes:
+      {{- if (kindIs "map" $defaultOsDbs) }}
+      {{- if and (hasKey $defaultOsDbs "ca.crt") (hasKey $defaultOsDbs "tls.crt") (hasKey $defaultOsDbs "tls.key") }}
+      - name: os-secret-default-volume
+        secret:
+          secretName: os-certs-default
+      {{- end }}
+      {{- end }}
+      {{- range $dbName, $dbConfig := .Values.diracx.osDbs.dbs }}
+      {{- if kindIs "map" $dbConfig }}
+      {{- if and (hasKey $dbConfig "ca.crt") (hasKey $dbConfig "tls.crt") (hasKey $dbConfig "tls.key") }}
+      {{- $safeDbName := $dbName | lower | replace "_" "-" | replace "." "-" }}
+      - name: {{ printf "os-secret-%s-volume" $safeDbName }}
+        secret:
+          secretName: {{ printf "os-certs-%s" $safeDbName | quote }}
+      {{- end }}
+      {{- end }}
+      {{- end }}
       - name: scripts
         configMap:
           name: {{ template "initOs.fullname" . }}
