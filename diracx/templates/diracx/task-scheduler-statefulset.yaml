@@ -104,7 +104,7 @@ spec:
           imagePullPolicy: {{ .Values.global.imagePullPolicy }}
           command: [ "/usr/local/bin/_entrypoint.sh", "tini", "--", "bash", "/entrypoint.sh" ]
           args:
-            - diracx-task-run
+            - dirac-task
             - scheduler
           volumeMounts: {{ toYaml $commonVolumeMounts | nindent 12 }}
           envFrom:
