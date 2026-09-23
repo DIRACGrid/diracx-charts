@@ -42,6 +42,7 @@ diracx:
       JobLoggingDB:
       SandboxMetadataDB:
       TaskQueueDB:
+      TaskDB:
       PilotAgentsDB:
       ResourceStatusDB:
   osDbs:
