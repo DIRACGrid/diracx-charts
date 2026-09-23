@@ -7,7 +7,7 @@
 | https://charts.bitnami.com/bitnami/ | rabbitmq | 12.0.10 |
 | https://charts.dexidp.io/ | dex | 0.14.2 |
 | https://charts.jetstack.io | cert-manager | 1.13.1 |
-| https://grafana.github.io/helm-charts | grafana | 6.59.4 |
+| https://grafana.github.io/helm-charts | grafana | 6.61.2 |
 | https://helm.elastic.co | elasticsearch | 8.5.1 |
 | https://jaegertracing.github.io/helm-charts | jaeger | 0.71.14 |
 | https://open-telemetry.github.io/opentelemetry-helm-charts | opentelemetry-collector | 0.68.0 |
@@ -106,7 +106,7 @@
 | global.images.redisTasks.tag | string | `"7.4.2-alpine"` |  |
 | global.images.secret_generation.repository | string | `"diracgrid/diracx/secret-generation"` |  |
 | global.images.services.repository | string | `"diracgrid/diracx/services"` |  |
-| global.images.tag | string | `"v0.3.0"` |  |
+| global.images.tag | string | `"v0.4.1"` |  |
 | global.images.tasks.repository | string | `"diracgrid/diracx/tasks"` |  |
 | global.images.web.repository | string | `"diracgrid/diracx-web/static"` |  |
 | global.images.web.tag | string | `"v0.1.0-a11"` |  |
@@ -197,8 +197,8 @@
 | opentelemetry-collector.config.exporters.prometheus.resource_to_telemetry_conversion.enabled | bool | `true` |  |
 | opentelemetry-collector.config.exporters.prometheus.send_timestamps | bool | `true` |  |
 | opentelemetry-collector.config.receivers.jaeger | string | `nil` |  |
-| opentelemetry-collector.config.receivers.otlp.protocols.grpc | string | `nil` |  |
-| opentelemetry-collector.config.receivers.otlp.protocols.http | string | `nil` |  |
+| opentelemetry-collector.config.receivers.otlp.protocols.grpc | object | `{}` |  |
+| opentelemetry-collector.config.receivers.otlp.protocols.http | object | `{}` |  |
 | opentelemetry-collector.config.receivers.prometheus | string | `nil` |  |
 | opentelemetry-collector.config.service.pipelines.logs.exporters[0] | string | `"elasticsearch/log"` |  |
 | opentelemetry-collector.config.service.pipelines.logs.exporters[1] | string | `"logging"` |  |
