@@ -62,6 +62,7 @@
 | dex.service.ports.http.port | int | `8000` |  |
 | dex.service.type | string | `"NodePort"` |  |
 | diracx.hostname | string | `""` | Required: The hostname where the webapp/API is running |
+| diracx.osDbs.GlobalIndexPrefix | string | `nil` | Global prefix to be applied to all OpenSearch indices When set, this will add DIRACX_FACTORY_OS_GLOBAL_PREFIX to the secrets |
 | diracx.osDbs.dbs | string | `nil` | Which DiracX OpenSearch DBs are used? |
 | diracx.osDbs.default | string | `nil` |  |
 | diracx.pythonModulesToInstall | list | `[]` | List of install specifications to pass to pip before launching each container |
