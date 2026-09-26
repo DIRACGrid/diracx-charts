@@ -106,6 +106,66 @@ jobs:
           exit 1
         fi
 
+  # Install the latest released chart, then upgrade to the PR's chart.
+  # Catches upgrade-time regressions (e.g. PR #262, which converted
+  # diracx-secrets from a regular resource to a hook and consequently
+  # deleted it during upgrades from <= 1.0.x).
+  run-upgrade-test:
+    needs: detect-docs-only
+    if: needs.detect-docs-only.outputs.docs-only != 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    permissions:
+      contents: read
+    steps:
+    - uses: actions/checkout@v6
+      with:
+        fetch-depth: 0
+        # Tags are needed for `git worktree add` against the released ref.
+        # actions/checkout doesn't fetch tags by default even with depth: 0.
+    - name: Fetch tags
+      run: git fetch --tags --force
+    - name: Discover latest release
+      id: discover
+      env:
+        GH_TOKEN: ${{ github.token }}
+      run: scripts/upgrade-test/discover-latest-release.sh
+    - name: Skip notice
+      if: steps.discover.outputs.skip == 'true'
+      run: echo "::notice::${{ steps.discover.outputs.skip_reason }}; skipping upgrade test"
+    - name: Worktree the released chart
+      if: steps.discover.outputs.skip != 'true'
+      run: git worktree add /tmp/released-chart "${{ steps.discover.outputs.tag }}"
+    - name: Bring up cluster + install released chart
+      if: steps.discover.outputs.skip != 'true'
+      run: /tmp/released-chart/run_demo.sh --exit-when-done
+    - name: Add released chart's helm/kubectl to PATH
+      if: steps.discover.outputs.skip != 'true'
+      run: echo "/tmp/released-chart/.demo" >> "$GITHUB_PATH"
+    - name: Upgrade to PR chart
+      if: steps.discover.outputs.skip != 'true'
+      env:
+        KUBECONFIG: /tmp/released-chart/.demo/kube.conf
+        HELM_DATA_HOME: /tmp/released-chart/.demo/helm_data
+      run: |
+        HELM=/tmp/released-chart/.demo/helm
+        "$HELM" dependency build "$GITHUB_WORKSPACE/diracx"
+        "$HELM" upgrade --debug --atomic --wait --timeout 900s \
+          diracx-demo "$GITHUB_WORKSPACE/diracx" \
+          --values /tmp/released-chart/.demo/values.yaml
+    - name: Assert upgrade healthy
+      if: steps.discover.outputs.skip != 'true'
+      env:
+        KUBECONFIG: /tmp/released-chart/.demo/kube.conf
+        HELM_DATA_HOME: /tmp/released-chart/.demo/helm_data
+      run: scripts/upgrade-test/assert-upgrade-healthy.sh
+    - name: Diagnostics
+      if: always() && steps.discover.outputs.skip != 'true'
+      env:
+        KUBECONFIG: /tmp/released-chart/.demo/kube.conf
+        HELM_DATA_HOME: /tmp/released-chart/.demo/helm_data
+      run: scripts/upgrade-test/collect-diagnostics.sh
+
   # Same as run-demo except mount the sources inside the container
   # Uses ci_values.yaml to override image tags to "dev"
   run-demo-mount-sources:
