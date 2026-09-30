@@ -229,11 +229,22 @@ diracx:
 
     ###
 
+    ### Logs settings https://diracx.diracgrid.org/en/latest/admin/reference/logs/
+    # -- Format of the logs: json (one JSON object per line, for log collectors) or text
+    DIRACX_LOG_FORMAT: "text"
+
     ### Open Telemetry settings (experimental)
+    #  https://diracx.diracgrid.org/en/latest/admin/reference/opentelemetry/
 
     DIRACX_OTEL_ENABLED: "false"
     DIRACX_OTEL_GRPC_ENDPOINT: "diracx-demo-opentelemetry-collector:4317"
     DIRACX_OTEL_GRPC_INSECURE: "true"
+
+    # Keep 10% of the traces. "parentbased" means that a trace is either
+    # kept or dropped as a whole, including the tasks it triggered.
+    # -- Sample the traces. Strongly suggested for
+    # OTEL_TRACES_SAMPLER: "parentbased_traceidratio"
+    # OTEL_TRACES_SAMPLER_ARG: "0.1"
 
   # If mysql is enabled, you are not allowed
   # to set the username passwords
