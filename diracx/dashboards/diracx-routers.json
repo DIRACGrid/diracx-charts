@@ -1224,7 +1224,7 @@
     {
       "type": "row",
       "id": 20,
-      "title": "Databases (SQL)",
+      "title": "Clients",
       "collapsed": false,
       "gridPos": {
         "x": 0,
@@ -1237,6 +1237,260 @@
     {
       "type": "timeseries",
       "id": 21,
+      "title": "Requests by client version",
+      "description": "Requests per version of the DiracX client (DiracX-Client-Version header). none: no header (web interface, direct HTTP requests); invalid: unparsable version; other: more versions than tracked.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource}"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 50,
+        "w": 12,
+        "h": 8
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "sum by (client_version) (rate(client_requests_total{service_name=~\"$service\", service_instance_id=~\"$instance\"}[$__rate_interval]))",
+          "legendFormat": "{{client_version}}",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource}"
+          }
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "reqps",
+          "custom": {
+            "drawStyle": "line",
+            "lineWidth": 2,
+            "fillOpacity": 20,
+            "showPoints": "never",
+            "spanNulls": false,
+            "stacking": {
+              "mode": "normal",
+              "group": "A"
+            },
+            "axisSoftMin": 0,
+            "gradientMode": "none"
+          },
+          "color": {
+            "mode": "palette-classic"
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "bottom",
+          "showLegend": true,
+          "calcs": [
+            "mean",
+            "max"
+          ]
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      }
+    },
+    {
+      "type": "timeseries",
+      "id": 22,
+      "title": "Rejected clients",
+      "description": "Requests refused because the client is older than the minimum supported version (or sent an invalid version).",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource}"
+      },
+      "gridPos": {
+        "x": 12,
+        "y": 50,
+        "w": 12,
+        "h": 8
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "sum by (client_version) (increase(client_requests_total{service_name=~\"$service\", service_instance_id=~\"$instance\", outcome=\"rejected\"}[$__interval])) > 0",
+          "legendFormat": "{{client_version}}",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource}"
+          }
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "custom": {
+            "drawStyle": "bars",
+            "lineWidth": 2,
+            "fillOpacity": 60,
+            "showPoints": "never",
+            "spanNulls": false,
+            "stacking": {
+              "mode": "none",
+              "group": "A"
+            },
+            "axisSoftMin": 0,
+            "gradientMode": "none"
+          },
+          "color": {
+            "mode": "palette-classic"
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "bottom",
+          "showLegend": true,
+          "calcs": [
+            "mean",
+            "max"
+          ]
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      }
+    },
+    {
+      "type": "table",
+      "id": 23,
+      "title": "Client versions over the selected time range",
+      "description": "Every client version seen over the dashboard time range, to decide whether the minimum client version can be raised.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource}"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 58,
+        "w": 24,
+        "h": 7
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "sum by (client_version) (increase(client_requests_total{service_name=~\"$service\", service_instance_id=~\"$instance\"}[$__range]))",
+          "format": "table",
+          "instant": true,
+          "range": false,
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource}"
+          }
+        },
+        {
+          "refId": "B",
+          "expr": "sum by (client_version) (increase(client_requests_total{service_name=~\"$service\", service_instance_id=~\"$instance\", outcome=\"rejected\"}[$__range])) or sum by (client_version) (increase(client_requests_total{service_name=~\"$service\", service_instance_id=~\"$instance\"}[$__range])) * 0",
+          "format": "table",
+          "instant": true,
+          "range": false,
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource}"
+          }
+        }
+      ],
+      "transformations": [
+        {
+          "id": "merge",
+          "options": {}
+        },
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {
+              "Time": true
+            },
+            "indexByName": {},
+            "renameByName": {
+              "Value #A": "Requests",
+              "Value #B": "Rejected"
+            }
+          }
+        },
+        {
+          "id": "filterFieldsByName",
+          "options": {
+            "include": {
+              "names": [
+                "client_version",
+                "Requests",
+                "Rejected"
+              ]
+            }
+          }
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "align": "auto"
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Requests"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "short"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Rejected"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "short"
+              }
+            ]
+          }
+        ]
+      },
+      "options": {
+        "showHeader": true,
+        "sortBy": [
+          {
+            "displayName": "Requests",
+            "desc": true
+          }
+        ]
+      }
+    },
+    {
+      "type": "row",
+      "id": 24,
+      "title": "Databases (SQL)",
+      "collapsed": false,
+      "gridPos": {
+        "x": 0,
+        "y": 65,
+        "w": 24,
+        "h": 1
+      },
+      "panels": []
+    },
+    {
+      "type": "timeseries",
+      "id": 25,
       "title": "Query latency p95 by database",
       "description": "95th percentile of the SQL query duration, per database.",
       "datasource": {
@@ -1245,7 +1499,7 @@
       },
       "gridPos": {
         "x": 0,
-        "y": 50,
+        "y": 66,
         "w": 8,
         "h": 8
       },
@@ -1300,7 +1554,7 @@
     },
     {
       "type": "timeseries",
-      "id": 22,
+      "id": 26,
       "title": "Queries by database and operation",
       "description": "SQL queries per second (8 busiest database/operation pairs).",
       "datasource": {
@@ -1309,7 +1563,7 @@
       },
       "gridPos": {
         "x": 8,
-        "y": 50,
+        "y": 66,
         "w": 8,
         "h": 8
       },
@@ -1364,7 +1618,7 @@
     },
     {
       "type": "timeseries",
-      "id": 23,
+      "id": 27,
       "title": "Query errors",
       "description": "SQL queries which raised an exception, per database and exception type.",
       "datasource": {
@@ -1373,7 +1627,7 @@
       },
       "gridPos": {
         "x": 16,
-        "y": 50,
+        "y": 66,
         "w": 8,
         "h": 8
       },
@@ -1428,7 +1682,7 @@
     },
     {
       "type": "timeseries",
-      "id": 24,
+      "id": 28,
       "title": "Connection pool usage (busiest instance)",
       "description": "Connections checked out of the SQLAlchemy pool over the pool capacity (pool_size + max_overflow), for the instance with the fullest pool. At 100%, requests wait for a connection.",
       "datasource": {
@@ -1437,7 +1691,7 @@
       },
       "gridPos": {
         "x": 0,
-        "y": 58,
+        "y": 74,
         "w": 12,
         "h": 8
       },
@@ -1492,7 +1746,7 @@
     },
     {
       "type": "timeseries",
-      "id": 25,
+      "id": 29,
       "title": "Connections in use by instance",
       "description": "Connections currently checked out of the pools, per instance.",
       "datasource": {
@@ -1501,7 +1755,7 @@
       },
       "gridPos": {
         "x": 12,
-        "y": 58,
+        "y": 74,
         "w": 12,
         "h": 8
       },
