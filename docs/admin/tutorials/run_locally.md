@@ -92,7 +92,12 @@ See [here](../../dev/explanations/run_demo.md) for more details on what you can 
 * ElasticSearch for logs (OpenSearch not yet supported)
 * Grafana to display all that (accessible on port 32004 of the demo)
 
-To enable it, run ``run_demo.sh`` with ``enable-open-telemetry``
+To enable it, run ``run_demo.sh`` with ``--enable-open-telemetry``
+
+Grafana is provisioned with the dashboards of ``diracx/dashboards``: *DiracX Routers* (HTTP traffic, latency, SQL queries of the API servers), *DiracX Tasks* (task throughput, queues, workers, retries, scheduler) and *Metrics* (HTTP requests per route).
+See [Use the Grafana dashboards](../how-to/monitoring/use-the-dashboards.md) for how to read them.
+
+If you only need to see the traces and metrics produced by your code, ``pixi run local-start --otel`` in the ``diracx`` repository is much lighter: it prints them in the terminal (see the [monitor the task system tutorial](monitor-tasks.md)).
 
 Note that this configuration is trivial and does not follow production recommandations (like using batch processing)
 
