@@ -229,6 +229,11 @@ diracx:
 
     ###
 
+    ### Logs settings https://github.com/DIRACGrid/diracx/blob/main/docs/admin/reference/logs.md
+
+    # -- Format of the logs: json (one JSON object per line, for log collectors) or text
+    DIRACX_LOG_FORMAT: "json"
+
     ### Open Telemetry settings (experimental)
 
     DIRACX_OTEL_ENABLED: "false"

@@ -81,6 +81,15 @@ helm upgrade diracx-demo ./diracx --values .demo/values.yaml
 See [here](../../dev/explanations/run_demo.md) for more details on what you can do to alter the behavior of the local installation.
 
 
+## Logs
+
+The DiracX pods write their logs as JSON (``DIRACX_LOG_FORMAT: json``).
+To follow them live in a readable form, use [stern](https://github.com/stern/stern) with the DiracX template, as explained in [Collect and read the logs](../how-to/monitoring/collect-and-read-logs.md#with-stern):
+
+```bash
+stern --template-file diracx.stern.tmpl diracx-demo
+```
+
 ## OpenTelemetry
 
 > :warning: **Experimental**: opentelemetry is an evolving product, and so is our implementation of it.
