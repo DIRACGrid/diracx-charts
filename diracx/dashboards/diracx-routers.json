@@ -35,9 +35,9 @@
           "type": "prometheus",
           "uid": "${datasource}"
         },
-        "definition": "label_values(http_server_request_duration_seconds_count, service_name)",
+        "definition": "label_values({__name__=~\"http_server_request_duration(_seconds)?_count\"}, service_name)",
         "query": {
-          "query": "label_values(http_server_request_duration_seconds_count, service_name)",
+          "query": "label_values({__name__=~\"http_server_request_duration(_seconds)?_count\"}, service_name)",
           "refId": "var-service"
         },
         "refresh": 2,
@@ -58,9 +58,9 @@
           "type": "prometheus",
           "uid": "${datasource}"
         },
-        "definition": "label_values(http_server_request_duration_seconds_count{service_name=~\"$service\"}, service_instance_id)",
+        "definition": "label_values({__name__=~\"http_server_request_duration(_seconds)?_count\", service_name=~\"$service\"}, service_instance_id)",
         "query": {
-          "query": "label_values(http_server_request_duration_seconds_count{service_name=~\"$service\"}, service_instance_id)",
+          "query": "label_values({__name__=~\"http_server_request_duration(_seconds)?_count\", service_name=~\"$service\"}, service_instance_id)",
           "refId": "var-instance"
         },
         "refresh": 2,
@@ -81,9 +81,9 @@
           "type": "prometheus",
           "uid": "${datasource}"
         },
-        "definition": "label_values(http_server_request_duration_seconds_count{service_name=~\"$service\"}, http_route)",
+        "definition": "label_values({__name__=~\"http_server_request_duration(_seconds)?_count\", service_name=~\"$service\"}, http_route)",
         "query": {
-          "query": "label_values(http_server_request_duration_seconds_count{service_name=~\"$service\"}, http_route)",
+          "query": "label_values({__name__=~\"http_server_request_duration(_seconds)?_count\", service_name=~\"$service\"}, http_route)",
           "refId": "var-route"
         },
         "refresh": 2,
@@ -134,7 +134,7 @@
       "targets": [
         {
           "refId": "A",
-          "expr": "sum(rate(http_server_request_duration_seconds_count{service_name=~\"$service\", service_instance_id=~\"$instance\", http_route=~\"$route\"}[$__rate_interval]))",
+          "expr": "sum(rate({__name__=~\"http_server_request_duration(_seconds)?_count\", service_name=~\"$service\", service_instance_id=~\"$instance\", http_route=~\"$route\"}[$__rate_interval]))",
           "datasource": {
             "type": "prometheus",
             "uid": "${datasource}"
@@ -193,7 +193,7 @@
       "targets": [
         {
           "refId": "A",
-          "expr": "(sum(rate(http_server_request_duration_seconds_count{service_name=~\"$service\", service_instance_id=~\"$instance\", http_route=~\"$route\", http_response_status_code=~\"5..\"}[$__rate_interval])) or vector(0)) / sum(rate(http_server_request_duration_seconds_count{service_name=~\"$service\", service_instance_id=~\"$instance\", http_route=~\"$route\"}[$__rate_interval]))",
+          "expr": "(sum(rate({__name__=~\"http_server_request_duration(_seconds)?_count\", service_name=~\"$service\", service_instance_id=~\"$instance\", http_route=~\"$route\", http_response_status_code=~\"5..\"}[$__rate_interval])) or vector(0)) / sum(rate({__name__=~\"http_server_request_duration(_seconds)?_count\", service_name=~\"$service\", service_instance_id=~\"$instance\", http_route=~\"$route\"}[$__rate_interval]))",
           "datasource": {
             "type": "prometheus",
             "uid": "${datasource}"
@@ -260,7 +260,7 @@
       "targets": [
         {
           "refId": "A",
-          "expr": "histogram_quantile(0.95, sum by (le) (rate(http_server_request_duration_seconds_bucket{service_name=~\"$service\", service_instance_id=~\"$instance\", http_route=~\"$route\"}[$__rate_interval])))",
+          "expr": "histogram_quantile(0.95, sum by (le) (rate({__name__=~\"http_server_request_duration(_seconds)?_bucket\", service_name=~\"$service\", service_instance_id=~\"$instance\", http_route=~\"$route\"}[$__rate_interval])))",
           "datasource": {
             "type": "prometheus",
             "uid": "${datasource}"
@@ -458,7 +458,7 @@
       "targets": [
         {
           "refId": "A",
-          "expr": "sum by (status) (label_replace(rate(http_server_request_duration_seconds_count{service_name=~\"$service\", service_instance_id=~\"$instance\", http_route=~\"$route\"}[$__rate_interval]), \"status\", \"${1}xx\", \"http_response_status_code\", \"([0-9]).*\"))",
+          "expr": "sum by (status) (label_replace(rate({__name__=~\"http_server_request_duration(_seconds)?_count\", service_name=~\"$service\", service_instance_id=~\"$instance\", http_route=~\"$route\"}[$__rate_interval]), \"status\", \"${1}xx\", \"http_response_status_code\", \"([0-9]).*\"))",
           "legendFormat": "{{status}}",
           "datasource": {
             "type": "prometheus",
@@ -583,7 +583,7 @@
       "targets": [
         {
           "refId": "A",
-          "expr": "topk(8, sum by (http_request_method, http_route) (rate(http_server_request_duration_seconds_count{service_name=~\"$service\", service_instance_id=~\"$instance\", http_route=~\"$route\"}[$__rate_interval])))",
+          "expr": "topk(8, sum by (http_request_method, http_route) (rate({__name__=~\"http_server_request_duration(_seconds)?_count\", service_name=~\"$service\", service_instance_id=~\"$instance\", http_route=~\"$route\"}[$__rate_interval])))",
           "legendFormat": "{{http_request_method}} {{http_route}}",
           "datasource": {
             "type": "prometheus",
@@ -647,7 +647,7 @@
       "targets": [
         {
           "refId": "A",
-          "expr": "sum by (http_request_method, http_route, http_response_status_code) (rate(http_server_request_duration_seconds_count{service_name=~\"$service\", service_instance_id=~\"$instance\", http_route=~\"$route\", http_response_status_code=~\"5..\"}[$__rate_interval])) > 0",
+          "expr": "sum by (http_request_method, http_route, http_response_status_code) (rate({__name__=~\"http_server_request_duration(_seconds)?_count\", service_name=~\"$service\", service_instance_id=~\"$instance\", http_route=~\"$route\", http_response_status_code=~\"5..\"}[$__rate_interval])) > 0",
           "legendFormat": "{{http_request_method}} {{http_route}} ({{http_response_status_code}})",
           "datasource": {
             "type": "prometheus",
@@ -711,7 +711,7 @@
       "targets": [
         {
           "refId": "A",
-          "expr": "topk(8, sum by (http_request_method, http_route, http_response_status_code) (rate(http_server_request_duration_seconds_count{service_name=~\"$service\", service_instance_id=~\"$instance\", http_route=~\"$route\", http_response_status_code=~\"4..\"}[$__rate_interval])) > 0)",
+          "expr": "topk(8, sum by (http_request_method, http_route, http_response_status_code) (rate({__name__=~\"http_server_request_duration(_seconds)?_count\", service_name=~\"$service\", service_instance_id=~\"$instance\", http_route=~\"$route\", http_response_status_code=~\"4..\"}[$__rate_interval])) > 0)",
           "legendFormat": "{{http_request_method}} {{http_route}} ({{http_response_status_code}})",
           "datasource": {
             "type": "prometheus",
@@ -788,7 +788,7 @@
       "targets": [
         {
           "refId": "A",
-          "expr": "histogram_quantile(0.50, sum by (le) (rate(http_server_request_duration_seconds_bucket{service_name=~\"$service\", service_instance_id=~\"$instance\", http_route=~\"$route\"}[$__rate_interval])))",
+          "expr": "histogram_quantile(0.50, sum by (le) (rate({__name__=~\"http_server_request_duration(_seconds)?_bucket\", service_name=~\"$service\", service_instance_id=~\"$instance\", http_route=~\"$route\"}[$__rate_interval])))",
           "legendFormat": "p50",
           "datasource": {
             "type": "prometheus",
@@ -797,7 +797,7 @@
         },
         {
           "refId": "B",
-          "expr": "histogram_quantile(0.95, sum by (le) (rate(http_server_request_duration_seconds_bucket{service_name=~\"$service\", service_instance_id=~\"$instance\", http_route=~\"$route\"}[$__rate_interval])))",
+          "expr": "histogram_quantile(0.95, sum by (le) (rate({__name__=~\"http_server_request_duration(_seconds)?_bucket\", service_name=~\"$service\", service_instance_id=~\"$instance\", http_route=~\"$route\"}[$__rate_interval])))",
           "legendFormat": "p95",
           "datasource": {
             "type": "prometheus",
@@ -806,7 +806,7 @@
         },
         {
           "refId": "C",
-          "expr": "histogram_quantile(0.99, sum by (le) (rate(http_server_request_duration_seconds_bucket{service_name=~\"$service\", service_instance_id=~\"$instance\", http_route=~\"$route\"}[$__rate_interval])))",
+          "expr": "histogram_quantile(0.99, sum by (le) (rate({__name__=~\"http_server_request_duration(_seconds)?_bucket\", service_name=~\"$service\", service_instance_id=~\"$instance\", http_route=~\"$route\"}[$__rate_interval])))",
           "legendFormat": "p99",
           "datasource": {
             "type": "prometheus",
@@ -870,7 +870,7 @@
       "targets": [
         {
           "refId": "A",
-          "expr": "topk(8, histogram_quantile(0.95, sum by (le, http_request_method, http_route) (rate(http_server_request_duration_seconds_bucket{service_name=~\"$service\", service_instance_id=~\"$instance\", http_route=~\"$route\"}[$__rate_interval]))))",
+          "expr": "topk(8, histogram_quantile(0.95, sum by (le, http_request_method, http_route) (rate({__name__=~\"http_server_request_duration(_seconds)?_bucket\", service_name=~\"$service\", service_instance_id=~\"$instance\", http_route=~\"$route\"}[$__rate_interval]))))",
           "legendFormat": "{{http_request_method}} {{http_route}}",
           "datasource": {
             "type": "prometheus",
@@ -934,7 +934,7 @@
       "targets": [
         {
           "refId": "A",
-          "expr": "sum by (http_request_method, http_route) (increase(http_server_request_duration_seconds_count{service_name=~\"$service\", service_instance_id=~\"$instance\", http_route=~\"$route\"}[$__range]))",
+          "expr": "sum by (http_request_method, http_route) (increase({__name__=~\"http_server_request_duration(_seconds)?_count\", service_name=~\"$service\", service_instance_id=~\"$instance\", http_route=~\"$route\"}[$__range]))",
           "format": "table",
           "instant": true,
           "range": false,
@@ -945,7 +945,7 @@
         },
         {
           "refId": "B",
-          "expr": "histogram_quantile(0.50, sum by (le, http_request_method, http_route) (rate(http_server_request_duration_seconds_bucket{service_name=~\"$service\", service_instance_id=~\"$instance\", http_route=~\"$route\"}[$__range])))",
+          "expr": "histogram_quantile(0.50, sum by (le, http_request_method, http_route) (rate({__name__=~\"http_server_request_duration(_seconds)?_bucket\", service_name=~\"$service\", service_instance_id=~\"$instance\", http_route=~\"$route\"}[$__range])))",
           "format": "table",
           "instant": true,
           "range": false,
@@ -956,7 +956,7 @@
         },
         {
           "refId": "C",
-          "expr": "histogram_quantile(0.95, sum by (le, http_request_method, http_route) (rate(http_server_request_duration_seconds_bucket{service_name=~\"$service\", service_instance_id=~\"$instance\", http_route=~\"$route\"}[$__range])))",
+          "expr": "histogram_quantile(0.95, sum by (le, http_request_method, http_route) (rate({__name__=~\"http_server_request_duration(_seconds)?_bucket\", service_name=~\"$service\", service_instance_id=~\"$instance\", http_route=~\"$route\"}[$__range])))",
           "format": "table",
           "instant": true,
           "range": false,
@@ -967,7 +967,7 @@
         },
         {
           "refId": "D",
-          "expr": "(sum by (http_request_method, http_route) (increase(http_server_request_duration_seconds_count{service_name=~\"$service\", service_instance_id=~\"$instance\", http_route=~\"$route\", http_response_status_code=~\"5..\"}[$__range])) or sum by (http_request_method, http_route) (increase(http_server_request_duration_seconds_count{service_name=~\"$service\", service_instance_id=~\"$instance\", http_route=~\"$route\"}[$__range])) * 0) / sum by (http_request_method, http_route) (increase(http_server_request_duration_seconds_count{service_name=~\"$service\", service_instance_id=~\"$instance\", http_route=~\"$route\"}[$__range]))",
+          "expr": "(sum by (http_request_method, http_route) (increase({__name__=~\"http_server_request_duration(_seconds)?_count\", service_name=~\"$service\", service_instance_id=~\"$instance\", http_route=~\"$route\", http_response_status_code=~\"5..\"}[$__range])) or sum by (http_request_method, http_route) (increase({__name__=~\"http_server_request_duration(_seconds)?_count\", service_name=~\"$service\", service_instance_id=~\"$instance\", http_route=~\"$route\"}[$__range])) * 0) / sum by (http_request_method, http_route) (increase({__name__=~\"http_server_request_duration(_seconds)?_count\", service_name=~\"$service\", service_instance_id=~\"$instance\", http_route=~\"$route\"}[$__range]))",
           "format": "table",
           "instant": true,
           "range": false,
@@ -1111,7 +1111,7 @@
       "targets": [
         {
           "refId": "A",
-          "expr": "sum by (service_instance_id) (rate(http_server_request_duration_seconds_count{service_name=~\"$service\", service_instance_id=~\"$instance\", http_route=~\"$route\"}[$__rate_interval]))",
+          "expr": "sum by (service_instance_id) (rate({__name__=~\"http_server_request_duration(_seconds)?_count\", service_name=~\"$service\", service_instance_id=~\"$instance\", http_route=~\"$route\"}[$__rate_interval]))",
           "legendFormat": "{{service_instance_id}}",
           "datasource": {
             "type": "prometheus",
@@ -1506,7 +1506,7 @@
       "targets": [
         {
           "refId": "A",
-          "expr": "histogram_quantile(0.95, sum by (le, db_namespace) (rate(db_client_operation_duration_seconds_bucket{service_name=~\"$service\", service_instance_id=~\"$instance\", diracx_component=\"routers\"}[$__rate_interval])))",
+          "expr": "histogram_quantile(0.95, sum by (le, db_namespace) (rate({__name__=~\"db_client_operation_duration(_seconds)?_bucket\", service_name=~\"$service\", service_instance_id=~\"$instance\", diracx_component=\"routers\"}[$__rate_interval])))",
           "legendFormat": "{{db_namespace}}",
           "datasource": {
             "type": "prometheus",
@@ -1570,7 +1570,7 @@
       "targets": [
         {
           "refId": "A",
-          "expr": "topk(8, sum by (db_namespace, db_operation_name) (rate(db_client_operation_duration_seconds_count{service_name=~\"$service\", service_instance_id=~\"$instance\", diracx_component=\"routers\"}[$__rate_interval])))",
+          "expr": "topk(8, sum by (db_namespace, db_operation_name) (rate({__name__=~\"db_client_operation_duration(_seconds)?_count\", service_name=~\"$service\", service_instance_id=~\"$instance\", diracx_component=\"routers\"}[$__rate_interval])))",
           "legendFormat": "{{db_namespace}} {{db_operation_name}}",
           "datasource": {
             "type": "prometheus",
@@ -1634,7 +1634,7 @@
       "targets": [
         {
           "refId": "A",
-          "expr": "sum by (db_namespace, error_type) (rate(db_client_operation_duration_seconds_count{service_name=~\"$service\", service_instance_id=~\"$instance\", diracx_component=\"routers\", error_type!=\"\"}[$__rate_interval]))",
+          "expr": "sum by (db_namespace, error_type) (rate({__name__=~\"db_client_operation_duration(_seconds)?_count\", service_name=~\"$service\", service_instance_id=~\"$instance\", diracx_component=\"routers\", error_type!=\"\"}[$__rate_interval]))",
           "legendFormat": "{{db_namespace}} {{error_type}}",
           "datasource": {
             "type": "prometheus",
@@ -1762,7 +1762,7 @@
       "targets": [
         {
           "refId": "A",
-          "expr": "histogram_quantile(0.95, sum by (le, db_client_connection_pool_name) (rate(db_client_connection_wait_time_seconds_bucket{service_name=~\"$service\", service_instance_id=~\"$instance\", diracx_component=\"routers\"}[$__rate_interval])))",
+          "expr": "histogram_quantile(0.95, sum by (le, db_client_connection_pool_name) (rate({__name__=~\"db_client_connection_wait_time(_seconds)?_bucket\", service_name=~\"$service\", service_instance_id=~\"$instance\", diracx_component=\"routers\"}[$__rate_interval])))",
           "legendFormat": "{{db_client_connection_pool_name}}",
           "datasource": {
             "type": "prometheus",
@@ -1826,7 +1826,7 @@
       "targets": [
         {
           "refId": "A",
-          "expr": "sum by (db_client_connection_pool_name) (increase(db_client_connection_timeouts_total{service_name=~\"$service\", service_instance_id=~\"$instance\", diracx_component=\"routers\"}[$__interval])) > 0",
+          "expr": "sum by (db_client_connection_pool_name) (increase({__name__=~\"db_client_connection_timeouts(_total)?\", service_name=~\"$service\", service_instance_id=~\"$instance\", diracx_component=\"routers\"}[$__interval])) > 0",
           "legendFormat": "{{db_client_connection_pool_name}}",
           "datasource": {
             "type": "prometheus",
