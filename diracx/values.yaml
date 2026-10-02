@@ -229,6 +229,11 @@ diracx:
 
     ###
 
+    ### Logs settings https://github.com/DIRACGrid/diracx/blob/main/docs/admin/reference/logs.md
+
+    # -- Format of the logs: json (one JSON object per line, for log collectors) or text
+    DIRACX_LOG_FORMAT: "json"
+
     ### Open Telemetry settings (experimental)
 
     DIRACX_OTEL_ENABLED: "false"
@@ -629,7 +634,7 @@ opentelemetry-collector:
 # Elasticsearch is ONLY for the opentelemetry usage as opensearch isn't ready
 elasticsearch:
   enabled: false
-  esJavaOpts: "-Xms128m -Xmx128m"
+  esJavaOpts: "-Xms256m -Xmx256m"
   replicas: 1
   clusterHealthCheckParams: "local=true"
   discovery.seed_hosts: ["elasticsearch-master-headless"]
@@ -640,7 +645,7 @@ elasticsearch:
       memory: "512M"
     limits:
       cpu: "1000m"
-      memory: "512M"
+      memory: "1Gi"
 
   # Request smaller persistent volumes.
   volumeClaimTemplate:

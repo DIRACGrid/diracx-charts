@@ -81,6 +81,15 @@ helm upgrade diracx-demo ./diracx --values .demo/values.yaml
 See [here](../../dev/explanations/run_demo.md) for more details on what you can do to alter the behavior of the local installation.
 
 
+## Logs
+
+The DiracX pods write their logs as JSON (``DIRACX_LOG_FORMAT: json``).
+To follow them live in a readable form, use [stern](https://github.com/stern/stern) with the DiracX template, as explained in [Collect and read the logs](../how-to/monitoring/collect-and-read-logs.md#with-stern):
+
+```bash
+stern --template-file diracx.stern.tmpl diracx-demo
+```
+
 ## OpenTelemetry
 
 > :warning: **Experimental**: opentelemetry is an evolving product, and so is our implementation of it.
@@ -92,7 +101,12 @@ See [here](../../dev/explanations/run_demo.md) for more details on what you can 
 * ElasticSearch for logs (OpenSearch not yet supported)
 * Grafana to display all that (accessible on port 32004 of the demo)
 
-To enable it, run ``run_demo.sh`` with ``enable-open-telemetry``
+To enable it, run ``run_demo.sh`` with ``--enable-open-telemetry``
+
+Grafana is provisioned with the dashboards of ``diracx/dashboards``: *DiracX Routers* (HTTP traffic, latency, SQL queries of the API servers), *DiracX Tasks* (task throughput, queues, workers, retries, scheduler) and *Metrics* (HTTP requests per route).
+See [Use the Grafana dashboards](../how-to/monitoring/use-the-dashboards.md) for how to read them.
+
+If you only need to see the traces and metrics produced by your code, ``pixi run local-start --otel`` in the ``diracx`` repository is much lighter: it prints them in the terminal (see the [monitor the task system tutorial](monitor-tasks.md)).
 
 Note that this configuration is trivial and does not follow production recommandations (like using batch processing)
 

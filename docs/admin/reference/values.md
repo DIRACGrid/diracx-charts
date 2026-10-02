@@ -68,6 +68,7 @@
 | diracx.service.port | int | `8000` |  |
 | diracx.settings | object | "e.g. DIRACX_CONFIG_BACKEND_URL=..." | Settings to inject into the API container via environment variables |
 | diracx.settings.DIRACX_CONFIG_BACKEND_URL | string | `"git+https://gitlab.invalid/myvo/diracx-config"` | URL to get the diracx config |
+| diracx.settings.DIRACX_LOG_FORMAT | string | `"json"` | Format of the logs: json (one JSON object per line, for log collectors) or text |
 | diracx.settings.DIRACX_SANDBOX_STORE_BUCKET_NAME | string | `"sandboxes-store"` | Name of the bucket for the sandbox |
 | diracx.settings.DIRACX_SERVICE_AUTH_TOKEN_KEYSTORE | string | `"file:///keystore/jwks.json"` | path storing the token key |
 | diracx.sqlDbs.dbs | string | `nil` | Which DiracX MySQL DBs are used? |
@@ -79,10 +80,10 @@
 | elasticsearch."discovery.seed_hosts"[0] | string | `"elasticsearch-master-headless"` |  |
 | elasticsearch.clusterHealthCheckParams | string | `"local=true"` |  |
 | elasticsearch.enabled | bool | `false` |  |
-| elasticsearch.esJavaOpts | string | `"-Xms128m -Xmx128m"` |  |
+| elasticsearch.esJavaOpts | string | `"-Xms256m -Xmx256m"` |  |
 | elasticsearch.replicas | int | `1` |  |
 | elasticsearch.resources.limits.cpu | string | `"1000m"` |  |
-| elasticsearch.resources.limits.memory | string | `"512M"` |  |
+| elasticsearch.resources.limits.memory | string | `"1Gi"` |  |
 | elasticsearch.resources.requests.cpu | string | `"100m"` |  |
 | elasticsearch.resources.requests.memory | string | `"512M"` |  |
 | elasticsearch.secret.password | string | `"elastic"` |  |
