@@ -81,10 +81,10 @@
 | elasticsearch."discovery.seed_hosts"[0] | string | `"elasticsearch-master-headless"` |  |
 | elasticsearch.clusterHealthCheckParams | string | `"local=true"` |  |
 | elasticsearch.enabled | bool | `false` |  |
-| elasticsearch.esJavaOpts | string | `"-Xms128m -Xmx128m"` |  |
+| elasticsearch.esJavaOpts | string | `"-Xms256m -Xmx256m"` |  |
 | elasticsearch.replicas | int | `1` |  |
 | elasticsearch.resources.limits.cpu | string | `"1000m"` |  |
-| elasticsearch.resources.limits.memory | string | `"512M"` |  |
+| elasticsearch.resources.limits.memory | string | `"1Gi"` |  |
 | elasticsearch.resources.requests.cpu | string | `"100m"` |  |
 | elasticsearch.resources.requests.memory | string | `"512M"` |  |
 | elasticsearch.secret.password | string | `"elastic"` |  |
