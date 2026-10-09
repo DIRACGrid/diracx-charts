@@ -5,6 +5,11 @@ global:
   # Keep the job log for 1h for investigations
   batchJobTTL: 3600
 
+gateway:
+  enabled: true
+  className: cloud-provider-kind
+  port: 8000
+
 developer:
   enabled: true
   urls:

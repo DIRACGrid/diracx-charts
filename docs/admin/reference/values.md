@@ -92,6 +92,11 @@
 | elasticsearch.volumeClaimTemplate.resources.requests.storage | string | `"100M"` |  |
 | elasticsearch.volumeClaimTemplate.storageClassName | string | `"standard"` |  |
 | fullnameOverride | string | `""` |  |
+| gateway.addresses | list | `[]` | Optional addresses requested for the Gateway |
+| gateway.className | string | `""` | Required when Gateway is enabled: name of the GatewayClass provided by the installed controller |
+| gateway.enabled | bool | `false` | Use Gateway API instead of Ingress. Production defaults to Ingress; the demo always enables Gateway API. |
+| gateway.port | int | `443` | Incoming HTTPS port |
+| gateway.tlsSecretName | string | `"diracx-tls"` | Secret containing the HTTPS certificate and private key |
 | global.activeDeadlineSeconds | int | `900` | timeout for job deadlines |
 | global.batchJobTTL | int | `600` | How long should batch jobs be retained after completing? |
 | global.imagePullPolicy | string | `"Always"` |  |
@@ -153,7 +158,7 @@
 | ingress.annotations | object | `{}` |  |
 | ingress.className | string | `"nginx"` |  |
 | ingress.enabled | bool | `true` |  |
-| ingress.tlsSecretName | string | `"myingress-cert"` |  |
+| ingress.tlsSecretName | string | `"diracx-tls"` |  |
 | initKeyStore.enabled | bool | `true` |  |
 | initOs.enabled | bool | `true` |  |
 | initSecrets.enabled | bool | `true` |  |

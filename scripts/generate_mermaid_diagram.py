@@ -23,6 +23,8 @@ KIND_SHAPES = {
     "CronJob": ("([", "])"),
     "Service": ("((", "))"),
     "Ingress": ("{{", "}}"),
+    "Gateway": ("{{", "}}"),
+    "HTTPRoute": ("[[", "]]"),
     "Job": ("([", "])"),
     "ConfigMap": ("[(", ")]"),
     "Secret": (">", "]"),
@@ -36,6 +38,8 @@ KIND_PREFIXES = {
     "CronJob": "cronjob",
     "Service": "svc",
     "Ingress": "ing",
+    "Gateway": "gateway",
+    "HTTPRoute": "httproute",
     "Job": "job",
     "ConfigMap": "cm",
     "Secret": "secret",
@@ -179,6 +183,42 @@ def extract_relationships(
                         )
                     )
 
+    # Gateway -> HTTPRoute (via parentRefs) and Gateway -> TLS Secret
+    for gateway_name, gateway_res in by_kind.get("Gateway", {}).items():
+        for listener in gateway_res.raw.get("spec", {}).get("listeners", []):
+            for cert_ref in (listener.get("tls", {}) or {}).get(
+                "certificateRefs", []
+            ):
+                if cert_ref.get("kind", "Secret") != "Secret":
+                    continue
+                secret_key = node_key("Secret", cert_ref.get("name", ""))
+                # Certificate Secrets are normally created by cert-manager or
+                # supplied by the site, so they may not appear in Helm output.
+                nodes.setdefault(secret_key, "Secret")
+                edges.append((gateway_res.key, secret_key, "uses TLS Secret"))
+
+    for route_name, route_res in by_kind.get("HTTPRoute", {}).items():
+        for parent in route_res.raw.get("spec", {}).get("parentRefs", []):
+            if parent.get("kind", "Gateway") != "Gateway":
+                continue
+            target = find_target(parent.get("name", ""), ["Gateway"])
+            if target:
+                edges.append((target, route_res.key, "accepts route"))
+
+        for rule in route_res.raw.get("spec", {}).get("rules", []):
+            paths = [
+                match.get("path", {}).get("value", "/")
+                for match in rule.get("matches", [])
+                if match.get("path", {}).get("type", "PathPrefix") == "PathPrefix"
+            ]
+            path_label = ", ".join(dict.fromkeys(paths)) or "routes to"
+            for backend in rule.get("backendRefs", []):
+                if backend.get("kind", "Service") != "Service":
+                    continue
+                target = find_target(backend.get("name", ""), ["Service"])
+                if target:
+                    edges.append((route_res.key, target, path_label))
+
     # Workloads -> ConfigMap/Secret/ServiceAccount (via volumes, envFrom)
     for kind in ("Deployment", "StatefulSet", "Job", "CronJob"):
         for res_name, res in by_kind.get(kind, {}).items():
@@ -283,6 +323,8 @@ def generate_mermaid(
     # Emit app resources grouped by kind
     kinds_order = [
         "Ingress",
+        "Gateway",
+        "HTTPRoute",
         "Service",
         "Deployment",
         "StatefulSet",
@@ -299,6 +341,16 @@ def generate_mermaid(
             continue
         for r in kind_res:
             lines.append(f"{indent}{indent}{indent}{indent}{node_decl(r.kind, r.name)}")
+
+    # A Gateway may refer to a certificate Secret provided by an administrator
+    # or created by cert-manager; it need not be a rendered Helm resource.
+    rendered_keys = {r.key for r in app_resources}
+    for key, kind in sorted(nodes.items()):
+        if kind == "Secret" and key not in rendered_keys:
+            name = key.split("/", 1)[1]
+            lines.append(
+                f"{indent}{indent}{indent}{indent}{node_decl(kind, name)}"
+            )
 
     lines.append(f"{indent}{indent}{indent}end")
 
@@ -337,6 +389,8 @@ def generate_mermaid(
     # Style classes per kind - blue tones that work on both light and dark backgrounds
     kind_colors = {
         "Ingress": ("#4a90d9", "#ffffff"),
+        "Gateway": ("#4a90d9", "#ffffff"),
+        "HTTPRoute": ("#38bdf8", "#102a43"),
         "Service": ("#5ba3e6", "#ffffff"),
         "Deployment": ("#3b7dd8", "#ffffff"),
         "StatefulSet": ("#3b7dd8", "#ffffff"),
