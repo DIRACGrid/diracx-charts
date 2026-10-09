@@ -276,7 +276,7 @@ In all the example below, we assume your Helm release is called `<release-name>`
         annotations:
             cert-manager.io/issuer: <release-name>-issuer
         className: traefik
-        tlsSecretName: <release-name>-ingress-cert
+        tlsSecretName: <release-name>-tls
 
     acme:
         enabled: true
@@ -296,7 +296,7 @@ In all the example below, we assume your Helm release is called `<release-name>`
         annotations:
             cert-manager.io/issuer: <release-name>-issuer
             className: nginx
-            tlsSecretName: <release-name>-ingress-cert
+            tlsSecretName: <release-name>-tls
 
     acme:
         enabled: true
@@ -314,6 +314,39 @@ In all the example below, we assume your Helm release is called `<release-name>`
         external-dns.alpha.kubernetes.io/target: "my.preferred.ip"
     loadBalancerIP: "my.preferred.ip"
     ```
+
+## Using Gateway API instead of Ingress
+
+Production installations use Ingress by default, with the existing `ingress:`
+settings. To use Gateway API instead, set `gateway.enabled: true`. This replaces the
+application Ingress with a Gateway and an HTTPRoute.
+The local demo always uses Gateway API.
+
+Before enabling this option, the site administrator must prepare Gateway API
+resource definitions and a compatible controller in the cluster. The chart does
+not install production controller software. Set `gateway.className` to the name
+of a GatewayClass provided by that controller.
+
+For an administrator-provided HTTPS certificate:
+
+```yaml
+gateway:
+    enabled: true
+    className: <site-gateway-class>
+    tlsSecretName: <site-certificate-secret>
+
+cert-manager:
+    enabled: false
+cert-manager-issuer:
+    enabled: false
+```
+
+This chart creates its own Gateway for the installation; it does not attach to an existing
+shared Gateway. Ingress annotations are not translated to Gateway configuration.
+Validate HTTPS, routing and login on the site's setup before
+adopting the Gateway option.
+
+To switch back, set `gateway.enabled: false` and restore the desired `ingress:` settings.
 
 ## Deploy diracx on your cluster
 
