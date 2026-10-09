@@ -59,7 +59,7 @@ jobs:
         cache: false
         environments: pre-commit
     - uses: pre-commit/action@v3.0.1
-    - uses: pre-commit-ci/lite-action@v1.1.0
+    - uses: pre-commit-ci/lite-action@v1.2.0
       if: always()
 
   run-demo:
