@@ -389,7 +389,7 @@ seaweedfs:
   mode: "mini"
   image:
     repository: "chrislusf/seaweedfs"
-    tag: 4.23
+    tag: 4.48
   persistence:
     size: 1Gi
     storageClass: "standard"
