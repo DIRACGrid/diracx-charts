@@ -40,7 +40,7 @@ spec:
                 - secretRef:
                     name: diracx-secrets
                 - secretRef:
-                    name: diracx-sql-connection-urls
+                    name: diracx-sql-root-connection-urls
                 - secretRef:
                     name: diracx-dynamic-secrets
               volumeMounts:
