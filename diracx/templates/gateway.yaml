@@ -1,0 +1,27 @@
+{{- if .Values.gateway.enabled }}
+apiVersion: gateway.networking.k8s.io/v1
+kind: Gateway
+metadata:
+  name: {{ include "diracx.fullname" . }}
+  labels:
+    {{- include "diracx.labels" . | nindent 4 }}
+spec:
+  gatewayClassName: {{ required "gateway.className must be set!" .Values.gateway.className | quote }}
+  {{- with .Values.gateway.addresses }}
+  addresses:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+  listeners:
+    - name: https
+      hostname: {{ required "diracx.hostname must be set!" .Values.diracx.hostname | quote }}
+      port: {{ .Values.gateway.port }}
+      protocol: HTTPS
+      tls:
+        mode: Terminate
+        certificateRefs:
+          - kind: Secret
+            name: {{ required "gateway.tlsSecretName must be set!" .Values.gateway.tlsSecretName | quote }}
+      allowedRoutes:
+        namespaces:
+          from: Same
+{{- end }}

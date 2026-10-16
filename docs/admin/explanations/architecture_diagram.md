@@ -5,9 +5,10 @@ config:
 flowchart TD
 
     subgraph k8s_instance ["K8s Instance: diracx"]
-        subgraph helm_chart ["Helm Chart: diracx 1.1.18"]
+        subgraph helm_chart ["Helm Chart: diracx 1.2.0"]
             subgraph k8s_app ["K8s Application: diracx"]
-                ing_diracx{{"ing: diracx"}}
+                gateway_diracx{{"gateway: diracx"}}
+                httproute_diracx[["httproute: diracx"]]
                 svc_diracx(("svc: diracx"))
                 svc_diracx_task_redis(("svc: diracx-task-redis"))
                 svc_diracx_web(("svc: diracx-web"))
@@ -23,6 +24,8 @@ flowchart TD
                 cm_mysql_init_diracx_dbs[("cm: mysql-init-diracx-dbs")]
                 secret_diracx_secrets>"secret: diracx-secrets"]
                 sa_diracx[["sa: diracx"]]
+                secret_diracx_tls>"secret: diracx-tls"]
+                secret_diracx_validate_config_secrets>"secret: diracx-validate-config-secrets"]
             end
 
             subgraph hook_post_install_pre_upgrade ["post-install,pre-upgrade"]
@@ -46,9 +49,10 @@ flowchart TD
     svc_diracx_web -->|"routes to"| deploy_diracx_web
     svc_diracx -->|"routes to"| deploy_diracx
     svc_diracx_task_redis -->|"routes to"| sts_diracx_task_redis
-    ing_diracx -->|"/api"| svc_diracx
-    ing_diracx -->|"/.well-known"| svc_diracx
-    ing_diracx -->|"/"| svc_diracx_web
+    gateway_diracx -->|"uses TLS Secret"| secret_diracx_tls
+    gateway_diracx -->|"accepts route"| httproute_diracx
+    httproute_diracx -->|"/api, /.well-known"| svc_diracx
+    httproute_diracx -->|"/"| svc_diracx_web
     deploy_diracx_web -->|"uses"| sa_diracx
     deploy_diracx -->|"mounts"| cm_diracx_container_entrypoint
     deploy_diracx -->|"env"| secret_diracx_secrets
@@ -77,6 +81,8 @@ flowchart TD
 
     %% Styling
     classDef ing fill:#4a90d9,stroke:#2563eb,color:#ffffff
+    classDef gateway fill:#4a90d9,stroke:#2563eb,color:#ffffff
+    classDef httproute fill:#38bdf8,stroke:#2563eb,color:#102a43
     classDef svc fill:#5ba3e6,stroke:#2563eb,color:#ffffff
     classDef deploy fill:#3b7dd8,stroke:#2563eb,color:#ffffff
     classDef sts fill:#3b7dd8,stroke:#2563eb,color:#ffffff
@@ -96,10 +102,12 @@ flowchart TD
     class deploy_diracx_task_worker_medium deploy
     class deploy_diracx_task_worker_small deploy
     class deploy_diracx_web deploy
-    class ing_diracx ing
+    class gateway_diracx gateway
+    class httproute_diracx httproute
     class job_diracx_init_keystore job
     class job_diracx_validate_config job
     class secret_diracx_secrets secret
+    class secret_diracx_tls secret
     class secret_diracx_validate_config_secrets secret
     class svc_diracx svc
     class svc_diracx_task_redis svc
