@@ -183,8 +183,8 @@ generate_secret_if_needed diracx-os-root-connection-urls \
 
 {{- /* Use certificate if defined else use login/password */}}
 {{- if and (ne $osCaCrt "") (ne $osTlsCrt "") (ne $osTlsKey "")}}
-{{- $osConnectionString = printf "{\"hosts\": [\"%s\"], \"use_ssl\": true, \"verify_certs\": true, \"client_cert\": \"%s\/tls.crt\", \"client_key\": \"%s\/tls.key\", \"ca_certs\": \"%s\/ca.crt\"}" $osDbHost $osCertPath $osCertPath $osCertPath }}
-{{- $osRootConnectionString = printf "{\"hosts\": [\"%s\"], \"use_ssl\": true, \"verify_certs\": true, \"client_cert\": \"%s\/tls.crt\", \"client_key\": \"%s\/tls.key\", \"ca_certs\": \"%s\/ca.crt\"}" $osDbHost $osCertPath $osCertPath $osCertPath }}
+{{- $osConnectionString = printf "{\"hosts\": [\"%s\"], \"use_ssl\": true, \"verify_certs\": true, \"client_cert\": \"%s/tls.crt\", \"client_key\": \"%s/tls.key\", \"ca_certs\": \"%s/ca.crt\"}" $osDbHost $osCertPath $osCertPath $osCertPath }}
+{{- $osRootConnectionString = printf "{\"hosts\": [\"%s\"], \"use_ssl\": true, \"verify_certs\": true, \"client_cert\": \"%s/tls.crt\", \"client_key\": \"%s/tls.key\", \"ca_certs\": \"%s/ca.crt\"}" $osDbHost $osCertPath $osCertPath $osCertPath }}
 {{- else }}
 {{- $osConnectionString = printf "{\"hosts\": [\"%s:%s@%s\"], \"use_ssl\": true, \"verify_certs\": false}" $osDbUser $osDbPassword $osDbHost }}
 {{- $osRootConnectionString = printf "{\"hosts\": [\"%s:%s@%s\"], \"use_ssl\": true, \"verify_certs\": false}" $osDbRootUser $osDbRootPassword $osDbHost }}
