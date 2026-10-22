@@ -199,4 +199,3 @@ generate_secret_if_needed diracx-os-root-connection-urls \
   --from-literal=DIRACX_OS_DB_{{ $osDbName | upper }}='{{ $osRootConnectionString }}'
 {{- end }}
 {{- end }}
-
