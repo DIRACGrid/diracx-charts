@@ -171,54 +171,20 @@ generate_secret_if_needed diracx-os-root-connection-urls \
 {{- else }}
 
 
-{{- $defaultOsDbHost := $.Values.diracx.osDbs.default.host }}
-{{- $defaultOsDbRootUser := $.Values.diracx.osDbs.default.rootUser }}
-{{- $defaultOsDbRootPassword := $.Values.diracx.osDbs.default.rootPassword }}
-{{- $defaultOsDbUser := $.Values.diracx.osDbs.default.user }}
-{{- $defaultOsDbPassword := $.Values.diracx.osDbs.default.password }}
-{{- $defaultOsCaCrt := index $.Values.diracx.osDbs.default "ca.crt" | default "" }}
-{{- $defaultOsTlsCrt := index $.Values.diracx.osDbs.default "tls.crt" | default "" }}
-{{- $defaultOsTlsKey := index $.Values.diracx.osDbs.default "tls.key" | default "" }}
-{{- $defaultOsCertPath := "/os-certs/default/" }}
+{{- $osDbHost := $.Values.diracx.osDbs.default.host }}
+{{- $osDbRootUser := $.Values.diracx.osDbs.default.rootUser }}
+{{- $osDbRootPassword := $.Values.diracx.osDbs.default.rootPassword }}
+{{- $osDbUser := $.Values.diracx.osDbs.default.user }}
+{{- $osDbPassword := $.Values.diracx.osDbs.default.password }}
+{{- $osCaCrt := index $.Values.diracx.osDbs.default "ca.crt" | default "" }}
+{{- $osTlsCrt := index $.Values.diracx.osDbs.default "tls.crt" | default "" }}
+{{- $osTlsKey := index $.Values.diracx.osDbs.default "tls.key" | default "" }}
+{{- $osCertPath := "/os-cert" }}
 
-{{- range $osDbName, $osDbSettings := .Values.diracx.osDbs.dbs }}
-{{- $osDbHost := $defaultOsDbHost }}
-{{- $osDbRootUser := $defaultOsDbRootUser }}
-{{- $osDbRootPassword := $defaultOsDbRootPassword }}
-{{- $osDbUser := $defaultOsDbUser }}
-{{- $osDbPassword := $defaultOsDbPassword }}
-{{- $osCaCrt := $defaultOsCaCrt }}
-{{- $osTlsCrt := $defaultOsTlsCrt }}
-{{- $osTlsKey := $defaultOsTlsKey }}
-{{- $osCertPath := $defaultOsCertPath }}
-{{- $osConnectionString := "" }}
-{{- $osRootConnectionString := "" }}
-
-# In case db is empty, takes default settings
-{{- if or (not $osDbSettings) }}
-{{- $osDbSettings = $.Values.diracx.osDbs.default }}
-{{- end }}
-
-# In case has settings, complete with default ones and check for cert use
-{{- if kindIs "map" $osDbSettings }}
-{{- $osSafeDbName := $osDbName | lower | replace "_" "-" | replace "." "-" }}
-{{- if and (hasKey $osDbSettings "ca.crt") (hasKey $osDbSettings "tls.crt") (hasKey $osDbSettings "tls.key") }}
-{{- $osCertPath = printf "/os-certs/%s/" $osSafeDbName }}
-{{- end }}
-
-{{- $osDbHost = $osDbSettings.host | default $defaultOsDbHost }}
-{{- $osDbRootUser = $osDbSettings.rootUser | default $defaultOsDbRootUser }}
-{{- $osDbRootPassword = $osDbSettings.rootPassword | default $defaultOsDbRootPassword }}
-{{- $osDbUser = $osDbSettings.user | default $defaultOsDbUser }}
-{{- $osDbPassword = $osDbSettings.password | default $defaultOsDbPassword }}
-{{- $osCaCrt = index $osDbSettings "ca.crt" | default $defaultOsCaCrt }}
-{{- $osTlsCrt = index $osDbSettings "tls.crt" | default $defaultOsTlsCrt }}
-{{- $osTlsKey = index $osDbSettings "tls.key" | default $defaultOsTlsKey }}
-
-{{- /* Check if useCRT is defined in $osDbSettings */}}
-{{- if and (hasKey $osDbSettings "useCRT") (eq $osDbSettings.useCRT true) }}
-{{- $osConnectionString = printf "{\"hosts\": [\"%s\"], \"use_ssl\": true, \"verify_certs\": true, \"client_cert\": \"%stls.crt\", \"client_key\": \"%stls.key\", \"ca_certs\": \"%sca.crt\"}" $osDbHost $osCertPath $osCertPath $osCertPath }}
-{{- $osRootConnectionString = printf "{\"hosts\": [\"%s\"], \"use_ssl\": true, \"verify_certs\": true, \"client_cert\": \"%stls.crt\", \"client_key\": \"%stls.key\", \"ca_certs\": \"%sca.crt\"}" $osDbHost $osCertPath $osCertPath $osCertPath }}
+{{- /* Use certificate if defined else use login/password */}}
+{{- if and (neq $osCaCrt "") (neq $osTlsCrt "") (neq $osTlsKey "")}}
+{{- $osConnectionString = printf "{\"hosts\": [\"%s\"], \"use_ssl\": true, \"verify_certs\": true, \"client_cert\": \"%s\/tls.crt\", \"client_key\": \"%s\/tls.key\", \"ca_certs\": \"%s\/ca.crt\"}" $osDbHost $osCertPath $osCertPath $osCertPath }}
+{{- $osRootConnectionString = printf "{\"hosts\": [\"%s\"], \"use_ssl\": true, \"verify_certs\": true, \"client_cert\": \"%s\/tls.crt\", \"client_key\": \"%s\/tls.key\", \"ca_certs\": \"%s\/ca.crt\"}" $osDbHost $osCertPath $osCertPath $osCertPath }}
 {{- else }}
 {{- $osConnectionString = printf "{\"hosts\": [\"%s:%s@%s\"], \"use_ssl\": true, \"verify_certs\": false}" $osDbUser $osDbPassword $osDbHost }}
 {{- $osRootConnectionString = printf "{\"hosts\": [\"%s:%s@%s\"], \"use_ssl\": true, \"verify_certs\": false}" $osDbRootUser $osDbRootPassword $osDbHost }}
