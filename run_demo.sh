@@ -511,6 +511,13 @@ space_monitor_pid=$!
 
 # Create the cluster itself
 printf "%b Starting Kind cluster...\n" ${UNICORN_EMOJI}
+# Kind normally creates its Docker network with Docker's default address pool.
+# Create it with an explicit subnet so cloud-provider-kind can assign the
+# requested Gateway address to its Envoy container.
+if ! docker network inspect kind >/dev/null 2>&1; then
+  docker network create --driver bridge --subnet 172.18.0.0/16 kind
+fi
+
 "${demo_dir}/kind" create cluster \
   --image "${registry_proxy_dockerhub}/kindest/node:${KINDEST_NODE_VERSION}" \
   --kubeconfig "${KUBECONFIG}" \
