@@ -304,7 +304,7 @@ diracx:
       # All DBs used should be configured here.
       # If they use the default configuration
       # they should have a null value.
-      # If ca.crt, tls.crt and tls.key are defined in default 
+      # If ca.crt, tls.crt and tls.key are defined in default
       # then dbs will use certificate authentication else they will use login/password
 
   # -- List of install specifications to pass to pip before launching each container
