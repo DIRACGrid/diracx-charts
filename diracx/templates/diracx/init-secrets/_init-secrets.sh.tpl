@@ -182,7 +182,7 @@ generate_secret_if_needed diracx-os-root-connection-urls \
 {{- $osCertPath := "/os-cert" }}
 
 {{- /* Use certificate if defined else use login/password */}}
-{{- if and (neq $osCaCrt "") (neq $osTlsCrt "") (neq $osTlsKey "")}}
+{{- if and (ne $osCaCrt "") (ne $osTlsCrt "") (ne $osTlsKey "")}}
 {{- $osConnectionString = printf "{\"hosts\": [\"%s\"], \"use_ssl\": true, \"verify_certs\": true, \"client_cert\": \"%s\/tls.crt\", \"client_key\": \"%s\/tls.key\", \"ca_certs\": \"%s\/ca.crt\"}" $osDbHost $osCertPath $osCertPath $osCertPath }}
 {{- $osRootConnectionString = printf "{\"hosts\": [\"%s\"], \"use_ssl\": true, \"verify_certs\": true, \"client_cert\": \"%s\/tls.crt\", \"client_key\": \"%s\/tls.key\", \"ca_certs\": \"%s\/ca.crt\"}" $osDbHost $osCertPath $osCertPath $osCertPath }}
 {{- else }}
