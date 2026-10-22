@@ -1,0 +1,23 @@
+{{- if and .Values.gateway.enabled (index .Values "cert-manager-issuer" "enabled") }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .Release.Name }}-gateway-certificate
+  labels:
+    {{- include "diracx.labels" . | nindent 4 }}
+data:
+  # The existing issuer job applies this after cert-manager recognizes Certificates.
+  certificate.yaml: |
+    apiVersion: cert-manager.io/v1
+    kind: Certificate
+    metadata:
+      name: {{ include "diracx.fullname" . }}
+    spec:
+      secretName: {{ required "gateway.tlsSecretName must be set!" .Values.gateway.tlsSecretName | quote }}
+      dnsNames:
+        - {{ required "diracx.hostname must be set!" .Values.diracx.hostname | quote }}
+      issuerRef:
+        name: diracx-ca-issuer
+        kind: Issuer
+        group: cert-manager.io
+{{- end }}

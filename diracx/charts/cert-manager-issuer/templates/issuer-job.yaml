@@ -24,9 +24,15 @@ spec:
           volumeMounts:
             - name: scripts
               mountPath: /scripts
+            - name: gateway-certificate
+              mountPath: /gateway-certificate
           resources:
 {{ toYaml .Values.resources | indent 12 }}
       volumes:
       - name: scripts
         configMap:
           name: {{ template "diracx.fullname" . }}-certmanager
+      - name: gateway-certificate
+        configMap:
+          name: {{ .Release.Name }}-gateway-certificate
+          optional: true

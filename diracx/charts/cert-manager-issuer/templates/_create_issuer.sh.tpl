@@ -10,3 +10,7 @@ while ! kubectl --namespace=$namespace apply -f ${issuer_file:=issuer.yml}; do
   sleep 1;
 done ;
 set -e ; # reset `e` as active
+
+if [[ -f /gateway-certificate/certificate.yaml ]]; then
+  kubectl --namespace=$namespace apply -f /gateway-certificate/certificate.yaml
+fi
