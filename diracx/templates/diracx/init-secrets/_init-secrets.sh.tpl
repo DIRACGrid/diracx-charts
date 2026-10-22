@@ -180,6 +180,8 @@ generate_secret_if_needed diracx-os-root-connection-urls \
 {{- $osTlsCrt := index $.Values.diracx.osDbs.default "tls.crt" | default "" }}
 {{- $osTlsKey := index $.Values.diracx.osDbs.default "tls.key" | default "" }}
 {{- $osCertPath := "/os-cert" }}
+{{- $osConnectionString := "" }}
+{{- $osRootConnectionString := "" }}
 
 {{- /* Use certificate if defined else use login/password */}}
 {{- if and (ne $osCaCrt "") (ne $osTlsCrt "") (ne $osTlsKey "")}}
