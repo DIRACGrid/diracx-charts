@@ -189,6 +189,8 @@ generate_secret_if_needed diracx-os-root-connection-urls \
 {{- $osConnectionString = printf "{\"hosts\": [\"%s:%s@%s\"], \"use_ssl\": true, \"verify_certs\": false}" $osDbUser $osDbPassword $osDbHost }}
 {{- $osRootConnectionString = printf "{\"hosts\": [\"%s:%s@%s\"], \"use_ssl\": true, \"verify_certs\": false}" $osDbRootUser $osDbRootPassword $osDbHost }}
 {{- end }}
+
+{{- range $osDbName, $osDbSettings := .Values.diracx.osDbs.dbs }}
 generate_secret_if_needed diracx-os-connection-urls \
   --from-literal=DIRACX_OS_DB_{{ $osDbName | upper }}='{{ $osConnectionString }}'
 generate_secret_if_needed diracx-os-root-connection-urls \
