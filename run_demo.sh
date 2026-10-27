@@ -411,9 +411,9 @@ if [[ ! -f "${demo_dir}/helm" ]]; then
   # renovate: datasource=github-releases depName=kubernetes/kubernetes
   KUBECTL_VERSION="v1.37.1"
   # renovate: datasource=github-releases depName=helm/helm versioning=loose
-  HELM_VERSION="v3.22.0"
+  HELM_VERSION="v3.22.1"
   # renovate: datasource=github-releases depName=mikefarah/yq
-  YQ_VERSION="v4.53.6"
+  YQ_VERSION="v4.54.1"
 
   printf "%b Downloading kind, kubectl, helm and yq using arkade\n" ${UNICORN_EMOJI}
   "${demo_dir}/arkade" get \
