@@ -93,24 +93,29 @@ generate_secret_if_needed diracx-sql-root-connection-urls \
 
 
 {{- $default_db_host := $.Values.diracx.sqlDbs.default.host }}
+{{- $default_db_port := $.Values.diracx.sqlDbs.default.port }}
 {{- $default_db_root_user := $.Values.diracx.sqlDbs.default.rootUser }}
 {{- $default_db_root_password := $.Values.diracx.sqlDbs.default.rootPassword }}
 {{- $default_db_user := $.Values.diracx.sqlDbs.default.user }}
 {{- $default_db_password := $.Values.diracx.sqlDbs.default.password }}
+
 
 {{- range $dbName, $db_settings := .Values.diracx.sqlDbs.dbs }}
 
 
 {{- if kindIs "map" $db_settings }}
 {{- $db_host :=  $db_settings.host | default $default_db_host  }}
+{{- $db_port := $db_settings.port | default $default_db_port | default 3306 }}
 {{- $db_root_user :=  $db_settings.rootUser | default $default_db_root_user  }}
 {{- $db_root_password :=  $db_settings.rootPassword | default $default_db_root_password  }}
 {{- $db_user := $db_settings.user | default $default_db_user }}
 {{- $db_password :=  $db_settings.password | default $default_db_password  }}
 {{- $db_internal_name :=  $db_settings.internalName | default $dbName  }}
 
-{{- $url_string := urlJoin (dict "scheme" "mysql+aiomysql" "userinfo" ( print $db_user  ":" $db_password ) "host" $db_host "path" $db_internal_name ) }}
-{{- $root_url_string := urlJoin (dict "scheme" "mysql+aiomysql" "userinfo" ( print $db_root_user  ":" $db_root_password ) "host" $db_host "path" $db_internal_name ) }}
+{{- $db_host_port := print $db_host ":" $db_port }}
+
+{{- $url_string := urlJoin (dict "scheme" "mysql+aiomysql" "userinfo" ( print $db_user ":" $db_password ) "host" $db_host_port "path" $db_internal_name ) }}
+{{- $root_url_string := urlJoin (dict "scheme" "mysql+aiomysql" "userinfo" ( print $db_root_user ":" $db_root_password ) "host" $db_host_port "path" $db_internal_name ) }}
 
 generate_secret_if_needed diracx-sql-connection-urls \
   --from-literal=DIRACX_DB_URL_{{ $dbName | upper }}="{{ $url_string }}"
