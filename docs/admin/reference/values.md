@@ -7,7 +7,7 @@
 | https://charts.bitnami.com/bitnami/ | rabbitmq | 12.0.10 |
 | https://charts.dexidp.io/ | dex | 0.14.2 |
 | https://charts.jetstack.io | cert-manager | 1.13.1 |
-| https://grafana.github.io/helm-charts | grafana | 6.59.4 |
+| https://grafana.github.io/helm-charts | grafana | 6.61.2 |
 | https://helm.elastic.co | elasticsearch | 8.5.1 |
 | https://jaegertracing.github.io/helm-charts | jaeger | 0.71.14 |
 | https://open-telemetry.github.io/opentelemetry-helm-charts | opentelemetry-collector | 0.68.0 |
@@ -62,12 +62,14 @@
 | dex.service.ports.http.port | int | `8000` |  |
 | dex.service.type | string | `"NodePort"` |  |
 | diracx.hostname | string | `""` | Required: The hostname where the webapp/API is running |
+| diracx.osDbs.GlobalIndexPrefix | string | `nil` | Global prefix to be applied to all OpenSearch indices When set, this will add DIRACX_FACTORY_OS_GLOBAL_PREFIX to the secrets |
 | diracx.osDbs.dbs | string | `nil` | Which DiracX OpenSearch DBs are used? |
 | diracx.osDbs.default | string | `nil` |  |
 | diracx.pythonModulesToInstall | list | `[]` | List of install specifications to pass to pip before launching each container |
 | diracx.service.port | int | `8000` |  |
 | diracx.settings | object | "e.g. DIRACX_CONFIG_BACKEND_URL=..." | Settings to inject into the API container via environment variables |
 | diracx.settings.DIRACX_CONFIG_BACKEND_URL | string | `"git+https://gitlab.invalid/myvo/diracx-config"` | URL to get the diracx config |
+| diracx.settings.DIRACX_LOG_FORMAT | string | `"text"` | Format of the logs: json (one JSON object per line, for log collectors) or text |
 | diracx.settings.DIRACX_SANDBOX_STORE_BUCKET_NAME | string | `"sandboxes-store"` | Name of the bucket for the sandbox |
 | diracx.settings.DIRACX_SERVICE_AUTH_TOKEN_KEYSTORE | string | `"file:///keystore/jwks.json"` | path storing the token key |
 | diracx.sqlDbs.dbs | string | `nil` | Which DiracX MySQL DBs are used? |
@@ -79,10 +81,10 @@
 | elasticsearch."discovery.seed_hosts"[0] | string | `"elasticsearch-master-headless"` |  |
 | elasticsearch.clusterHealthCheckParams | string | `"local=true"` |  |
 | elasticsearch.enabled | bool | `false` |  |
-| elasticsearch.esJavaOpts | string | `"-Xms128m -Xmx128m"` |  |
+| elasticsearch.esJavaOpts | string | `"-Xms256m -Xmx256m"` |  |
 | elasticsearch.replicas | int | `1` |  |
 | elasticsearch.resources.limits.cpu | string | `"1000m"` |  |
-| elasticsearch.resources.limits.memory | string | `"512M"` |  |
+| elasticsearch.resources.limits.memory | string | `"1Gi"` |  |
 | elasticsearch.resources.requests.cpu | string | `"100m"` |  |
 | elasticsearch.resources.requests.memory | string | `"512M"` |  |
 | elasticsearch.secret.password | string | `"elastic"` |  |
@@ -105,7 +107,7 @@
 | global.images.redisTasks.tag | string | `"7.4.2-alpine"` |  |
 | global.images.secret_generation.repository | string | `"diracgrid/diracx/secret-generation"` |  |
 | global.images.services.repository | string | `"diracgrid/diracx/services"` |  |
-| global.images.tag | string | `"v0.3.0"` |  |
+| global.images.tag | string | `"v0.7.0"` |  |
 | global.images.tasks.repository | string | `"diracgrid/diracx/tasks"` |  |
 | global.images.web.repository | string | `"diracgrid/diracx-web/static"` |  |
 | global.images.web.tag | string | `"v0.1.0-a11"` |  |
@@ -196,8 +198,8 @@
 | opentelemetry-collector.config.exporters.prometheus.resource_to_telemetry_conversion.enabled | bool | `true` |  |
 | opentelemetry-collector.config.exporters.prometheus.send_timestamps | bool | `true` |  |
 | opentelemetry-collector.config.receivers.jaeger | string | `nil` |  |
-| opentelemetry-collector.config.receivers.otlp.protocols.grpc | string | `nil` |  |
-| opentelemetry-collector.config.receivers.otlp.protocols.http | string | `nil` |  |
+| opentelemetry-collector.config.receivers.otlp.protocols.grpc | object | `{}` |  |
+| opentelemetry-collector.config.receivers.otlp.protocols.http | object | `{}` |  |
 | opentelemetry-collector.config.receivers.prometheus | string | `nil` |  |
 | opentelemetry-collector.config.service.pipelines.logs.exporters[0] | string | `"elasticsearch/log"` |  |
 | opentelemetry-collector.config.service.pipelines.logs.exporters[1] | string | `"logging"` |  |
@@ -242,6 +244,8 @@
 | seaweedfs.config.configMap.data."seaweedfs-s3.json" | string | `"{\n  \"identities\": [\n    {\n      \"name\": \"admin\",\n      \"credentials\": [\n        {\n          \"accessKey\": \"console\",\n          \"secretKey\": \"console123\"\n        }\n      ],\n      \"actions\": [\"Admin\", \"Read\", \"Write\", \"List\", \"Tagging\"]\n    }\n  ]\n}\n"` |  |
 | seaweedfs.config.configMap.name | string | `"seaweedfs-s3-config"` |  |
 | seaweedfs.enabled | bool | `false` |  |
+| seaweedfs.image.repository | string | `"chrislusf/seaweedfs"` |  |
+| seaweedfs.image.tag | float | `4.23` |  |
 | seaweedfs.mode | string | `"mini"` |  |
 | seaweedfs.persistence.accessModes[0] | string | `"ReadWriteOnce"` |  |
 | seaweedfs.persistence.size | string | `"1Gi"` |  |
