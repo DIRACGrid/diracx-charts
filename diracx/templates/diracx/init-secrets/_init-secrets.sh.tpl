@@ -99,7 +99,6 @@ generate_secret_if_needed diracx-sql-root-connection-urls \
 {{- $default_db_user := $.Values.diracx.sqlDbs.default.user }}
 {{- $default_db_password := $.Values.diracx.sqlDbs.default.password }}
 
-
 {{- range $dbName, $db_settings := .Values.diracx.sqlDbs.dbs }}
 
 
@@ -135,7 +134,7 @@ generate_secret_if_needed diracx-sql-root-connection-urls \
 {{- end }}
 {{- end }}
 
-
+### OpenSearch settings
 
 {{- if .Values.taskWorkers.enabled }}
 # Generate the Redis URL secret for the task broker
@@ -155,28 +154,29 @@ generate_secret_if_needed diracx-task-redis-url \
 
 # Make sure that there are no default connection settings
 {{ if .Values.diracx.osDbs.default }}
-{{ fail "There should be no default connection settings if running mysql from this Chart" }}
+{{ fail "There should be no default connection settings if running opensearch from this Chart" }}
 {{ end }}
 
 {{- range $osDbName,$osDbSettings := .Values.diracx.osDbs.dbs }}
 
-
 # Make sure there are no connection settings
 {{ if $osDbSettings }}
-{{ fail "There should be no connection settings if running mysql from this Chart" }}
+{{ fail "There should be no connection settings if running opensearch from this Chart" }}
 {{ end }}
 
+{{- $os_url_string := urlJoin (dict "scheme" "https" "userinfo" "admin:admin" "host" "opensearch-cluster-master:9200" ) }}
+
 generate_secret_if_needed diracx-os-connection-urls \
-  --from-literal=DIRACX_OS_DB_{{ $osDbName | upper }}='{"hosts": "admin:admin@opensearch-cluster-master:9200", "use_ssl": true, "verify_certs": false}'
+  --from-literal=DIRACX_OS_DB_{{ $osDbName | upper }}='{"hosts": "{{ $os_url_string }}", "use_ssl": true, "verify_certs": false}'
 generate_secret_if_needed diracx-os-root-connection-urls \
-  --from-literal=DIRACX_OS_DB_{{ $osDbName | upper }}='{"hosts": "admin:admin@opensearch-cluster-master:9200", "use_ssl": true, "verify_certs": false}'
+  --from-literal=DIRACX_OS_DB_{{ $osDbName | upper }}='{"hosts": "{{ $os_url_string }}", "use_ssl": true, "verify_certs": false}'
 {{- end }}
 
-# If we use an external MySQL instance
+# If we use an external OpenSearch instance
 {{- else }}
 
-
 {{- $defaultOsDbHost := $.Values.diracx.osDbs.default.host }}
+{{- $defaultOsDbPort := $.Values.diracx.osDbs.default.port | default 9200 }}
 {{- $defaultOsDbRootUser := $.Values.diracx.osDbs.default.rootUser }}
 {{- $defaultOsDbRootPassword := $.Values.diracx.osDbs.default.rootPassword }}
 {{- $defaultOsDbUser := $.Values.diracx.osDbs.default.user }}
@@ -184,22 +184,32 @@ generate_secret_if_needed diracx-os-root-connection-urls \
 
 {{- range $osDbName, $osDbSettings := .Values.diracx.osDbs.dbs }}
 
-
 {{- if kindIs "map" $osDbSettings }}
-{{- $osDbHost :=  $osDbSettings.host | default $defaultOsDbHost  }}
-{{- $osDbRootUser :=  $osDbSettings.rootUser | default $defaultOsDbRootUser  }}
-{{- $osDbRootPassword :=  $osDbSettings.rootPassword | default $defaultOsDbRootPassword  }}
+{{- $osDbHost := $osDbSettings.host | default $defaultOsDbHost }}
+{{- $osDbPort := $osDbSettings.port | default $defaultOsDbPort }}
+{{- $osDbRootUser := $osDbSettings.rootUser | default $defaultOsDbRootUser }}
+{{- $osDbRootPassword := $osDbSettings.rootPassword | default $defaultOsDbRootPassword }}
 {{- $osDbUser := $osDbSettings.user | default $defaultOsDbUser }}
-{{- $osDbPassword :=  $osDbSettings.password | default $defaultOsDbPassword  }}
+{{- $osDbPassword := $osDbSettings.password | default $defaultOsDbPassword }}
+
+{{- $os_host_port := print $osDbHost ":" $osDbPort }}
+{{- $os_url_string := urlJoin (dict "scheme" "https" "userinfo" (print $osDbUser ":" $osDbPassword) "host" $os_host_port) }}
+{{- $os_root_url_string := urlJoin (dict "scheme" "https" "userinfo" (print $osDbRootUser ":" $osDbRootPassword) "host" $os_host_port) }}
+
 generate_secret_if_needed diracx-os-connection-urls \
-  --from-literal=DIRACX_OS_DB_{{ $osDbName | upper }}='{"hosts": "{{ $osDbUser }}:{{ $osDbPassword }}@{{ $osDbHost }}", "use_ssl": true, "verify_certs": false}'
+  --from-literal=DIRACX_OS_DB_{{ $osDbName | upper }}='{"hosts": "{{ $os_url_string }}", "use_ssl": true, "verify_certs": false}'
 generate_secret_if_needed diracx-os-root-connection-urls \
-  --from-literal=DIRACX_OS_DB_{{ $osDbName | upper }}='{"hosts": "{{ $osDbRootUser }}:{{ $osDbRootPassword }}@{{ $osDbHost }}", "use_ssl": true, "verify_certs": false}'
+  --from-literal=DIRACX_OS_DB_{{ $osDbName | upper }}='{"hosts": "{{ $os_root_url_string }}", "use_ssl": true, "verify_certs": false}'
 {{- else }}
+
+{{- $os_host_port := print $defaultOsDbHost ":" $defaultOsDbPort }}
+{{- $os_url_string := urlJoin (dict "scheme" "https" "userinfo" (print $defaultOsDbUser ":" $defaultOsDbPassword) "host" $os_host_port) }}
+{{- $os_root_url_string := urlJoin (dict "scheme" "https" "userinfo" (print $defaultOsDbRootUser ":" $defaultOsDbRootPassword) "host" $os_host_port) }}
+
 generate_secret_if_needed diracx-os-connection-urls \
-  --from-literal=DIRACX_OS_DB_{{ $osDbName | upper }}='{"hosts": "{{ $defaultOsDbUser }}:{{ $defaultOsDbPassword }}@{{ $defaultOsDbHost }}", "use_ssl": true, "verify_certs": false}'
+  --from-literal=DIRACX_OS_DB_{{ $osDbName | upper }}='{"hosts": "{{ $os_url_string }}", "use_ssl": true, "verify_certs": false}'
 generate_secret_if_needed diracx-os-root-connection-urls \
-  --from-literal=DIRACX_OS_DB_{{ $osDbName | upper }}='{"hosts": "{{ $defaultOsDbRootUser }}:{{ $defaultOsDbRootPassword }}@{{ $defaultOsDbHost }}", "use_ssl": true, "verify_certs": false}'
+  --from-literal=DIRACX_OS_DB_{{ $osDbName | upper }}='{"hosts": "{{ $os_root_url_string }}", "use_ssl": true, "verify_certs": false}'
 {{- end }}
 {{- end }}
 {{- end }}
