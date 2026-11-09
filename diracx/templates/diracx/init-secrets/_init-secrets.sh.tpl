@@ -193,8 +193,8 @@ generate_secret_if_needed diracx-os-root-connection-urls \
 {{- $osDbPassword := $osDbSettings.password | default $defaultOsDbPassword }}
 
 {{- $os_host_port := print $osDbHost ":" $osDbPort }}
-{{- $os_url_string := urlJoin (dict "scheme" "https" "userinfo" (print $osDbUser ":" $osDbPassword) "host" $os_host_port) }}
-{{- $os_root_url_string := urlJoin (dict "scheme" "https" "userinfo" (print $osDbRootUser ":" $osDbRootPassword) "host" $os_host_port) }}
+{{- $os_url_string := print "https://" $osDbUser ":" $osDbPassword "@" $os_host_port }}
+{{- $os_root_url_string := print "https://" $osDbRootUser ":" $osDbRootPassword "@" $os_host_port }}
 
 generate_secret_if_needed diracx-os-connection-urls \
   --from-literal=DIRACX_OS_DB_{{ $osDbName | upper }}='{"hosts": "{{ $os_url_string }}", "use_ssl": true, "verify_certs": false}'
