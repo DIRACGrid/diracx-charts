@@ -3,7 +3,7 @@ kind: RoleBinding
 metadata:
   annotations:
     meta.helm.sh/release-name: diracx
-    meta.helm.sh/release-namespace: diracx
+    meta.helm.sh/release-namespace: {{ .Release.Namespace }}
   labels:
     app: cert-manager-issuer
     app.kubernetes.io/managed-by: Helm
@@ -11,7 +11,7 @@ metadata:
     heritage: Helm
     release: diracx
   name: diracx-cert-manager-issuer
-  namespace: diracx
+  namespace: {{ .Release.Namespace }}
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: Role
@@ -19,18 +19,18 @@ roleRef:
 subjects:
 - kind: ServiceAccount
   name: diracx-cert-manager-issuer
-  namespace: diracx
+  namespace: {{ .Release.Namespace }}
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
 metadata:
   annotations:
     meta.helm.sh/release-name: diracx
-    meta.helm.sh/release-namespace: diracx
+    meta.helm.sh/release-namespace: {{ .Release.Namespace }}
   labels:
     app.kubernetes.io/managed-by: Helm
   name: diracx-cert-manager-issuer
-  namespace: diracx
+  namespace: {{ .Release.Namespace }}
 rules:
 - apiGroups:
   - cert-manager.io
