@@ -73,7 +73,7 @@
 | diracx.settings.DIRACX_SANDBOX_STORE_BUCKET_NAME | string | `"sandboxes-store"` | Name of the bucket for the sandbox |
 | diracx.settings.DIRACX_SERVICE_AUTH_TOKEN_KEYSTORE | string | `"file:///keystore/jwks.json"` | path storing the token key |
 | diracx.sqlDbs.dbs | string | `nil` | Which DiracX MySQL DBs are used? |
-| diracx.sqlDbs.default | string | `nil` | default credentials |
+| diracx.sqlDbs.default | string | `nil` | NOTE: please avoid usage of special characters like =!$ in passwords          as it may influence incorrect parsing in Python code DB credentials |
 | diracx.tasks | string | `nil` | Task worker configuration |
 | diracxWeb.branch | string | `""` |  |
 | diracxWeb.repoURL | string | `""` | install specification to pass to npm before launching container |
