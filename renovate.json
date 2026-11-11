@@ -26,22 +26,22 @@
       "allowedVersions": "<4.0.0"
     },
     {
-      "description": "DiracX and diracx-web releases: ghcr.io gives no release timestamps, so any minimumReleaseAge would hold them forever (minimumReleaseAgeBehaviour defaults to timestamp-required). null turns the check off.",
+      "description": "ghcr.io has no release timestamps, so a minimumReleaseAge would block these updates",
       "matchPackageNames": ["ghcr.io/diracgrid/diracx/client", "ghcr.io/diracgrid/diracx-web/static"],
       "minimumReleaseAge": null
     },
     {
-      "description": "One PR for DiracX, one for diracx-web: the projects release separately, and a broken release of one must not hold back the other",
+      "description": "DiracX releases",
       "matchPackageNames": ["ghcr.io/diracgrid/diracx/client"],
       "groupName": "DiracX"
     },
     {
-      "description": "One PR for DiracX, one for diracx-web: the projects release separately, and a broken release of one must not hold back the other",
+      "description": "diracx-web releases",
       "matchPackageNames": ["ghcr.io/diracgrid/diracx-web/static"],
       "groupName": "diracx-web"
     },
     {
-      "description": "DiracX and diracx-web patch releases (and diracx-web alpha releases): bump the chart patch version and merge when CI passes",
+      "description": "Patch releases: bump the chart patch version and automerge",
       "matchPackageNames": ["ghcr.io/diracgrid/diracx/client", "ghcr.io/diracgrid/diracx-web/static"],
       "matchUpdateTypes": ["patch"],
       "automerge": true,
@@ -55,7 +55,7 @@
       ]
     },
     {
-      "description": "DiracX and diracx-web minor/major releases may break deployments (DB migrations, new settings): bump the chart minor version and wait for a review",
+      "description": "Minor/major releases: bump the chart minor version and wait for a review",
       "matchPackageNames": ["ghcr.io/diracgrid/diracx/client", "ghcr.io/diracgrid/diracx-web/static"],
       "matchUpdateTypes": ["minor", "major"],
       "automerge": false,
@@ -82,7 +82,7 @@
       "versioningTemplate": "{{#if versioning}}{{{versioning}}}{{else}}semver{{/if}}"
     },
     {
-      "description": "Update the DiracX appVersion and the diracx-web image tag. Only helm-docs comment lines (# -- or # @) may sit between the marker and the key, so a stray marker cannot grab another key",
+      "description": "Update the DiracX appVersion and the diracx-web image tag",
       "customType": "regex",
       "managerFilePatterns": ["/^diracx/Chart\\.yaml$/", "/^diracx/values\\.yaml$/"],
       "matchStrings": [

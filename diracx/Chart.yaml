@@ -17,9 +17,7 @@ version: "1.1.20"
 # incremented each time you make changes to the application. Versions are not expected to
 # follow Semantic Versioning. They should reflect the version the application is using.
 # It is recommended to use it with quotes.
-# Updated by Renovate on each DiracX release; the DiracX images (services, tasks, client) default to it.
-# Renovate watches the client image: the DiracX release job pushes it last, so once it exists
-# the services and tasks images of the same release exist too.
+# Renovate watches the client image because the DiracX release pushes it last.
 # renovate: datasource=docker depName=ghcr.io/diracgrid/diracx/client versioning=pep440
 appVersion: v0.7.0
 

@@ -107,10 +107,10 @@
 | global.images.redisTasks.tag | string | `"7.4.2-alpine"` |  |
 | global.images.secret_generation.repository | string | `"diracgrid/diracx/secret-generation"` |  |
 | global.images.services.repository | string | `"diracgrid/diracx/services"` |  |
-| global.images.tag | string | the chart `appVersion` | Tag of the DiracX images (services, tasks, client, ...) |
+| global.images.tag | string | the chart `appVersion` | Tag of the DiracX images |
 | global.images.tasks.repository | string | `"diracgrid/diracx/tasks"` |  |
 | global.images.web.repository | string | `"diracgrid/diracx-web/static"` |  |
-| global.images.web.tag | string | the diracx-web release pinned by this chart version (see `values.yaml`) | Tag of the diracx-web image. Each chart version pins one release; Renovate bumps it |
+| global.images.web.tag | string | the release pinned by this chart version | Tag of the diracx-web image |
 | global.storageClassName | string | `"standard"` |  |
 | grafana.datasources."datasources.yaml".apiVersion | int | `1` |  |
 | grafana.datasources."datasources.yaml".datasources[0].name | string | `"Jaeger"` |  |

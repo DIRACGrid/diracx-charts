@@ -103,11 +103,7 @@ class Resource:
 
 
 def extract_chart_name(resources: list[dict]) -> str:
-    """Extract the chart name from resource labels.
-
-    The chart version is left out on purpose, so that version bumps do not
-    change the generated diagram.
-    """
+    """Extract the chart name (not the version, so bumps keep the diagram stable)."""
     for r in resources:
         labels = r.get("metadata", {}).get("labels", {}) or {}
         chart_label = labels.get("helm.sh/chart", "")
