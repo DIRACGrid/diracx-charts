@@ -102,17 +102,15 @@ class Resource:
         return self.hook is not None
 
 
-def extract_chart_metadata(resources: list[dict]) -> tuple[str, str]:
-    """Extract chart name and version from resource labels."""
+def extract_chart_name(resources: list[dict]) -> str:
+    """Extract the chart name (not the version, so bumps keep the diagram stable)."""
     for r in resources:
         labels = r.get("metadata", {}).get("labels", {}) or {}
         chart_label = labels.get("helm.sh/chart", "")
         if chart_label:
-            # e.g. "diracx-1.0.18" -> ("diracx", "1.0.18")
-            parts = chart_label.rsplit("-", 1)
-            if len(parts) == 2:
-                return parts[0], parts[1]
-    return "diracx", "unknown"
+            # e.g. "diracx-1.0.18" -> "diracx"
+            return chart_label.rsplit("-", 1)[0]
+    return "diracx"
 
 
 def extract_relationships(
@@ -243,7 +241,6 @@ def generate_mermaid(
     nodes: dict[str, str],
     edges: list[tuple[str, str, str]],
     chart_name: str,
-    chart_version: str,
     release_name: str,
 ) -> str:
     """Generate Mermaid flowchart with subgraphs and styling."""
@@ -274,7 +271,7 @@ def generate_mermaid(
     lines.append(f"{indent}subgraph k8s_instance [\"K8s Instance: {release_name}\"]")
     lines.append(
         f"{indent}{indent}subgraph helm_chart"
-        f" [\"Helm Chart: {chart_name} {chart_version}\"]"
+        f" [\"Helm Chart: {chart_name}\"]"
     )
     lines.append(
         f"{indent}{indent}{indent}subgraph k8s_app [\"K8s Application: {release_name}\"]"
@@ -399,13 +396,11 @@ def main():
         print("Error: no Kubernetes resources found in input", file=sys.stderr)
         sys.exit(1)
 
-    chart_name, chart_version = extract_chart_metadata(raw_resources)
+    chart_name = extract_chart_name(raw_resources)
     resources = [Resource(r) for r in raw_resources]
 
     edges, nodes = extract_relationships(resources)
-    diagram = generate_mermaid(
-        resources, nodes, edges, chart_name, chart_version, args.release_name
-    )
+    diagram = generate_mermaid(resources, nodes, edges, chart_name, args.release_name)
 
     if args.output:
         with open(args.output, "w") as f:
