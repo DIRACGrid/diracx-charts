@@ -107,10 +107,10 @@
 | global.images.redisTasks.tag | string | `"7.4.2-alpine"` |  |
 | global.images.secret_generation.repository | string | `"diracgrid/diracx/secret-generation"` |  |
 | global.images.services.repository | string | `"diracgrid/diracx/services"` |  |
-| global.images.tag | string | `"v0.7.0"` |  |
+| global.images.tag | string | the chart `appVersion` | Tag of the DiracX images (services, tasks, client, ...) |
 | global.images.tasks.repository | string | `"diracgrid/diracx/tasks"` |  |
 | global.images.web.repository | string | `"diracgrid/diracx-web/static"` |  |
-| global.images.web.tag | string | `"v0.1.0-a11"` |  |
+| global.images.web.tag | string | the latest diracx-web release | Tag of the diracx-web image, updated by Renovate on each diracx-web release |
 | global.storageClassName | string | `"standard"` |  |
 | grafana.datasources."datasources.yaml".apiVersion | int | `1` |  |
 | grafana.datasources."datasources.yaml".datasources[0].name | string | `"Jaeger"` |  |

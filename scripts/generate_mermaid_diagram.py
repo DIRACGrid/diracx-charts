@@ -243,7 +243,6 @@ def generate_mermaid(
     nodes: dict[str, str],
     edges: list[tuple[str, str, str]],
     chart_name: str,
-    chart_version: str,
     release_name: str,
 ) -> str:
     """Generate Mermaid flowchart with subgraphs and styling."""
@@ -274,7 +273,7 @@ def generate_mermaid(
     lines.append(f"{indent}subgraph k8s_instance [\"K8s Instance: {release_name}\"]")
     lines.append(
         f"{indent}{indent}subgraph helm_chart"
-        f" [\"Helm Chart: {chart_name} {chart_version}\"]"
+        f" [\"Helm Chart: {chart_name}\"]"
     )
     lines.append(
         f"{indent}{indent}{indent}subgraph k8s_app [\"K8s Application: {release_name}\"]"
@@ -399,13 +398,13 @@ def main():
         print("Error: no Kubernetes resources found in input", file=sys.stderr)
         sys.exit(1)
 
-    chart_name, chart_version = extract_chart_metadata(raw_resources)
+    # The chart version is left out of the diagram so that version bumps do not
+    # change it.
+    chart_name, _ = extract_chart_metadata(raw_resources)
     resources = [Resource(r) for r in raw_resources]
 
     edges, nodes = extract_relationships(resources)
-    diagram = generate_mermaid(
-        resources, nodes, edges, chart_name, chart_version, args.release_name
-    )
+    diagram = generate_mermaid(resources, nodes, edges, chart_name, args.release_name)
 
     if args.output:
         with open(args.output, "w") as f:
