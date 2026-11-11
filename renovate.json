@@ -26,13 +26,24 @@
       "allowedVersions": "<4.0.0"
     },
     {
-      "description": "DiracX and diracx-web releases: update at once, bump the chart version, merge when CI passes",
-      "matchPackageNames": [
-        "ghcr.io/diracgrid/diracx/services",
-        "ghcr.io/diracgrid/diracx-web/static"
-      ],
-      "minimumReleaseAge": null,
-      "groupName": "DiracX releases",
+      "description": "DiracX and diracx-web releases: ghcr.io gives no release timestamps, so any minimumReleaseAge would hold them forever (minimumReleaseAgeBehaviour defaults to timestamp-required). null turns the check off.",
+      "matchPackageNames": ["ghcr.io/diracgrid/diracx/client", "ghcr.io/diracgrid/diracx-web/static"],
+      "minimumReleaseAge": null
+    },
+    {
+      "description": "One PR for DiracX, one for diracx-web: the projects release separately, and a broken release of one must not hold back the other",
+      "matchPackageNames": ["ghcr.io/diracgrid/diracx/client"],
+      "groupName": "DiracX"
+    },
+    {
+      "description": "One PR for DiracX, one for diracx-web: the projects release separately, and a broken release of one must not hold back the other",
+      "matchPackageNames": ["ghcr.io/diracgrid/diracx-web/static"],
+      "groupName": "diracx-web"
+    },
+    {
+      "description": "DiracX and diracx-web patch releases (and diracx-web alpha releases): bump the chart patch version and merge when CI passes",
+      "matchPackageNames": ["ghcr.io/diracgrid/diracx/client", "ghcr.io/diracgrid/diracx-web/static"],
+      "matchUpdateTypes": ["patch"],
       "automerge": true,
       "bumpVersions": [
         {
@@ -42,13 +53,27 @@
           "bumpType": "patch"
         }
       ]
+    },
+    {
+      "description": "DiracX and diracx-web minor/major releases may break deployments (DB migrations, new settings): bump the chart minor version and wait for a review",
+      "matchPackageNames": ["ghcr.io/diracgrid/diracx/client", "ghcr.io/diracgrid/diracx-web/static"],
+      "matchUpdateTypes": ["minor", "major"],
+      "automerge": false,
+      "bumpVersions": [
+        {
+          "name": "diracx chart version",
+          "filePatterns": ["diracx/Chart.yaml"],
+          "matchStrings": ["(?:^|\\n)version:\\s*\"?(?<version>[^\"\\s]+)\"?"],
+          "bumpType": "minor"
+        }
+      ]
     }
   ],
   "customManagers": [
     {
       "description": "Update tool versions in run_demo.sh",
       "customType": "regex",
-      "fileMatch": ["^run_demo\\.sh$"],
+      "managerFilePatterns": ["/^run_demo\\.sh$/"],
       "matchStrings": [
         "# renovate: datasource=(?<datasource>.*?) depName=(?<depName>.*?)( versioning=(?<versioning>.*?))?\\n\\s*[A-Z_]+_VERSION=\"(?<currentValue>.*)\"",
         "# renovate: datasource=(?<datasource>.*?) depName=(?<depName>.*?)( versioning=(?<versioning>.*?))?\\n\\s*[A-Z_]+_VERSION='(?<currentValue>.*)'"
@@ -57,11 +82,11 @@
       "versioningTemplate": "{{#if versioning}}{{{versioning}}}{{else}}semver{{/if}}"
     },
     {
-      "description": "Update the DiracX appVersion and the diracx-web image tag",
+      "description": "Update the DiracX appVersion and the diracx-web image tag. Only helm-docs comment lines (# -- or # @) may sit between the marker and the key, so a stray marker cannot grab another key",
       "customType": "regex",
-      "fileMatch": ["^diracx/Chart\\.yaml$", "^diracx/values\\.yaml$"],
+      "managerFilePatterns": ["/^diracx/Chart\\.yaml$/", "/^diracx/values\\.yaml$/"],
       "matchStrings": [
-        "# renovate: datasource=(?<datasource>\\S+) depName=(?<depName>\\S+)( versioning=(?<versioning>\\S+))?\\n(?:[ \\t]*#.*\\n)*[ \\t]*(?:appVersion|tag):[ \\t]*\"?(?<currentValue>[^\"\\s]+)\"?"
+        "# renovate: datasource=(?<datasource>\\S+) depName=(?<depName>\\S+)( versioning=(?<versioning>\\S+))?\\n(?:[ \\t]*# (?:--|@).*\\n)*[ \\t]*(?:appVersion|tag):[ \\t]*\"?(?<currentValue>[^\"\\s]+)\"?"
       ],
       "datasourceTemplate": "{{datasource}}",
       "versioningTemplate": "{{#if versioning}}{{{versioning}}}{{else}}semver{{/if}}"

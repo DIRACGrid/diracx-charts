@@ -102,17 +102,19 @@ class Resource:
         return self.hook is not None
 
 
-def extract_chart_metadata(resources: list[dict]) -> tuple[str, str]:
-    """Extract chart name and version from resource labels."""
+def extract_chart_name(resources: list[dict]) -> str:
+    """Extract the chart name from resource labels.
+
+    The chart version is left out on purpose, so that version bumps do not
+    change the generated diagram.
+    """
     for r in resources:
         labels = r.get("metadata", {}).get("labels", {}) or {}
         chart_label = labels.get("helm.sh/chart", "")
         if chart_label:
-            # e.g. "diracx-1.0.18" -> ("diracx", "1.0.18")
-            parts = chart_label.rsplit("-", 1)
-            if len(parts) == 2:
-                return parts[0], parts[1]
-    return "diracx", "unknown"
+            # e.g. "diracx-1.0.18" -> "diracx"
+            return chart_label.rsplit("-", 1)[0]
+    return "diracx"
 
 
 def extract_relationships(
@@ -398,9 +400,7 @@ def main():
         print("Error: no Kubernetes resources found in input", file=sys.stderr)
         sys.exit(1)
 
-    # The chart version is left out of the diagram so that version bumps do not
-    # change it.
-    chart_name, _ = extract_chart_metadata(raw_resources)
+    chart_name = extract_chart_name(raw_resources)
     resources = [Resource(r) for r in raw_resources]
 
     edges, nodes = extract_relationships(resources)

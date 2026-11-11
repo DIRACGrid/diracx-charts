@@ -48,8 +48,8 @@ global:
 
     web:
       # renovate: datasource=docker depName=ghcr.io/diracgrid/diracx-web/static versioning=pep440
-      # -- Tag of the diracx-web image, updated by Renovate on each diracx-web release
-      # @default -- the latest diracx-web release
+      # -- Tag of the diracx-web image. Each chart version pins one release; Renovate bumps it
+      # @default -- the diracx-web release pinned by this chart version (see `values.yaml`)
       tag: v0.1.0-a11
       repository: diracgrid/diracx-web/static
 

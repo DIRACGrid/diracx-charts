@@ -110,7 +110,7 @@
 | global.images.tag | string | the chart `appVersion` | Tag of the DiracX images (services, tasks, client, ...) |
 | global.images.tasks.repository | string | `"diracgrid/diracx/tasks"` |  |
 | global.images.web.repository | string | `"diracgrid/diracx-web/static"` |  |
-| global.images.web.tag | string | the latest diracx-web release | Tag of the diracx-web image, updated by Renovate on each diracx-web release |
+| global.images.web.tag | string | the diracx-web release pinned by this chart version (see `values.yaml`) | Tag of the diracx-web image. Each chart version pins one release; Renovate bumps it |
 | global.storageClassName | string | `"standard"` |  |
 | grafana.datasources."datasources.yaml".apiVersion | int | `1` |  |
 | grafana.datasources."datasources.yaml".datasources[0].name | string | `"Jaeger"` |  |
