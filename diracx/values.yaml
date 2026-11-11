@@ -259,6 +259,8 @@ diracx:
 
     # -- Which DiracX MySQL DBs are used?
     dbs:
+      TransformationDB:
+        internalName: DiracXTransformationDB
     # All DBs used should be configured here.
     # If they use the default configuration
     # they should have a null value

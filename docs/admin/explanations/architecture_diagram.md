@@ -5,7 +5,7 @@ config:
 flowchart TD
 
     subgraph k8s_instance ["K8s Instance: diracx"]
-        subgraph helm_chart ["Helm Chart: diracx 1.1.19"]
+        subgraph helm_chart ["Helm Chart: diracx 1.1.20"]
             subgraph k8s_app ["K8s Application: diracx"]
                 ing_diracx{{"ing: diracx"}}
                 svc_diracx(("svc: diracx"))
@@ -20,7 +20,6 @@ flowchart TD
                 sts_diracx_task_scheduler["sts: diracx-task-scheduler"]
                 cronjob_diracx_cleanup_authdb(["cronjob: diracx-cleanup-authdb"])
                 cm_diracx_cleanup_authdb[("cm: diracx-cleanup-authdb")]
-                cm_mysql_init_diracx_dbs[("cm: mysql-init-diracx-dbs")]
                 secret_diracx_secrets>"secret: diracx-secrets"]
                 sa_diracx[["sa: diracx"]]
             end
@@ -89,7 +88,6 @@ flowchart TD
     class cm_diracx_container_entrypoint cm
     class cm_diracx_init_keystore cm
     class cm_diracx_validate_config cm
-    class cm_mysql_init_diracx_dbs cm
     class cronjob_diracx_cleanup_authdb cronjob
     class deploy_diracx deploy
     class deploy_diracx_task_worker_large deploy

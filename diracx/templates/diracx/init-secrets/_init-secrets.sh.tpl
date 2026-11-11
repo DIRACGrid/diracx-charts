@@ -77,15 +77,16 @@ mysql_root_password=$(kubectl get secret {{ .Values.mysql.auth.existingSecret }}
 {{- range $dbName,$dbSettings := .Values.diracx.sqlDbs.dbs }}
 
 
-# Make sure there are no connection settings
-{{ if $dbSettings }}
+# Allow an internal database name, but no connection settings
+{{ if omit (default dict $dbSettings) "internalName" }}
 {{ fail "There should be no connection settings if running mysql from this Chart" }}
 {{ end }}
+{{- $internalName := (default dict $dbSettings).internalName | default $dbName }}
 
 generate_secret_if_needed diracx-sql-connection-urls \
-  --from-literal=DIRACX_DB_URL_{{ $dbName | upper }}="mysql+aiomysql://{{ $.Values.mysql.auth.username }}:${mysql_password}@{{ $.Release.Name }}-mysql:3306/{{ $dbName }}"
+  --from-literal=DIRACX_DB_URL_{{ $dbName | upper }}="mysql+aiomysql://{{ $.Values.mysql.auth.username }}:${mysql_password}@{{ $.Release.Name }}-mysql:3306/{{ $internalName }}"
 generate_secret_if_needed diracx-sql-root-connection-urls \
-  --from-literal=DIRACX_DB_URL_{{ $dbName | upper }}="mysql+aiomysql://root:${mysql_root_password}@{{ $.Release.Name }}-mysql:3306/{{ $dbName }}"
+  --from-literal=DIRACX_DB_URL_{{ $dbName | upper }}="mysql+aiomysql://root:${mysql_root_password}@{{ $.Release.Name }}-mysql:3306/{{ $internalName }}"
 {{- end }}
 
 # If we use an external MySQL instance

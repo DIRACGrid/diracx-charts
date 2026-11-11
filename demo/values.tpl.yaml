@@ -47,6 +47,7 @@ diracx:
       PilotAgentsDB:
       ResourceStatusDB:
       TransformationDB:
+        internalName: DiracXTransformationDB
   osDbs:
     dbs:
       JobParametersDB:
