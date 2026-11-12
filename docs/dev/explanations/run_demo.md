@@ -5,8 +5,8 @@
 In order to run the `diracx charts` locally, this script:
 
 1. Downloads various utilities (`kind`, `helm`, `kubectl`, etc)
-2. Starts a local kubernetes using [kind](https://kind.sigs.k8s.io/)
-3. Installs the `chart` using `helm`, enabling all the dependencies (DBs, IdP, Object store, etc)
+2. Starts a local Kubernetes cluster using [kind](https://kind.sigs.k8s.io/)
+3. Sets up access to the cluster and installs the `chart` using `helm`, enabling all the dependencies (DBs, IdP, Object store, etc)
 4. Generate the initial configuration for all the dependencies and `diracx` (db credentials, urls of services, create admin users, etc)
 
 All this relies on templated configuration in the [demo](../demo/) directory. A temporary folder (`diracx-charts/.demo`) is used to generate the actual config and host various tools. It is important for this directory to have a deterministic location as it is used by the `diracx` integration tests.
@@ -55,7 +55,10 @@ Effectively, that means that you can do `diracx-charts/run_demo.sh <mydiracx-web
 
 ## CA certificates
 
-The `run_demo.sh` generates a self signed certificate and dumps it in `diracx-charts/.demo/demo-ca.pem` to allow for a local client to interact with it.
+The demo uses cert-manager with a local self-signed certificate authority. It
+issues the HTTPS certificate for the demo hostname and stores the certificate
+and private key in the `diracx-tls` Kubernetes Secret. The Gateway refers to
+that Secret, and Envoy uses it when handling HTTPS connections.
 
 
 ## Secret generation

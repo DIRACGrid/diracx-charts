@@ -297,8 +297,20 @@ diracx:
 ingress:
   enabled: true
   className: "nginx"
-  tlsSecretName: myingress-cert
+  tlsSecretName: diracx-tls
   annotations: {}
+
+gateway:
+  # -- Use Gateway API instead of Ingress. Production defaults to Ingress; the demo always enables Gateway API.
+  enabled: false
+  # -- Required when Gateway is enabled: name of the GatewayClass provided by the installed controller
+  className: ""
+  # -- Incoming HTTPS port
+  port: 443
+  # -- Optional addresses requested for the Gateway
+  addresses: []
+  # -- Secret containing the HTTPS certificate and private key
+  tlsSecretName: diracx-tls
 
 diracxWeb:
   service:

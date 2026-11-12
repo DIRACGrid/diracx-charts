@@ -32,6 +32,9 @@ function cleanup(){
   if [[ -f "${demo_dir}/kind" ]] && [[ -f "${KUBECONFIG}" ]]; then
       "${demo_dir}/kind" delete cluster --name diracx-demo
   fi
+  if [[ -n "${gateway_controller_container:-}" ]]; then
+    docker stop "${gateway_controller_container}" || true
+  fi
   rm -rf "${tmp_dir}"
   if [[ -n "${space_monitor_pid:-}" ]]; then
     wait $space_monitor_pid || true
@@ -123,7 +126,7 @@ usage+="                         WARNING: There is no garbage collection so the 
 usage+="  --offline: Run in a mode which is suitable for fully offline use.\n"
 usage+="             WARNING: This may result in some weird behaviour, see the demo documentation for details.\n"
 usage+="             Implies: --mount-containerd\n"
-usage+="  --only-download-deps: Only download kind/kubectl/helm binaries and helm plugins, then exit\n"
+usage+="  --only-download-deps: Only download demo tools, helm plugins, Gateway controller and Envoy images, then exit\n"
 usage+="                        Useful for preparing the environment before running other commands\n"
 usage+="  --registry-proxy: Use a registry proxy for pulling container images.\n"
 usage+="                    This is useful for restricted environments or to avoid rate limits.\n"
@@ -291,15 +294,21 @@ while [ -n "${1:-}" ]; do case $1 in
 esac; shift
 done
 
-# Derive registry proxy URLs for DockerHub and GHCR
+# Derive registry proxy URLs for DockerHub, GHCR and Kubernetes images
 # When --registry-proxy is set, all image pulls go through the proxy
 if [[ -n "${registry_proxy}" ]]; then
   registry_proxy_dockerhub="${registry_proxy}/docker.io"
   registry_proxy_github="${registry_proxy}/ghcr.io"
+  registry_proxy_kubernetes="${registry_proxy}/registry.k8s.io"
 else
   registry_proxy_dockerhub="docker.io"
   registry_proxy_github="ghcr.io"
+  registry_proxy_kubernetes="registry.k8s.io"
 fi
+
+# renovate: datasource=github-releases depName=kubernetes-sigs/cloud-provider-kind
+CLOUD_PROVIDER_KIND_VERSION="v0.11.1"
+gateway_controller_image="${registry_proxy_kubernetes}/cloud-provider-kind/cloud-controller-manager:${CLOUD_PROVIDER_KIND_VERSION}"
 
 # Remaining arguments are positional parameters that are used to specify which
 # source directories to mount in the demo cluster
@@ -429,6 +438,14 @@ if [[ ! -f "${demo_dir}/helm" ]]; then
   "${demo_dir}/helm" plugin install https://github.com/databus23/helm-diff --version ${HELM_DIFF_VERSION}
 fi
 
+# Download the Gateway controller and Envoy images used by the demo.
+if [ ${offline_mode} -eq 0 ]; then
+  printf "%b Downloading Gateway controller and proxy images\n" "${UNICORN_EMOJI}"
+  docker pull "${gateway_controller_image}"
+  gateway_proxy_image=$(docker run --rm --pull=never "${gateway_controller_image}" list-images)
+  docker pull "${gateway_proxy_image/docker.io/${registry_proxy_dockerhub}}"
+fi
+
 # Exit early if we're only downloading dependencies
 if [ ${only_download_deps} -eq 1 ]; then
   printf "%b Dependencies downloaded successfully to %s\n" ${PARTY_EMOJI} "${demo_dir}"
@@ -494,6 +511,13 @@ space_monitor_pid=$!
 
 # Create the cluster itself
 printf "%b Starting Kind cluster...\n" ${UNICORN_EMOJI}
+# Kind normally creates its Docker network with Docker's default address pool.
+# Create it with an explicit subnet so cloud-provider-kind can assign the
+# requested Gateway address to its Envoy container.
+if ! docker network inspect kind >/dev/null 2>&1; then
+  docker network create --driver bridge --subnet 172.18.0.0/16 kind
+fi
+
 "${demo_dir}/kind" create cluster \
   --image "${registry_proxy_dockerhub}/kindest/node:${KINDEST_NODE_VERSION}" \
   --kubeconfig "${KUBECONFIG}" \
@@ -520,7 +544,7 @@ if ! check_hostname "${machine_hostname}"; then
   if ! check_hostname "${machine_hostname}"; then
     machine_ip=$(ifconfig | grep 'inet ' | awk '{ print $2 }' | grep -v '^127' | head -n 1 | cut -d '/' -f 1)
     # We use nip.io to have an actual DNS name and be allowed to specify this in
-    # the ingress host
+    # the Gateway hostname
     machine_hostname="${machine_ip}.nip.io"
     if ! check_hostname "${machine_hostname}"; then
       echo "Failed to find an appropriate hostname for the demo."
@@ -608,23 +632,34 @@ if grep '{{' "${demo_dir}/values.yaml"; then
 fi
 
 
-# Add an ingress to the cluster
-printf "%b Creating an ingress...\n" ${UNICORN_EMOJI}
-# TODO: This should move to the chart itself
-if [ ${offline_mode} -eq 0 ]; then
-  curl -L https://raw.githubusercontent.com/kubernetes/ingress-nginx/main/deploy/static/provider/kind/deploy.yaml > "${tmp_dir}/kind-ingress-deploy.yaml"
-  # Disable the strict validation of the path
-  # https://github.com/kubernetes/ingress-nginx/issues/11176
-  # https://github.com/kubernetes/ingress-nginx/issues/10200
-  sed -E 's/^data: null/data:\n  strict-validate-path-type: "false"/g'  "${tmp_dir}/kind-ingress-deploy.yaml" > "${demo_dir}/kind-ingress-deploy.yaml"
+# Start the demo Gateway API controller.
+# Run the Gateway controller in Docker; it manages the Envoy containers used for traffic.
+# Gateway/HTTPRoute configuration itself provided by the chart.
+printf "%b Starting Gateway API controller...\n" "${UNICORN_EMOJI}"
+# The provider discovers all Kind clusters; do not modify unrelated clusters.
+if [[ "$("${demo_dir}/kind" get clusters)" != "diracx-demo" ]]; then
+  printf "%b cloud-provider-kind requires diracx-demo to be the only Kind cluster\n" "${SKULL_EMOJI}"
+  exit 1
 fi
+gateway_controller_container=$(docker run --detach --rm --pull=never \
+  --network kind \
+  --volume /var/run/docker.sock:/var/run/docker.sock \
+  --env "CLOUD_PROVIDER_KIND_REGISTRY_URL=${registry_proxy_dockerhub}" \
+  "${gateway_controller_image}" \
+  --enable-lb-port-mapping --enable-default-ingress=false)
 
-"${demo_dir}/kubectl" apply -f "${demo_dir}/kind-ingress-deploy.yaml"
-printf "%b Waiting for ingress controller to be created...\n" ${UNICORN_EMOJI}
-"${demo_dir}/kubectl" wait --namespace ingress-nginx \
-  --for=condition=ready pod \
-  --selector=app.kubernetes.io/component=controller \
-  --timeout=300s
+printf "%b Waiting for Gateway API controller...\n" "${UNICORN_EMOJI}"
+for resource in gatewayclasses gateways httproutes; do
+  "${demo_dir}/kubectl" wait --for=create "crd/${resource}.gateway.networking.k8s.io" --timeout=300s
+  "${demo_dir}/kubectl" wait --for=condition=Established "crd/${resource}.gateway.networking.k8s.io" --timeout=300s
+done
+"${demo_dir}/kubectl" wait --for=create gatewayclass/cloud-provider-kind --timeout=300s
+"${demo_dir}/kubectl" wait --for=condition=Accepted gatewayclass/cloud-provider-kind --timeout=300s
+
+# An explicit IPv4 address makes cloud-provider-kind publish a fixed host port.
+# Ask Docker for an available address instead of assuming its network subnet.
+gateway_address=$(docker run --rm --network kind "${registry_proxy_dockerhub}/library/busybox:latest" hostname -i)
+"${demo_dir}/yq" eval -i ".gateway.addresses = [{\"type\": \"IPAddress\", \"value\": \"${gateway_address}\"}]" "${demo_dir}/values.yaml"
 
 # Install the DiracX chart
 printf "%b Installing DiracX...\n" ${UNICORN_EMOJI}
@@ -668,6 +703,7 @@ else
 fi
 
 # Set the helm arguments which might need to be prefixed
+helm_arguments+=("--set" "${helm_arg_prefix}gateway.enabled=true")
 if [ "${machine_ip}" ]; then
   helm_arguments+=("--set" "${helm_arg_prefix}developer.ipAlias=${machine_ip}")
 fi
@@ -688,6 +724,10 @@ if ! "${demo_dir}/helm" install --debug diracx-demo "${chart_path}" "${helm_argu
 else
   printf "%b Waiting for installation to finish...\n" ${UNICORN_EMOJI}
   if "${demo_dir}/kubectl" wait --for=condition=ready pod --selector='app.kubernetes.io/name in (diracx, diracx-web)' --timeout=900s; then
+    "${demo_dir}/kubectl" wait --for=condition=Ready certificate/diracx-demo --timeout=300s
+    "${demo_dir}/kubectl" wait --for=condition=Programmed gateway/diracx-demo --timeout=300s
+    "${demo_dir}/kubectl" wait --for='jsonpath={.status.parents[0].conditions[?(@.type=="Accepted")].status}=True' httproute/diracx-demo --timeout=300s
+    "${demo_dir}/kubectl" wait --for='jsonpath={.status.parents[0].conditions[?(@.type=="ResolvedRefs")].status}=True' httproute/diracx-demo --timeout=300s
     printf "%b %b %b Pods are ready! %b %b %b\n" "${PARTY_EMOJI}" "${PARTY_EMOJI}" "${PARTY_EMOJI}" "${PARTY_EMOJI}" "${PARTY_EMOJI}" "${PARTY_EMOJI}"
 
     # Dump the CA certificate to a file so that it can be used by the client
