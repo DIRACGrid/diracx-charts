@@ -277,7 +277,23 @@ diracx:
   # If opensearch is enabled, you are not allowed
   # to set the username passwords
   osDbs:
+    # -- default credentials
     default:
+    #  rootUser: admin
+    #  rootPassword: hunter123
+    #  user: dirac
+    #  password: password123
+    #  host: osHost:123
+    #  ca.crt: |
+    #    -----BEGIN CERTIFICATE-----
+    #    -----END CERTIFICATE-----
+    #  tls.crt: |
+    #    -----BEGIN CERTIFICATE-----
+    #    -----END CERTIFICATE-----
+    #  tls.key: |
+    #    -----BEGIN PRIVATE KEY-----
+    #    -----END PRIVATE KEY-----
+
 
     # -- Global prefix to be applied to all OpenSearch indices
     # When set, this will add DIRACX_FACTORY_OS_GLOBAL_PREFIX to the secrets
@@ -285,8 +301,11 @@ diracx:
 
     # -- Which DiracX OpenSearch DBs are used?
     dbs:
-      # JobParametersDB:
-      # PilotLogsDB:
+      # All DBs used should be configured here.
+      # If they use the default configuration
+      # they should have a null value.
+      # If ca.crt, tls.crt and tls.key are defined in default
+      # then dbs will use certificate authentication else they will use login/password
 
   # -- List of install specifications to pass to pip before launching each container
   pythonModulesToInstall: []

@@ -64,7 +64,13 @@ spec:
           persistentVolumeClaim:
             claimName: pvc-coverage
         {{- end }}
-
+        {{- if kindIs "map" .Values.diracx.osDbs.default }}
+        {{- if and (hasKey .Values.diracx.osDbs.default "ca.crt") (hasKey .Values.diracx.osDbs.default "tls.crt") (hasKey .Values.diracx.osDbs.default "tls.key") }}
+        - name: os-secret-volume
+          secret:
+            secretName: os-cert
+        {{- end }}
+        {{- end }}
       {{/* Define common volume mounts for reusability */}}
       {{- $commonVolumeMounts := list }}
       {{- if .Values.developer.enabled }}
@@ -156,6 +162,13 @@ spec:
             {{- end }}
           {{- end }}
           volumeMounts: {{ toYaml $commonVolumeMounts | nindent 12 }}
+            {{- if kindIs "map" .Values.diracx.osDbs.default }}
+            {{- if and (hasKey .Values.diracx.osDbs.default "ca.crt") (hasKey .Values.diracx.osDbs.default "tls.crt") (hasKey .Values.diracx.osDbs.default "tls.key") }}
+            - name: os-secret-volume
+              mountPath: /os-cert
+              readOnly: true
+            {{- end }}
+            {{- end }}
           envFrom:
             # - configMapRef:
             #     name: diracx-env-config

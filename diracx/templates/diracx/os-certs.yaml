@@ -1,0 +1,17 @@
+{{- if kindIs "map" .Values.diracx.osDbs.default }}
+{{- if and (hasKey .Values.diracx.osDbs.default "ca.crt") (hasKey .Values.diracx.osDbs.default "tls.crt") (hasKey .Values.diracx.osDbs.default "tls.key") }}
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: os-cert
+  annotations:
+    "helm.sh/hook": pre-install,pre-upgrade
+    "helm.sh/hook-weight": "-1"
+type: kubernetes.io/tls
+data:
+  ca.crt: {{ index .Values.diracx.osDbs.default "ca.crt" | b64enc | quote }}
+  tls.crt: {{ index .Values.diracx.osDbs.default "tls.crt" | b64enc | quote }}
+  tls.key: {{ index .Values.diracx.osDbs.default "tls.key" | b64enc | quote }}
+{{- end }}
+{{- end }}

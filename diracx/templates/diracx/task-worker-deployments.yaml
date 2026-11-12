@@ -69,7 +69,13 @@ spec:
           persistentVolumeClaim:
             claimName: pvc-coverage
         {{- end }}
-
+        {{- if kindIs "map" $.Values.diracx.osDbs.default }}
+        {{- if and (hasKey $.Values.diracx.osDbs.default "ca.crt") (hasKey $.Values.diracx.osDbs.default "tls.crt") (hasKey $.Values.diracx.osDbs.default "tls.key") }}
+        - name: os-secret-volume
+          secret:
+            secretName: os-cert
+        {{- end }}
+        {{- end }}
       {{- $commonVolumeMounts := list }}
       {{- if $.Values.developer.enabled }}
       {{- $commonVolumeMounts = append $commonVolumeMounts (dict "mountPath" "/cs_store" "name" "cs-store-mount" "readOnly" false) }}
@@ -114,6 +120,13 @@ spec:
             - --worker-size={{ $size }}
             - --max-concurrent-tasks={{ $worker.maxConcurrentTasks }}
           volumeMounts: {{ toYaml $commonVolumeMounts | nindent 12 }}
+            {{- if kindIs "map" $.Values.diracx.osDbs.default }}
+            {{- if and (hasKey $.Values.diracx.osDbs.default "ca.crt") (hasKey $.Values.diracx.osDbs.default "tls.crt") (hasKey $.Values.diracx.osDbs.default "tls.key") }}
+            - name: os-secret-volume
+              mountPath: /os-cert
+              readOnly: true
+            {{- end }}
+            {{- end }}
           envFrom:
             - secretRef:
                 name: diracx-secrets
