@@ -57,6 +57,11 @@ generate_secret_if_needed {{ .Values.rabbitmq.auth.existingPasswordSecret }} --f
 generate_secret_if_needed {{ .Values.rabbitmq.auth.existingErlangSecret }} --from-literal=rabbitmq-erlang-cookie=$(gen_random 'a-zA-Z0-9' 32)
 {{- end }}
 
+# Root password of the MariaDB server used by the diracx unit tests
+{{- if .Values.testDatabases.mariadb.enabled }}
+generate_secret_if_needed {{ .Values.testDatabases.mariadb.existingSecret }} --from-literal=mariadb-root-password=$(gen_random 'a-zA-Z0-9' 32)
+{{- end }}
+
 # If we deploy MySQL ourselves
 {{- if .Values.mysql.enabled }}
 
