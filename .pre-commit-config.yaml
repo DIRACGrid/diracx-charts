@@ -40,3 +40,9 @@ repos:
     - id: shellcheck
       # TODO: Render demo in CI and run the scripts through shell-check
       exclude: '\.tpl$'
+
+  - repo: https://github.com/zizmorcore/zizmor-pre-commit
+    rev: v1.32.0
+    hooks:
+      - id: zizmor
+        args: ["--no-online-audits"]

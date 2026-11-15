@@ -8,6 +8,13 @@ on:
     branches:
       - master
 
+# A new push to the same branch/PR cancels the previous run.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
 
 defaults:
   run:
@@ -15,6 +22,7 @@ defaults:
 
 jobs:
   detect-docs-only:
+    name: detect-docs-only
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -22,15 +30,18 @@ jobs:
       docs-only: ${{ steps.check.outputs.docs-only }}
     steps:
       - name: Checkout
-        uses: actions/checkout@v7
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           fetch-depth: 0
+          persist-credentials: false
 
       - name: Check for docs-only changes
         id: check
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          BASE_BRANCH: ${{ github.base_ref }}
         run: |
-          if [ "${{ github.event_name }}" = "pull_request" ]; then
-            BASE_BRANCH="${{ github.base_ref }}"
+          if [ "$EVENT_NAME" = "pull_request" ]; then
             git fetch origin "$BASE_BRANCH"
             CHANGED_FILES=$(git diff --name-only "origin/$BASE_BRANCH"...HEAD)
           else
@@ -51,23 +62,29 @@ jobs:
           echo "docs-only=$DOCS_ONLY" >> "$GITHUB_OUTPUT"
 
   pre-commit:
+    name: pre-commit
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v7
-    - uses: prefix-dev/setup-pixi@v0.11.2
+    - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      # pre-commit ci lite relies on the persisted credentials to push fixes.
+      # zizmor: ignore[artipacked] required by pre-commit-ci/lite-action
+    - uses: prefix-dev/setup-pixi@ad1da6449d9e506fd127fd67ab2d054a769f6a94 # v0.11.2
       with:
         cache: false
         environments: pre-commit
-    - uses: pre-commit/action@v3.0.1
-    - uses: pre-commit-ci/lite-action@v1.2.0
+    - uses: pre-commit/action@2c7b3805fd2a0fd8c1884dcaebf91fc102a13ecd # v3.0.1
+    - uses: pre-commit-ci/lite-action@062bca0919bc9d6e66755cc05074b70c77e111fc # v1.2.0
       if: always()
 
   run-demo:
+    name: run-demo
     needs: detect-docs-only
     if: needs.detect-docs-only.outputs.docs-only != 'true'
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v7
+    - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      with:
+        persist-credentials: false
     - name: Start demo
       run: |
         ./run_demo.sh --exit-when-done
@@ -109,11 +126,14 @@ jobs:
   # Same as run-demo except mount the sources inside the container
   # Uses ci_values.yaml to override image tags to "dev"
   run-demo-mount-sources:
+    name: run-demo-mount-sources
     needs: detect-docs-only
     if: needs.detect-docs-only.outputs.docs-only != 'true'
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v7
+    - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      with:
+        persist-credentials: false
     - name: Clone source
       run: |
         git clone https://github.com/DIRACGrid/diracx.git /tmp/diracx
