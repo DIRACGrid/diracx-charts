@@ -36,8 +36,8 @@
     {
       "description": "Update tool versions in run_demo.sh",
       "customType": "regex",
-      "fileMatch": [
-        "^run_demo\\.sh$"
+      "managerFilePatterns": [
+        "/^run_demo\\.sh$/"
       ],
       "matchStrings": [
         "# renovate: datasource=(?<datasource>.*?) depName=(?<depName>.*?)( versioning=(?<versioning>.*?))?\\n\\s*[A-Z_]+_VERSION=\"(?<currentValue>.*)\"",
