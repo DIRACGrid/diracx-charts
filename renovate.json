@@ -1,28 +1,34 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
-  "extends": ["config:recommended"],
-  "minimumReleaseAge": "7 days",
+  "extends": [
+    "local>DIRACGrid/.github//renovate-config"
+  ],
   "packageRules": [
     {
       "description": "Require dashboard approval for Helm chart dependency updates",
-      "matchManagers": ["helmv3"],
+      "matchManagers": [
+        "helmv3"
+      ],
       "dependencyDashboardApproval": true
     },
     {
-      "description": "Group all GitHub Actions updates together",
-      "matchManagers": ["github-actions"],
-      "groupName": "GitHub Actions"
-    },
-    {
       "description": "Group all tool version updates together",
-      "matchDatasources": ["github-releases"],
-      "matchFileNames": ["run_demo.sh"],
+      "matchDatasources": [
+        "github-releases"
+      ],
+      "matchFileNames": [
+        "run_demo.sh"
+      ],
       "groupName": "demo script tool versions"
     },
     {
       "description": "Pin Helm to 3.x to avoid v4 verification issues",
-      "matchDatasources": ["github-releases"],
-      "matchPackageNames": ["helm/helm"],
+      "matchDatasources": [
+        "github-releases"
+      ],
+      "matchPackageNames": [
+        "helm/helm"
+      ],
       "allowedVersions": "<4.0.0"
     }
   ],
@@ -30,7 +36,9 @@
     {
       "description": "Update tool versions in run_demo.sh",
       "customType": "regex",
-      "fileMatch": ["^run_demo\\.sh$"],
+      "fileMatch": [
+        "^run_demo\\.sh$"
+      ],
       "matchStrings": [
         "# renovate: datasource=(?<datasource>.*?) depName=(?<depName>.*?)( versioning=(?<versioning>.*?))?\\n\\s*[A-Z_]+_VERSION=\"(?<currentValue>.*)\"",
         "# renovate: datasource=(?<datasource>.*?) depName=(?<depName>.*?)( versioning=(?<versioning>.*?))?\\n\\s*[A-Z_]+_VERSION='(?<currentValue>.*)'"
