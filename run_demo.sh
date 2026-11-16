@@ -35,6 +35,9 @@ function cleanup(){
   if [[ -n "${gateway_controller_container:-}" ]]; then
     docker stop "${gateway_controller_container}" || true
   fi
+  if [[ -n "${gateway_forwarder_container:-}" ]]; then
+    docker rm -f "${gateway_forwarder_container}" || true
+  fi
   rm -rf "${tmp_dir}"
   if [[ -n "${space_monitor_pid:-}" ]]; then
     wait $space_monitor_pid || true
@@ -728,6 +731,28 @@ else
     "${demo_dir}/kubectl" wait --for=condition=Programmed gateway/diracx-demo --timeout=300s
     "${demo_dir}/kubectl" wait --for='jsonpath={.status.parents[0].conditions[?(@.type=="Accepted")].status}=True' httproute/diracx-demo --timeout=300s
     "${demo_dir}/kubectl" wait --for='jsonpath={.status.parents[0].conditions[?(@.type=="ResolvedRefs")].status}=True' httproute/diracx-demo --timeout=300s
+
+    # cloud-provider-kind v0.12.0 publishes the Gateway listeners on an ephemeral
+    # host port instead of pinning them to the listener port (see
+    # https://github.com/kubernetes-sigs/cloud-provider-kind/pull/481). The demo
+    # URLs are built on the fixed "${gateway_port}" host port, so if the Envoy
+    # load balancer did not claim that port on the host, re-expose it through a
+    # small TCP forwarder running on the Kind network, next to the Envoy
+    # container.
+    gateway_port=$("${demo_dir}/yq" eval '.gateway.port // 8000' "${demo_dir}/values.yaml")
+    envoy_container=$(docker ps --filter "name=kindccm-gw-" --format "{{.Names}}" | head -n 1)
+    envoy_host_port=$(docker port "${envoy_container}" "${gateway_port}/tcp" 2>/dev/null | head -n 1 | grep -Eo '[0-9]+$') || true
+    if [[ "${envoy_host_port}" != "${gateway_port}" ]]; then
+      printf "%b Re-exposing the Gateway on the fixed host port %s ...\n" "${INFO_EMOJI}" "${gateway_port}"
+      docker rm -f diracx-demo-gateway-port-forward &>/dev/null || true
+      gateway_forwarder_container=$(docker run --detach --rm \
+        --name diracx-demo-gateway-port-forward \
+        --network kind \
+        --publish "${gateway_port}:${gateway_port}" \
+        "${registry_proxy_dockerhub}/alpine/socat:latest" \
+        "TCP-LISTEN:${gateway_port},fork,reuseaddr" "TCP:${gateway_address}:${gateway_port}")
+    fi
+
     printf "%b %b %b Pods are ready! %b %b %b\n" "${PARTY_EMOJI}" "${PARTY_EMOJI}" "${PARTY_EMOJI}" "${PARTY_EMOJI}" "${PARTY_EMOJI}" "${PARTY_EMOJI}"
 
     # Dump the CA certificate to a file so that it can be used by the client
