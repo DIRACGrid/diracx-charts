@@ -35,6 +35,9 @@ function cleanup(){
   if [[ -n "${gateway_controller_container:-}" ]]; then
     docker stop "${gateway_controller_container}" || true
   fi
+  if [[ -n "${gateway_forwarder_container:-}" ]]; then
+    docker rm -f "${gateway_forwarder_container}" || true
+  fi
   rm -rf "${tmp_dir}"
   if [[ -n "${space_monitor_pid:-}" ]]; then
     wait $space_monitor_pid || true
@@ -309,6 +312,10 @@ fi
 # renovate: datasource=github-releases depName=kubernetes-sigs/cloud-provider-kind
 CLOUD_PROVIDER_KIND_VERSION="v0.12.0"
 gateway_controller_image="${registry_proxy_kubernetes}/cloud-provider-kind/cloud-controller-manager:${CLOUD_PROVIDER_KIND_VERSION}"
+# TCP forwarder that re-exposes the Gateway on its fixed host port (see below).
+# renovate: datasource=docker depName=alpine/socat versioning=loose
+SOCAT_VERSION="1.8.1.1"
+gateway_forwarder_image="${registry_proxy_dockerhub}/alpine/socat:${SOCAT_VERSION}"
 
 # Remaining arguments are positional parameters that are used to specify which
 # source directories to mount in the demo cluster
@@ -444,6 +451,7 @@ if [ ${offline_mode} -eq 0 ]; then
   docker pull "${gateway_controller_image}"
   gateway_proxy_image=$(docker run --rm --pull=never "${gateway_controller_image}" list-images)
   docker pull "${gateway_proxy_image/docker.io/${registry_proxy_dockerhub}}"
+  docker pull "${gateway_forwarder_image}"
 fi
 
 # Exit early if we're only downloading dependencies
@@ -728,6 +736,28 @@ else
     "${demo_dir}/kubectl" wait --for=condition=Programmed gateway/diracx-demo --timeout=300s
     "${demo_dir}/kubectl" wait --for='jsonpath={.status.parents[0].conditions[?(@.type=="Accepted")].status}=True' httproute/diracx-demo --timeout=300s
     "${demo_dir}/kubectl" wait --for='jsonpath={.status.parents[0].conditions[?(@.type=="ResolvedRefs")].status}=True' httproute/diracx-demo --timeout=300s
+
+    # cloud-provider-kind v0.12.0 publishes the Gateway listeners on an ephemeral
+    # host port instead of pinning them to the listener port (see
+    # https://github.com/kubernetes-sigs/cloud-provider-kind/pull/481). The demo
+    # URLs are built on the fixed "${gateway_port}" host port, so if the Envoy
+    # load balancer did not claim that port on the host, re-expose it through a
+    # small TCP forwarder running on the Kind network, next to the Envoy
+    # container.
+    gateway_port=$("${demo_dir}/yq" eval '.gateway.port // 8000' "${demo_dir}/values.yaml")
+    envoy_container=$(docker ps --filter "name=kindccm-gw-" --format "{{.Names}}" | head -n 1)
+    envoy_host_port=$(docker port "${envoy_container}" "${gateway_port}/tcp" 2>/dev/null | head -n 1 | grep -Eo '[0-9]+$') || true
+    if [[ "${envoy_host_port}" != "${gateway_port}" ]]; then
+      printf "%b Re-exposing the Gateway on the fixed host port %s ...\n" "${INFO_EMOJI}" "${gateway_port}"
+      docker rm -f diracx-demo-gateway-port-forward &>/dev/null || true
+      gateway_forwarder_container=$(docker run --detach --rm --pull=never \
+        --name diracx-demo-gateway-port-forward \
+        --network kind \
+        --publish "0.0.0.0:${gateway_port}:${gateway_port}" \
+        "${gateway_forwarder_image}" \
+        "TCP-LISTEN:${gateway_port},fork,reuseaddr" "TCP:${gateway_address}:${gateway_port}")
+    fi
+
     printf "%b %b %b Pods are ready! %b %b %b\n" "${PARTY_EMOJI}" "${PARTY_EMOJI}" "${PARTY_EMOJI}" "${PARTY_EMOJI}" "${PARTY_EMOJI}" "${PARTY_EMOJI}"
 
     # Dump the CA certificate to a file so that it can be used by the client
