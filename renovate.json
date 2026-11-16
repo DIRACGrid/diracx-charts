@@ -32,6 +32,20 @@
       "allowedVersions": "<4.0.0"
     },
     {
+      "description": "Name the DiracX PRs after the project, not the image Renovate watches",
+      "matchPackageNames": [
+        "ghcr.io/diracgrid/diracx/client"
+      ],
+      "commitMessageTopic": "DiracX"
+    },
+    {
+      "description": "Name the diracx-web PRs after the project, not the image Renovate watches",
+      "matchPackageNames": [
+        "ghcr.io/diracgrid/diracx-web/static"
+      ],
+      "commitMessageTopic": "diracx-web"
+    },
+    {
       "description": "DiracX and diracx-web releases: bump the chart patch version for a patch release, the minor version otherwise",
       "matchPackageNames": [
         "ghcr.io/diracgrid/diracx/client",
