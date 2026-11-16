@@ -269,6 +269,7 @@ In all the example below, we assume your Helm release is called `<release-name>`
 === "Traefik"
 
     For a installation with Traefik (like k3s) with a Let's Encrypt certificate.
+    For the Gateway API alternative, see [Using Gateway API instead of Ingress](#using-gateway-api-instead-of-ingress).
 
     ```yaml
     ingress:
@@ -276,7 +277,7 @@ In all the example below, we assume your Helm release is called `<release-name>`
         annotations:
             cert-manager.io/issuer: <release-name>-issuer
         className: traefik
-        tlsSecretName: <release-name>-ingress-cert
+        tlsSecretName: <release-name>-tls
 
     acme:
         enabled: true
@@ -296,7 +297,7 @@ In all the example below, we assume your Helm release is called `<release-name>`
         annotations:
             cert-manager.io/issuer: <release-name>-issuer
             className: nginx
-            tlsSecretName: <release-name>-ingress-cert
+            tlsSecretName: <release-name>-tls
 
     acme:
         enabled: true
@@ -314,6 +315,43 @@ In all the example below, we assume your Helm release is called `<release-name>`
         external-dns.alpha.kubernetes.io/target: "my.preferred.ip"
     loadBalancerIP: "my.preferred.ip"
     ```
+
+## Using Gateway API instead of Ingress
+
+Production installations use Ingress by default. To use Gateway API instead,
+set `gateway.enabled: true`. This replaces the application Ingress with a
+Gateway and an HTTPRoute.
+
+Before enabling this option, the site administrator must prepare Gateway API
+resource definitions and a compatible controller in the cluster.
+
+The GatewayClass name, HTTPS port and controller setup depend on the controller
+and the site's configuration.
+
+For example, to use Traefik, enable its Gateway API support and add the
+following to the installation's Helm values file:
+
+```yaml
+gateway:
+    enabled: true
+    className: traefik
+    port: 8443
+    tlsSecretName: diracx-tls
+```
+
+Set `gateway.className` to the name of a GatewayClass provided by the
+controller. Set `gateway.tlsSecretName` to the name of a Secret in the same
+namespace as the Gateway, containing the certificate and private key for the
+DiracX hostname. For Traefik, `gateway.port` must match the controller's configured HTTPS entry point.
+Traefik's Helm chart defaults to port `8443`; use the configured port if your
+site differs.
+
+This chart creates its own Gateway for the installation; it does not attach to an existing
+shared Gateway. Ingress annotations are not translated to Gateway configuration.
+When switching an existing installation, check for old routing objects created
+independently of the Helm release, as those may still direct traffic.
+
+To switch back, set `gateway.enabled: false` and restore the desired `ingress:` settings.
 
 ## Deploy diracx on your cluster
 

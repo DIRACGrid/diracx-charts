@@ -225,7 +225,7 @@ To do this when deploying the chart see the `global.images` option in the values
 | ingress.annotations | object | `{}` |  |
 | ingress.className | string | `"nginx"` |  |
 | ingress.enabled | bool | `true` |  |
-| ingress.tlsSecretName | string | `"myingress-cert"` |  |
+| ingress.tlsSecretName | string | `"diracx-tls"` |  |
 | initOs.enabled | bool | `true` |  |
 | initSecrets.enabled | bool | `true` |  |
 | initSecrets.rbac.create | bool | `true` |  |

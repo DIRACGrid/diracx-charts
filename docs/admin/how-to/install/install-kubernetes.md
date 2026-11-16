@@ -117,6 +117,26 @@ The certificates are managed by [cert-manager](https://cert-manager.io/). If you
 
 The upstream documentation of [traefik](https://doc.traefik.io/traefik/https/acme/), the default `ingress` of k3s, explains how to do that. See the [DiracX installation instruction](./installing.md#ingress-configuration) for an example.
 
+### Optional Gateway API routing
+
+The DiracX chart uses Ingress by default. To use Gateway API with the Traefik
+installation included with K3s, the cluster administrator first needs to ensure
+that the Gateway API resource definitions are installed and enable Traefik's
+Gateway API support. The DiracX chart does not install these definitions or
+configure Traefik. The steps and compatible versions depend on the K3s
+installation; see the
+[K3s Gateway API instructions](https://docs.k3s.io/networking/networking-services#gateway-api).
+
+For example, check that the Gateway and HTTPRoute definitions are available:
+
+```bash
+kubectl get crd gateways.gateway.networking.k8s.io httproutes.gateway.networking.k8s.io
+```
+
+Once Traefik's Gateway API support is enabled, see the
+[Traefik example](./installing.md#using-gateway-api-instead-of-ingress) for the DiracX chart
+settings.
+
 
 ## Running on more than one node
 

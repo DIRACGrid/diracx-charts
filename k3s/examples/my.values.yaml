@@ -26,7 +26,7 @@ diracx:
 ingress:
   enabled: true
   className: "traefik"
-  tlsSecretName: myingress-cert
+  tlsSecretName: diracx-tls
   annotations: {}
 
 
