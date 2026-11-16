@@ -312,6 +312,10 @@ fi
 # renovate: datasource=github-releases depName=kubernetes-sigs/cloud-provider-kind
 CLOUD_PROVIDER_KIND_VERSION="v0.12.0"
 gateway_controller_image="${registry_proxy_kubernetes}/cloud-provider-kind/cloud-controller-manager:${CLOUD_PROVIDER_KIND_VERSION}"
+# TCP forwarder that re-exposes the Gateway on its fixed host port (see below).
+# renovate: datasource=docker depName=alpine/socat versioning=loose
+SOCAT_VERSION="1.8.1.1"
+gateway_forwarder_image="${registry_proxy_dockerhub}/alpine/socat:${SOCAT_VERSION}"
 
 # Remaining arguments are positional parameters that are used to specify which
 # source directories to mount in the demo cluster
@@ -447,6 +451,7 @@ if [ ${offline_mode} -eq 0 ]; then
   docker pull "${gateway_controller_image}"
   gateway_proxy_image=$(docker run --rm --pull=never "${gateway_controller_image}" list-images)
   docker pull "${gateway_proxy_image/docker.io/${registry_proxy_dockerhub}}"
+  docker pull "${gateway_forwarder_image}"
 fi
 
 # Exit early if we're only downloading dependencies
@@ -745,11 +750,11 @@ else
     if [[ "${envoy_host_port}" != "${gateway_port}" ]]; then
       printf "%b Re-exposing the Gateway on the fixed host port %s ...\n" "${INFO_EMOJI}" "${gateway_port}"
       docker rm -f diracx-demo-gateway-port-forward &>/dev/null || true
-      gateway_forwarder_container=$(docker run --detach --rm \
+      gateway_forwarder_container=$(docker run --detach --rm --pull=never \
         --name diracx-demo-gateway-port-forward \
         --network kind \
-        --publish "${gateway_port}:${gateway_port}" \
-        "${registry_proxy_dockerhub}/alpine/socat:latest" \
+        --publish "0.0.0.0:${gateway_port}:${gateway_port}" \
+        "${gateway_forwarder_image}" \
         "TCP-LISTEN:${gateway_port},fork,reuseaddr" "TCP:${gateway_address}:${gateway_port}")
     fi
 
