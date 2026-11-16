@@ -32,37 +32,11 @@
       "allowedVersions": "<4.0.0"
     },
     {
-      "description": "ghcr.io has no release timestamps, so a minimumReleaseAge would block these updates",
+      "description": "DiracX and diracx-web releases: bump the chart patch version for a patch release, the minor version otherwise",
       "matchPackageNames": [
         "ghcr.io/diracgrid/diracx/client",
         "ghcr.io/diracgrid/diracx-web/static"
       ],
-      "minimumReleaseAge": null
-    },
-    {
-      "description": "DiracX releases",
-      "matchPackageNames": [
-        "ghcr.io/diracgrid/diracx/client"
-      ],
-      "groupName": "DiracX"
-    },
-    {
-      "description": "diracx-web releases",
-      "matchPackageNames": [
-        "ghcr.io/diracgrid/diracx-web/static"
-      ],
-      "groupName": "diracx-web"
-    },
-    {
-      "description": "Patch releases: bump the chart patch version and automerge",
-      "matchPackageNames": [
-        "ghcr.io/diracgrid/diracx/client",
-        "ghcr.io/diracgrid/diracx-web/static"
-      ],
-      "matchUpdateTypes": [
-        "patch"
-      ],
-      "automerge": true,
       "bumpVersions": [
         {
           "name": "diracx chart version",
@@ -72,20 +46,29 @@
           "matchStrings": [
             "(?:^|\\n)version:\\s*\"?(?<version>[^\"\\s]+)\"?"
           ],
-          "bumpType": "patch"
+          "bumpType": "{{#if isPatch}}patch{{else}}minor{{/if}}"
         }
       ]
     },
     {
-      "description": "Minor/major releases: bump the chart minor version and wait for a review",
+      "description": "Automerge patch releases. Minor/major releases can carry DB migrations or new settings, so they wait for a review",
       "matchPackageNames": [
         "ghcr.io/diracgrid/diracx/client",
         "ghcr.io/diracgrid/diracx-web/static"
       ],
       "matchUpdateTypes": [
-        "minor",
-        "major"
+        "patch"
       ],
+      "automerge": true
+    },
+    {
+      "description": "pep440 classes a prerelease-to-final step of the same version (v0.1.0-a11 -> v0.1.0) as patch: treat it as minor",
+      "matchPackageNames": [
+        "ghcr.io/diracgrid/diracx/client",
+        "ghcr.io/diracgrid/diracx-web/static"
+      ],
+      "matchCurrentValue": "/(a|b|rc)\\d+$/",
+      "matchNewValue": "!/(a|b|rc)\\d+$/",
       "automerge": false,
       "bumpVersions": [
         {

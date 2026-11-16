@@ -112,8 +112,8 @@ def extract_chart_name(resources: list[dict]) -> str:
         labels = r.get("metadata", {}).get("labels", {}) or {}
         chart_label = labels.get("helm.sh/chart", "")
         if chart_label:
-            # e.g. "diracx-1.0.18" -> "diracx"
-            return chart_label.rsplit("-", 1)[0]
+            # e.g. "diracx-1.0.18" or "diracx-1.2.0-rc1" -> "diracx"
+            return re.sub(r"-v?\d+\.\d+\.\d+.*$", "", chart_label)
     return "diracx"
 
 
