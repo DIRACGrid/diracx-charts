@@ -4,7 +4,13 @@ metadata:
   name: diracx-container-entrypoint
   annotations:
     "helm.sh/hook": pre-install,pre-upgrade
-    "helm.sh/hook-weight": "-3"
+    # Must be lower than the weight of every hook Job that mounts it
+    # (validate-config is -4). ArgoCD runs pre-upgrade hooks on every sync,
+    # including the first one, so the ConfigMap has to exist before those Jobs.
+    "helm.sh/hook-weight": "-10"
+    # Re-create on every sync so content changes are picked up
+    # (ArgoCD does not update an existing hook unless this is set).
+    "helm.sh/hook-delete-policy": before-hook-creation
     "helm.sh/resource-policy": keep
 data:
   pre-run-hook.sh: |
@@ -59,7 +65,7 @@ metadata:
   name: pv-coverage
   annotations:
     "helm.sh/hook": pre-install,pre-upgrade
-    "helm.sh/hook-weight": "-3"
+    "helm.sh/hook-weight": "-10"
     "helm.sh/resource-policy": keep
 spec:
   storageClassName: ""
@@ -76,7 +82,7 @@ metadata:
   name: pvc-coverage
   annotations:
     "helm.sh/hook": pre-install,pre-upgrade
-    "helm.sh/hook-weight": "-3"
+    "helm.sh/hook-weight": "-10"
     "helm.sh/resource-policy": keep
 spec:
   storageClassName: ""

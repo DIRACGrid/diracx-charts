@@ -250,12 +250,15 @@ diracx:
   # to set the username passwords
   sqlDbs:
     # -- default credentials
+    # -- NOTE: please avoid usage of special characters like =!$ in passwords
+    #          as it may influence incorrect parsing in Python code DB credentials
     default:
+    #     host: mysql-host-name, e.g. dbod-cms-diracx-test.cern.ch
+    #     port: mysql-port-number, e.g. 5569
     #     rootUser: admin
     #     rootPassword: hunter123
     #     user: dirac
     #     password: password123
-    #     host: sqlHost:123
 
     # -- Which DiracX MySQL DBs are used?
     dbs:
@@ -278,6 +281,12 @@ diracx:
   # to set the username passwords
   osDbs:
     default:
+    #     host: opensearch-host-name, e.g. opensearch-cluster-master.opensearch.svc.cluster.local
+    #     port: opensearch-port-number, e.g. 9200
+    #     rootUser: admin
+    #     rootPassword: hunter123
+    #     user: diracx
+    #     password: password123
 
     # -- Global prefix to be applied to all OpenSearch indices
     # When set, this will add DIRACX_FACTORY_OS_GLOBAL_PREFIX to the secrets
