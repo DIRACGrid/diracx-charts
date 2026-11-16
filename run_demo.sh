@@ -307,7 +307,7 @@ else
 fi
 
 # renovate: datasource=github-releases depName=kubernetes-sigs/cloud-provider-kind
-CLOUD_PROVIDER_KIND_VERSION="v0.11.1"
+CLOUD_PROVIDER_KIND_VERSION="v0.12.0"
 gateway_controller_image="${registry_proxy_kubernetes}/cloud-provider-kind/cloud-controller-manager:${CLOUD_PROVIDER_KIND_VERSION}"
 
 # Remaining arguments are positional parameters that are used to specify which
