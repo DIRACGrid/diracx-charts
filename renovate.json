@@ -30,6 +30,72 @@
         "helm/helm"
       ],
       "allowedVersions": "<4.0.0"
+    },
+    {
+      "description": "Name the DiracX PRs after the project, not the image Renovate watches",
+      "matchPackageNames": [
+        "ghcr.io/diracgrid/diracx/client"
+      ],
+      "commitMessageTopic": "DiracX"
+    },
+    {
+      "description": "Name the diracx-web PRs after the project, not the image Renovate watches",
+      "matchPackageNames": [
+        "ghcr.io/diracgrid/diracx-web/static"
+      ],
+      "commitMessageTopic": "diracx-web"
+    },
+    {
+      "description": "DiracX and diracx-web releases: bump the chart patch version for a patch release, the minor version otherwise",
+      "matchPackageNames": [
+        "ghcr.io/diracgrid/diracx/client",
+        "ghcr.io/diracgrid/diracx-web/static"
+      ],
+      "bumpVersions": [
+        {
+          "name": "diracx chart version",
+          "filePatterns": [
+            "diracx/Chart.yaml"
+          ],
+          "matchStrings": [
+            "(?:^|\\n)version:\\s*\"?(?<version>[^\"\\s]+)\"?"
+          ],
+          "bumpType": "{{#if isPatch}}patch{{else}}minor{{/if}}"
+        }
+      ]
+    },
+    {
+      "description": "Automerge patch releases. Minor/major releases can carry DB migrations or new settings, so they wait for a review",
+      "matchPackageNames": [
+        "ghcr.io/diracgrid/diracx/client",
+        "ghcr.io/diracgrid/diracx-web/static"
+      ],
+      "matchUpdateTypes": [
+        "patch"
+      ],
+      "automerge": true
+    },
+    {
+      "description": "pep440 classes a prerelease-to-final step of the same version (v0.1.0-a11 -> v0.1.0) as patch: treat it as minor",
+      "matchPackageNames": [
+        "ghcr.io/diracgrid/diracx/client",
+        "ghcr.io/diracgrid/diracx-web/static"
+      ],
+      "matchCurrentValue": "/(a|b|rc)\\d+$/",
+      "matchNewValue": "!/(a|b|rc)\\d+$/",
+      "automerge": false,
+      "bumpVersions": [
+        {
+          "name": "diracx chart version",
+          "filePatterns": [
+            "diracx/Chart.yaml"
+          ],
+          "matchStrings": [
+            "(?:^|\\n)version:\\s*\"?(?<version>[^\"\\s]+)\"?"
+          ],
+          "bumpType": "minor"
+        }
+      ]
     }
   ],
   "customManagers": [
@@ -42,6 +108,19 @@
       "matchStrings": [
         "# renovate: datasource=(?<datasource>.*?) depName=(?<depName>.*?)( versioning=(?<versioning>.*?))?\\n\\s*[A-Z_]+_VERSION=\"(?<currentValue>.*)\"",
         "# renovate: datasource=(?<datasource>.*?) depName=(?<depName>.*?)( versioning=(?<versioning>.*?))?\\n\\s*[A-Z_]+_VERSION='(?<currentValue>.*)'"
+      ],
+      "datasourceTemplate": "{{datasource}}",
+      "versioningTemplate": "{{#if versioning}}{{{versioning}}}{{else}}semver{{/if}}"
+    },
+    {
+      "description": "Update the DiracX appVersion and the diracx-web image tag",
+      "customType": "regex",
+      "managerFilePatterns": [
+        "/^diracx/Chart\\.yaml$/",
+        "/^diracx/values\\.yaml$/"
+      ],
+      "matchStrings": [
+        "# renovate: datasource=(?<datasource>\\S+) depName=(?<depName>\\S+)( versioning=(?<versioning>\\S+))?\\n(?:[ \\t]*# (?:--|@).*\\n)*[ \\t]*(?:appVersion|tag):[ \\t]*\"?(?<currentValue>[^\"\\s]+)\"?"
       ],
       "datasourceTemplate": "{{datasource}}",
       "versioningTemplate": "{{#if versioning}}{{{versioning}}}{{else}}semver{{/if}}"

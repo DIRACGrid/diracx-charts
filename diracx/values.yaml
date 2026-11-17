@@ -15,7 +15,9 @@ global:
   # -- timeout for job deadlines
   activeDeadlineSeconds: 900
   images:
-    tag: v0.7.0
+    # -- Tag of the DiracX images
+    # @default -- the chart `appVersion`
+    tag: ""
 
     # Registries, can be overridden to use private cache/mirror registries
     # note that images in dependent charts (e.g. mysql) are not affected by these settings
@@ -45,6 +47,9 @@ global:
       registryType: dockerhub
 
     web:
+      # renovate: datasource=docker depName=ghcr.io/diracgrid/diracx-web/static versioning=pep440
+      # -- Tag of the diracx-web image
+      # @default -- the release pinned by this chart version
       tag: v0.1.0-a11
       repository: diracgrid/diracx-web/static
 
