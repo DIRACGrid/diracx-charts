@@ -8,10 +8,11 @@ on:
     branches:
       - master
 
-# A new push to the same branch/PR cancels the previous run.
+# A new push to the same PR cancels the previous run. Runs on master are never
+# cancelled: they may be in the middle of a chart release (cr upload + index push).
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 permissions:
   contents: read
