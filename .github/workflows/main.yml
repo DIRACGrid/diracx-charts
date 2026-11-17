@@ -67,7 +67,7 @@ jobs:
     steps:
     - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       # pre-commit-ci/lite-action uploads the fixes as an artifact and the
-      # pre-commit.ci app pushes them: no git credentials needed here.
+      # pre-commit-ci-lite GitHub App pushes them: no git credentials needed here.
       with:
         persist-credentials: false
     - uses: prefix-dev/setup-pixi@ad1da6449d9e506fd127fd67ab2d054a769f6a94 # v0.11.2
