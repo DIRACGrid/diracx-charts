@@ -507,7 +507,7 @@ testDatabases:
     existingSecret: test-mariadb-secret
     image:
       repository: mariadb
-      tag: "11.4"
+      tag: "12.2"
 
 ##########################
 
