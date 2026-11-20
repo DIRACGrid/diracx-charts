@@ -12,6 +12,10 @@ gateway:
 
 developer:
   enabled: true
+  # Extra database servers for running the diracx unit tests against (pytest --demo-dir)
+  testDatabases:
+    mariadb:
+      enabled: true
   urls:
     diracx: https://{{ hostname }}:8000
     seaweedfs: http://{{ hostname }}:32000
@@ -105,11 +109,6 @@ dex:
         hash: "$2a$10$2b2cU8CPhOTaGrs1HRQuAueS7JTT5ZHsHSzYiFPm1leZck7Mc8T4W"
         username: "admin"
         userID: {{ dex_admin_uuid }}
-
-# Extra database servers for running the diracx unit tests against (pytest --demo-dir)
-testDatabases:
-  mariadb:
-    enabled: true
 
 indigoiam:
   config:
