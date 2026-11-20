@@ -309,8 +309,14 @@ diracx:
       # All DBs used should be configured here.
       # If they use the default configuration
       # they should have a null value.
-      # If ca.crt, tls.crt and tls.key are defined in default
-      # then dbs will use certificate authentication else they will use login/password
+      # host, rootUser, rootPassword, user and password can be overridden per DB:
+      #    JobDB:
+      #      host: otherOsHost:9200
+      #      user: jobUser
+      #      password: jobPassword
+      # Certificates (ca.crt, tls.crt, tls.key) can ONLY be defined in default;
+      # if they are defined there, certificate authentication applies to ALL dbs
+      # (per-DB user/password attributes are then ignored), else dbs use login/password.
 
   # -- List of install specifications to pass to pip before launching each container
   pythonModulesToInstall: []
