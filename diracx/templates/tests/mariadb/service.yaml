@@ -1,4 +1,4 @@
-{{- if .Values.testDatabases.mariadb.enabled }}
+{{- if .Values.developer.testDatabases.mariadb.enabled }}
 apiVersion: v1
 kind: Service
 metadata:
