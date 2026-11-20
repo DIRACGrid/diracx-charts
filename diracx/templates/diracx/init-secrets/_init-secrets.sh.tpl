@@ -155,7 +155,7 @@ generate_secret_if_needed diracx-task-redis-url \
 
 # Make sure that there are no default connection settings
 {{ if .Values.diracx.osDbs.default }}
-{{ fail "There should be no default connection settings if running mysql from this Chart" }}
+{{ fail "There should be no default connection settings if running opensearch from this Chart" }}
 {{ end }}
 
 {{- range $osDbName,$osDbSettings := .Values.diracx.osDbs.dbs }}
@@ -163,7 +163,7 @@ generate_secret_if_needed diracx-task-redis-url \
 
 # Make sure there are no connection settings
 {{ if $osDbSettings }}
-{{ fail "There should be no connection settings if running mysql from this Chart" }}
+{{ fail "There should be no connection settings if running opensearch from this Chart" }}
 {{ end }}
 
 generate_secret_if_needed diracx-os-connection-urls \
@@ -172,24 +172,45 @@ generate_secret_if_needed diracx-os-root-connection-urls \
   --from-literal=DIRACX_OS_DB_{{ $osDbName | upper }}='{"hosts": "admin:admin@opensearch-cluster-master:9200", "use_ssl": true, "verify_certs": false}'
 {{- end }}
 
-# If we use an external MySQL instance
+# If we use an external OpenSearch instance
 {{- else }}
 
 
-{{- $osDbHost := $.Values.diracx.osDbs.default.host }}
-{{- $osDbRootUser := $.Values.diracx.osDbs.default.rootUser }}
-{{- $osDbRootPassword := $.Values.diracx.osDbs.default.rootPassword }}
-{{- $osDbUser := $.Values.diracx.osDbs.default.user }}
-{{- $osDbPassword := $.Values.diracx.osDbs.default.password }}
+{{- $defaultOsDbHost := $.Values.diracx.osDbs.default.host | default "" }}
+{{- $defaultOsDbRootUser := $.Values.diracx.osDbs.default.rootUser | default "" }}
+{{- $defaultOsDbRootPassword := $.Values.diracx.osDbs.default.rootPassword | default "" }}
+{{- $defaultOsDbUser := $.Values.diracx.osDbs.default.user | default "" }}
+{{- $defaultOsDbPassword := $.Values.diracx.osDbs.default.password | default "" }}
 {{- $osCaCrt := index $.Values.diracx.osDbs.default "ca.crt" | default "" }}
 {{- $osTlsCrt := index $.Values.diracx.osDbs.default "tls.crt" | default "" }}
 {{- $osTlsKey := index $.Values.diracx.osDbs.default "tls.key" | default "" }}
 {{- $osCertPath := "/os-cert" }}
+
+{{- /* Cert mode can only be defined in default; when set it applies to ALL dbs */}}
+{{- $certMode := and (ne $osCaCrt "") (ne $osTlsCrt "") (ne $osTlsKey "") }}
+
+{{- range $osDbName, $osDbSettings := .Values.diracx.osDbs.dbs }}
+
+{{- $osDbHost := $defaultOsDbHost }}
+{{- $osDbRootUser := $defaultOsDbRootUser }}
+{{- $osDbRootPassword := $defaultOsDbRootPassword }}
+{{- $osDbUser := $defaultOsDbUser }}
+{{- $osDbPassword := $defaultOsDbPassword }}
+{{- if kindIs "map" $osDbSettings }}
+{{- if or (hasKey $osDbSettings "ca.crt") (hasKey $osDbSettings "tls.crt") (hasKey $osDbSettings "tls.key") }}
+{{ fail "Certificates (ca.crt, tls.crt, tls.key) can only be set in diracx.osDbs.default, not per DB" }}
+{{- end }}
+{{- $osDbHost = $osDbSettings.host | default $defaultOsDbHost }}
+{{- $osDbRootUser = $osDbSettings.rootUser | default $defaultOsDbRootUser }}
+{{- $osDbRootPassword = $osDbSettings.rootPassword | default $defaultOsDbRootPassword }}
+{{- $osDbUser = $osDbSettings.user | default $defaultOsDbUser }}
+{{- $osDbPassword = $osDbSettings.password | default $defaultOsDbPassword }}
+{{- end }}
+
+{{- /* Use certificate (from default, applies to all dbs) if defined, else use per-db login/password */}}
 {{- $osConnectionString := "" }}
 {{- $osRootConnectionString := "" }}
-
-{{- /* Use certificate if defined else use login/password */}}
-{{- if and (ne $osCaCrt "") (ne $osTlsCrt "") (ne $osTlsKey "")}}
+{{- if $certMode }}
 {{- $osConnectionString = printf "{\"hosts\": [\"%s\"], \"use_ssl\": true, \"verify_certs\": true, \"client_cert\": \"%s/tls.crt\", \"client_key\": \"%s/tls.key\", \"ca_certs\": \"%s/ca.crt\"}" $osDbHost $osCertPath $osCertPath $osCertPath }}
 {{- $osRootConnectionString = printf "{\"hosts\": [\"%s\"], \"use_ssl\": true, \"verify_certs\": true, \"client_cert\": \"%s/tls.crt\", \"client_key\": \"%s/tls.key\", \"ca_certs\": \"%s/ca.crt\"}" $osDbHost $osCertPath $osCertPath $osCertPath }}
 {{- else }}
@@ -197,7 +218,6 @@ generate_secret_if_needed diracx-os-root-connection-urls \
 {{- $osRootConnectionString = printf "{\"hosts\": [\"%s:%s@%s\"], \"use_ssl\": true, \"verify_certs\": false}" $osDbRootUser $osDbRootPassword $osDbHost }}
 {{- end }}
 
-{{- range $osDbName, $osDbSettings := .Values.diracx.osDbs.dbs }}
 generate_secret_if_needed diracx-os-connection-urls \
   --from-literal=DIRACX_OS_DB_{{ $osDbName | upper }}='{{ $osConnectionString }}'
 generate_secret_if_needed diracx-os-root-connection-urls \
