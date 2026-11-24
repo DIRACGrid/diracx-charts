@@ -207,3 +207,17 @@ jobs:
           cat ".demo/.failed"
           exit 1
         fi
+
+  # The one check the branch ruleset requires: its name does not change with the matrices above.
+  ci-ok:
+    name: ci-ok
+    if: always()
+    needs: [detect-docs-only, pre-commit, run-demo, run-demo-mount-sources]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Fail unless every job passed or was skipped
+        env:
+          RESULTS: ${{ join(needs.*.result, ' ') }}
+        run: |
+          echo "${RESULTS}"
+          [[ ! "${RESULTS}" =~ failure|cancelled ]]
