@@ -1,6 +1,6 @@
 {{- if .Values.developer.testDatabases.mariadb.enabled }}
 {{- if not .Values.mysql.enabled }}
-{{- fail "developer.testDatabases.mariadb reuses the root password of the MySQL of this chart, so it requires mysql.enabled" }}
+{{- fail "developer.testDatabases.mariadb.enabled requires mysql.enabled=true: the test MariaDB reuses the root password of the MySQL of this chart" }}
 {{- end }}
 # Empty MariaDB server, only used by the diracx unit tests (which create their
 # own databases in it). Nothing in DiracX itself connects to it.

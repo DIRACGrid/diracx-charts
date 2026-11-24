@@ -37,7 +37,7 @@
 | developer.nodeWorkspacesDirectories | list | `[]` | List of node workspace directories to manage in the diracx-web container (node_modules) |
 | developer.offline | bool | `false` | Make it possible to launch the demo without having an internet connection |
 | developer.sourcePath | string | `"/diracx_source"` | Path from which to mount source of DIRACX |
-| developer.testDatabases.mariadb.enabled | bool | `false` | Deploy an empty MariaDB server, using the root password of the MySQL of this chart |
+| developer.testDatabases.mariadb.enabled | bool | `false` | Deploy an empty MariaDB server, using the root password of the MySQL of this chart (requires mysql.enabled) |
 | developer.testDatabases.mariadb.image.repository | string | `"mariadb"` |  |
 | developer.testDatabases.mariadb.image.tag | string | `"11.4"` |  |
 | developer.urls | object | `{}` | URLs which can be used to access various components of the demo (diracx, seaweedfs, dex, etc). They are used by the diracx tests |

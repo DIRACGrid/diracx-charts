@@ -199,7 +199,7 @@ developer:
   # DiracX itself never connects to them.
   testDatabases:
     mariadb:
-      # -- Deploy an empty MariaDB server, using the root password of the MySQL of this chart
+      # -- Deploy an empty MariaDB server, using the root password of the MySQL of this chart (requires mysql.enabled)
       enabled: false
       image:
         repository: mariadb
