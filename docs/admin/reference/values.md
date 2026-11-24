@@ -99,6 +99,8 @@
 | gateway.tlsSecretName | string | `"diracx-tls"` | Secret containing the HTTPS certificate and private key |
 | global.activeDeadlineSeconds | int | `900` | timeout for job deadlines |
 | global.batchJobTTL | int | `600` | How long should batch jobs be retained after completing? |
+| global.extraVolumeMounts | list | `[]` | Additional volumeMounts added to every container running a DiracX image (see `global.extraVolumes`). |
+| global.extraVolumes | list | `[]` | Additional volumes added to every pod running a DiracX image (services, CLI, task workers/scheduler and the init/validation jobs), e.g. to provide a CA trust store such as the EGI one. Must be used together with `global.extraVolumeMounts`. |
 | global.imagePullPolicy | string | `"Always"` |  |
 | global.images.busybox.registryType | string | `"dockerhub"` |  |
 | global.images.busybox.repository | string | `"library/busybox"` |  |

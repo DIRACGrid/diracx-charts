@@ -2,6 +2,7 @@
 
 {{/* Define common volume mounts for reusability */}}
 {{- $commonVolumeMounts := list }}
+{{- $commonVolumeMounts = concat $commonVolumeMounts ($.Values.global.extraVolumeMounts | default list) }}
 {{- $commonVolumeMounts = append $commonVolumeMounts (dict "mountPath" "/pre-run-hook.sh" "name" "container-entrypoint" "subPath" "pre-run-hook.sh") }}
 {{- if and .Values.developer.enabled .Values.developer.enableCoverage }}
 {{- $commonVolumeMounts = append $commonVolumeMounts (dict "mountPath" "/diracx-coveragerc" "name" "container-entrypoint" "subPath" "coveragerc") }}
@@ -53,6 +54,9 @@ spec:
               resources:
                 {{- toYaml .Values.cleanupAuthDB.resources | nindent 16 }}
           volumes:
+          {{- with $.Values.global.extraVolumes }}
+          {{- toYaml . | nindent 10 }}
+          {{- end }}
           - name: keystore
             secret:
               secretName: diracx-jwks

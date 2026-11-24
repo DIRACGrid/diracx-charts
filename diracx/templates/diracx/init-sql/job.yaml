@@ -2,6 +2,7 @@
 
 {{/* Define common volume mounts for reusability */}}
 {{- $commonVolumeMounts := list }}
+{{- $commonVolumeMounts = concat $commonVolumeMounts ($.Values.global.extraVolumeMounts | default list) }}
 {{- $commonVolumeMounts = append $commonVolumeMounts (dict "mountPath" "/pre-run-hook.sh" "name" "container-entrypoint" "subPath" "pre-run-hook.sh") }}
 {{- if and .Values.developer.enabled .Values.developer.enableCoverage }}
 {{- $commonVolumeMounts = append $commonVolumeMounts (dict "mountPath" "/diracx-coveragerc" "name" "container-entrypoint" "subPath" "coveragerc") }}
@@ -65,6 +66,9 @@ spec:
           resources:
             {{- toYaml .Values.initSql.resources | nindent 12 }}
       volumes:
+      {{- with $.Values.global.extraVolumes }}
+      {{- toYaml . | nindent 6 }}
+      {{- end }}
       - name: scripts
         configMap:
           name: {{ template "initSql.fullname" . }}
