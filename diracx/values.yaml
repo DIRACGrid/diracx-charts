@@ -50,7 +50,7 @@ global:
       # renovate: datasource=docker depName=ghcr.io/diracgrid/diracx-web/static versioning=pep440
       # -- Tag of the diracx-web image
       # @default -- the release pinned by this chart version
-      tag: v0.1.0-a11
+      tag: v0.1.0-a12
       repository: diracgrid/diracx-web/static
 
 # Number of diracx pods
