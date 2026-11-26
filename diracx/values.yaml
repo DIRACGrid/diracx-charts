@@ -14,6 +14,20 @@ global:
   storageClassName: standard
   # -- timeout for job deadlines
   activeDeadlineSeconds: 900
+  # -- Additional volumes added to every pod running a DiracX image
+  # (services, CLI, task workers/scheduler and the init/validation jobs),
+  # e.g. to provide a CA trust store such as the EGI one.
+  # Must be used together with `global.extraVolumeMounts`.
+  extraVolumes: []
+  #  - name: grid-security
+  #    hostPath:
+  #      path: /etc/grid-security/certificates
+  # -- Additional volumeMounts added to every container running a DiracX image
+  # (see `global.extraVolumes`).
+  extraVolumeMounts: []
+  #  - name: grid-security
+  #    mountPath: /etc/grid-security/certificates
+  #    readOnly: true
   images:
     # -- Tag of the DiracX images
     # @default -- the chart `appVersion`

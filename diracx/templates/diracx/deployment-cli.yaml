@@ -28,6 +28,9 @@ spec:
       securityContext:
         {{- toYaml .Values.podSecurityContext | nindent 8 }}
       volumes:
+        {{- with $.Values.global.extraVolumes }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
         {{- if .Values.developer.enabled }}
         - name: cs-store-mount
           persistentVolumeClaim:
@@ -60,6 +63,7 @@ spec:
 
       {{/* Define common volume mounts for reusability */}}
       {{- $commonVolumeMounts := list }}
+      {{- $commonVolumeMounts = concat $commonVolumeMounts ($.Values.global.extraVolumeMounts | default list) }}
       {{- $commonVolumeMounts = append $commonVolumeMounts (dict "mountPath" "/cs_store" "name" "cs-store-mount" "readOnly" false) }}
       {{- $commonVolumeMounts = append $commonVolumeMounts (dict "mountPath" "/ca" "name" "ca-mount" "readOnly" false) }}
       {{- $commonVolumeMounts = append $commonVolumeMounts (dict "mountPath" "/pre-run-hook.sh" "name" "container-entrypoint" "subPath" "pre-run-hook.sh") }}
