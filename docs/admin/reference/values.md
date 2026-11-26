@@ -66,7 +66,7 @@
 | dex.service.type | string | `"NodePort"` |  |
 | diracx.hostname | string | `""` | Required: The hostname where the webapp/API is running |
 | diracx.osDbs.GlobalIndexPrefix | string | `nil` | Global prefix to be applied to all OpenSearch indices When set, this will add DIRACX_FACTORY_OS_GLOBAL_PREFIX to the secrets |
-| diracx.osDbs.dbs | string | `nil` | Which DiracX OpenSearch DBs are used? |
+| diracx.osDbs.dbs | object | `{"JobParametersDB":{},"PilotLogsDB":{}}` | OpenSearch databases and connection overrides. Use {} to inherit settings or null to remove a chart default. |
 | diracx.osDbs.default | string | `nil` |  |
 | diracx.pythonModulesToInstall | list | `[]` | List of install specifications to pass to pip before launching each container |
 | diracx.service.port | int | `8000` |  |
@@ -75,7 +75,7 @@
 | diracx.settings.DIRACX_LOG_FORMAT | string | `"text"` | Format of the logs: json (one JSON object per line, for log collectors) or text |
 | diracx.settings.DIRACX_SANDBOX_STORE_BUCKET_NAME | string | `"sandboxes-store"` | Name of the bucket for the sandbox |
 | diracx.settings.DIRACX_SERVICE_AUTH_TOKEN_KEYSTORE | string | `"file:///keystore/jwks.json"` | path storing the token key |
-| diracx.sqlDbs.dbs | string | `nil` | Which DiracX MySQL DBs are used? |
+| diracx.sqlDbs.dbs | object | `{"AuthDB":{},"JobDB":{},"JobLoggingDB":{},"PilotAgentsDB":{},"ResourceStatusDB":{},"SandboxMetadataDB":{},"TaskDB":{},"TaskQueueDB":{},"TransformationDB":{"internalName":"DiracXTransformationDB"}}` | MySQL databases and connection overrides. Use {} to inherit settings or null to remove a chart default. |
 | diracx.sqlDbs.default | string | `nil` | default credentials |
 | diracx.tasks | string | `nil` | Task worker configuration |
 | diracxWeb.branch | string | `""` |  |

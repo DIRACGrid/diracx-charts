@@ -45,21 +45,12 @@ diracx:
     DIRACX_TASKS_DUMMY_COMPUTE_BACKEND_ENABLED: "true"
     DIRACX_TASKS_DUMMY_COMPUTE_BACKEND_INTERVAL_SECONDS: "10"
     DIRACX_LOG_FORMAT: "json"
+
+  # Add demo-specific databases or connection overrides under dbs.
   sqlDbs:
-    dbs:
-      AuthDB:
-      JobDB:
-      JobLoggingDB:
-      SandboxMetadataDB:
-      TaskQueueDB:
-      TaskDB:
-      PilotAgentsDB:
-      ResourceStatusDB:
-      TransformationDB:
+    dbs: {}
   osDbs:
-    dbs:
-      JobParametersDB:
-      PilotLogsDB:
+    dbs: {}
 
 seaweedfs:
   enabled: true

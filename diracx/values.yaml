@@ -271,22 +271,22 @@ diracx:
     #     password: password123
     #     host: sqlHost:123
 
-    # -- Which DiracX MySQL DBs are used?
+    # -- MySQL databases and connection overrides. Use {} to inherit settings or null to remove a chart default.
     dbs:
-    # All DBs used should be configured here.
-    # If they use the default configuration
-    # they should have a null value
-  #    AuthDB:
-  #      internalName: DiracXAuthDB
-  #    JobDB:
-  #    JobLoggingDB:
-  #    SandboxMetadataDB:
-  #    TaskQueueDB:
-  #    PilotAgentsDB
-  #    ProxyDB:
-  #      user: proxyUser
-  #      password: hush
-  #      host: proxyHost:345
+      AuthDB: {}
+      JobDB: {}
+      JobLoggingDB: {}
+      PilotAgentsDB: {}
+      ResourceStatusDB: {}
+      SandboxMetadataDB: {}
+      TaskDB: {}
+      TaskQueueDB: {}
+      TransformationDB:
+        internalName: DiracXTransformationDB
+      # ProxyDB:
+      #   user: proxyUser
+      #   password: hush
+      #   host: proxyHost:345
 
   # If opensearch is enabled, you are not allowed
   # to set the username passwords
@@ -297,10 +297,10 @@ diracx:
     # When set, this will add DIRACX_FACTORY_OS_GLOBAL_PREFIX to the secrets
     GlobalIndexPrefix:
 
-    # -- Which DiracX OpenSearch DBs are used?
+    # -- OpenSearch databases and connection overrides. Use {} to inherit settings or null to remove a chart default.
     dbs:
-      # JobParametersDB:
-      # PilotLogsDB:
+      JobParametersDB: {}
+      PilotLogsDB: {}
 
   # -- List of install specifications to pass to pip before launching each container
   pythonModulesToInstall: []

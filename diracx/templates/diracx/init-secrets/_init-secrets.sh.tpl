@@ -77,60 +77,37 @@ mysql_root_password=$(kubectl get secret {{ .Values.mysql.auth.existingSecret }}
 {{- range $dbName,$dbSettings := .Values.diracx.sqlDbs.dbs }}
 
 
-# Make sure there are no connection settings
-{{ if $dbSettings }}
+# Allow an internal database name, but no connection overrides
+{{- $settings := default dict $dbSettings }}
+{{ if omit $settings "internalName" }}
 {{ fail "There should be no connection settings if running mysql from this Chart" }}
 {{ end }}
+{{- $schemaPath := $settings.internalName | default $dbName | urlquery | replace "+" "%20" }}
 
 generate_secret_if_needed diracx-sql-connection-urls \
-  --from-literal=DIRACX_DB_URL_{{ $dbName | upper }}="mysql+aiomysql://{{ $.Values.mysql.auth.username }}:${mysql_password}@{{ $.Release.Name }}-mysql:3306/{{ $dbName }}"
+  --from-literal=DIRACX_DB_URL_{{ $dbName | upper }}="mysql+aiomysql://{{ $.Values.mysql.auth.username }}:${mysql_password}@{{ $.Release.Name }}-mysql:3306/{{ $schemaPath }}"
 generate_secret_if_needed diracx-sql-root-connection-urls \
-  --from-literal=DIRACX_DB_URL_{{ $dbName | upper }}="mysql+aiomysql://root:${mysql_root_password}@{{ $.Release.Name }}-mysql:3306/{{ $dbName }}"
+  --from-literal=DIRACX_DB_URL_{{ $dbName | upper }}="mysql+aiomysql://root:${mysql_root_password}@{{ $.Release.Name }}-mysql:3306/{{ $schemaPath }}"
 {{- end }}
 
 # If we use an external MySQL instance
 {{- else }}
-
-
-{{- $default_db_host := $.Values.diracx.sqlDbs.default.host }}
-{{- $default_db_root_user := $.Values.diracx.sqlDbs.default.rootUser }}
-{{- $default_db_root_password := $.Values.diracx.sqlDbs.default.rootPassword }}
-{{- $default_db_user := $.Values.diracx.sqlDbs.default.user }}
-{{- $default_db_password := $.Values.diracx.sqlDbs.default.password }}
-
-{{- range $dbName, $db_settings := .Values.diracx.sqlDbs.dbs }}
-
-
-{{- if kindIs "map" $db_settings }}
-{{- $db_host :=  $db_settings.host | default $default_db_host  }}
-{{- $db_root_user :=  $db_settings.rootUser | default $default_db_root_user  }}
-{{- $db_root_password :=  $db_settings.rootPassword | default $default_db_root_password  }}
-{{- $db_user := $db_settings.user | default $default_db_user }}
-{{- $db_password :=  $db_settings.password | default $default_db_password  }}
-{{- $db_internal_name :=  $db_settings.internalName | default $dbName  }}
-
-{{- $url_string := urlJoin (dict "scheme" "mysql+aiomysql" "userinfo" ( print $db_user  ":" $db_password ) "host" $db_host "path" $db_internal_name ) }}
-{{- $root_url_string := urlJoin (dict "scheme" "mysql+aiomysql" "userinfo" ( print $db_root_user  ":" $db_root_password ) "host" $db_host "path" $db_internal_name ) }}
+{{- range $dbName, $dbSettings := .Values.diracx.sqlDbs.dbs }}
+{{- $connection := include "diracx.externalDatabaseConnection" (dict "backend" "MySQL" "section" "sqlDbs" "name" $dbName "shared" $.Values.diracx.sqlDbs.default "overrides" $dbSettings) | fromYaml }}
+{{- $schemaName := $dbName }}
+{{- if eq $dbName "AuthDB" }}
+{{- $schemaName = "DiracXAuthDB" }}
+{{- end }}
+{{- $schemaName = $connection.internalName | default $schemaName }}
+{{- $url := urlJoin (dict "scheme" "mysql+aiomysql" "userinfo" (print $connection.user ":" $connection.password) "host" $connection.host "path" $schemaName) }}
+{{- $rootUrl := urlJoin (dict "scheme" "mysql+aiomysql" "userinfo" (print $connection.rootUser ":" $connection.rootPassword) "host" $connection.host "path" $schemaName) }}
 
 generate_secret_if_needed diracx-sql-connection-urls \
-  --from-literal=DIRACX_DB_URL_{{ $dbName | upper }}="{{ $url_string }}"
+  --from-literal=DIRACX_DB_URL_{{ $dbName | upper }}="{{ $url }}"
 generate_secret_if_needed diracx-sql-root-connection-urls \
-  --from-literal=DIRACX_DB_URL_{{ $dbName | upper }}="{{ $root_url_string }}"
-{{- else }}
-
-{{- $url_string := urlJoin (dict "scheme" "mysql+aiomysql" "userinfo" ( print $default_db_user  ":" $default_db_password ) "host" $default_db_host "path" $dbName ) }}
-{{- $root_url_string := urlJoin (dict "scheme" "mysql+aiomysql" "userinfo" ( print $default_db_root_user  ":" $default_db_root_password ) "host" $default_db_host "path" $dbName ) }}
-
-generate_secret_if_needed diracx-sql-connection-urls \
-  --from-literal=DIRACX_DB_URL_{{ $dbName | upper }}="{{ $url_string }}"
-generate_secret_if_needed diracx-sql-root-connection-urls \
-  --from-literal=DIRACX_DB_URL_{{ $dbName | upper }}="{{ $root_url_string }}"
-{{- end }}
-
+  --from-literal=DIRACX_DB_URL_{{ $dbName | upper }}="{{ $rootUrl }}"
 {{- end }}
 {{- end }}
-
-
 
 {{- if .Values.taskWorkers.enabled }}
 # Generate the Redis URL secret for the task broker
@@ -150,7 +127,7 @@ generate_secret_if_needed diracx-task-redis-url \
 
 # Make sure that there are no default connection settings
 {{ if .Values.diracx.osDbs.default }}
-{{ fail "There should be no default connection settings if running mysql from this Chart" }}
+{{ fail "There should be no default connection settings if running OpenSearch from this Chart" }}
 {{ end }}
 
 {{- range $osDbName,$osDbSettings := .Values.diracx.osDbs.dbs }}
@@ -158,7 +135,7 @@ generate_secret_if_needed diracx-task-redis-url \
 
 # Make sure there are no connection settings
 {{ if $osDbSettings }}
-{{ fail "There should be no connection settings if running mysql from this Chart" }}
+{{ fail "There should be no connection settings if running OpenSearch from this Chart" }}
 {{ end }}
 
 generate_secret_if_needed diracx-os-connection-urls \
@@ -167,34 +144,13 @@ generate_secret_if_needed diracx-os-root-connection-urls \
   --from-literal=DIRACX_OS_DB_{{ $osDbName | upper }}='{"hosts": "admin:admin@opensearch-cluster-master:9200", "use_ssl": true, "verify_certs": false}'
 {{- end }}
 
-# If we use an external MySQL instance
+# If we use an external OpenSearch instance
 {{- else }}
-
-
-{{- $defaultOsDbHost := $.Values.diracx.osDbs.default.host }}
-{{- $defaultOsDbRootUser := $.Values.diracx.osDbs.default.rootUser }}
-{{- $defaultOsDbRootPassword := $.Values.diracx.osDbs.default.rootPassword }}
-{{- $defaultOsDbUser := $.Values.diracx.osDbs.default.user }}
-{{- $defaultOsDbPassword := $.Values.diracx.osDbs.default.password }}
-
 {{- range $osDbName, $osDbSettings := .Values.diracx.osDbs.dbs }}
-
-
-{{- if kindIs "map" $osDbSettings }}
-{{- $osDbHost :=  $osDbSettings.host | default $defaultOsDbHost  }}
-{{- $osDbRootUser :=  $osDbSettings.rootUser | default $defaultOsDbRootUser  }}
-{{- $osDbRootPassword :=  $osDbSettings.rootPassword | default $defaultOsDbRootPassword  }}
-{{- $osDbUser := $osDbSettings.user | default $defaultOsDbUser }}
-{{- $osDbPassword :=  $osDbSettings.password | default $defaultOsDbPassword  }}
+{{- $connection := include "diracx.externalDatabaseConnection" (dict "backend" "OpenSearch" "section" "osDbs" "name" $osDbName "shared" $.Values.diracx.osDbs.default "overrides" $osDbSettings) | fromYaml }}
 generate_secret_if_needed diracx-os-connection-urls \
-  --from-literal=DIRACX_OS_DB_{{ $osDbName | upper }}='{"hosts": "{{ $osDbUser }}:{{ $osDbPassword }}@{{ $osDbHost }}", "use_ssl": true, "verify_certs": false}'
+  --from-literal=DIRACX_OS_DB_{{ $osDbName | upper }}='{"hosts": "{{ $connection.user }}:{{ $connection.password }}@{{ $connection.host }}", "use_ssl": true, "verify_certs": false}'
 generate_secret_if_needed diracx-os-root-connection-urls \
-  --from-literal=DIRACX_OS_DB_{{ $osDbName | upper }}='{"hosts": "{{ $osDbRootUser }}:{{ $osDbRootPassword }}@{{ $osDbHost }}", "use_ssl": true, "verify_certs": false}'
-{{- else }}
-generate_secret_if_needed diracx-os-connection-urls \
-  --from-literal=DIRACX_OS_DB_{{ $osDbName | upper }}='{"hosts": "{{ $defaultOsDbUser }}:{{ $defaultOsDbPassword }}@{{ $defaultOsDbHost }}", "use_ssl": true, "verify_certs": false}'
-generate_secret_if_needed diracx-os-root-connection-urls \
-  --from-literal=DIRACX_OS_DB_{{ $osDbName | upper }}='{"hosts": "{{ $defaultOsDbRootUser }}:{{ $defaultOsDbRootPassword }}@{{ $defaultOsDbHost }}", "use_ssl": true, "verify_certs": false}'
-{{- end }}
+  --from-literal=DIRACX_OS_DB_{{ $osDbName | upper }}='{"hosts": "{{ $connection.rootUser }}:{{ $connection.rootPassword }}@{{ $connection.host }}", "use_ssl": true, "verify_certs": false}'
 {{- end }}
 {{- end }}

@@ -42,6 +42,23 @@ spec:
           image: "{{ include "diracx.busyboxImage" . }}"
           imagePullPolicy: IfNotPresent
           command: ['sh', '-c', 'until nc -vz {{ .Release.Name }}-mysql 3306; do echo "Waiting for mysql..."; sleep 3; done;']
+        {{- if and .Release.IsUpgrade .Values.diracx.sqlDbs.dbs }}
+        - name: create-mysql-databases
+          image: {{ include "mysql.image" .Subcharts.mysql | quote }}
+          imagePullPolicy: {{ .Values.mysql.image.pullPolicy }}
+          command: ["/bin/bash", "-ec"]
+          args:
+            - |
+              mysql --protocol=TCP --host={{ .Release.Name }}-mysql --user=root <<'SQL'
+              {{- include "diracx.createMysqlDatabases" . | nindent 14 }}
+              SQL
+          env:
+            - name: MYSQL_PWD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.mysql.auth.existingSecret }}
+                  key: mysql-root-password
+        {{- end }}
       {{ end }}
       containers:
         - name: {{ .Chart.Name }}

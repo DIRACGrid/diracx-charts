@@ -159,7 +159,7 @@ diracx:
     dbs:
       AuthDB:
         internalName: DiracXAuthDB
-      JobDB:
+      JobDB: {}
 ```
 
 You can chose whether you prefer to create the DB yourself or let `diracx` do it.
@@ -198,8 +198,8 @@ The setup is the same as for the SQL dbs
 diracx:
   osDbs:
     dbs:
-      JobParametersDB: null
-      PilotLogsDB: null
+      JobParametersDB: {}
+      PilotLogsDB: {}
     default:
       host: os-dirac.cern.ch:443/os
       password: secret123
