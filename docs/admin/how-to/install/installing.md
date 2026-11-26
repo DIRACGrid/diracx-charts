@@ -355,43 +355,24 @@ To switch back, set `gateway.enabled: false` and restore the desired `ingress:` 
 
 ## Deploy diracx on your cluster
 
-First of all, you need to clone the [diracx-chart](https://github.com/DIRACGrid/diracx-charts) repository.
+The chart is published on `ghcr.io`, the registry that also holds the DiracX container images. Nothing needs to be cloned or added with `helm repo add`.
 
+Each chart version ships one DiracX version, its `appVersion`. The available versions are listed on the [package page](https://github.com/DIRACGrid/diracx-charts/pkgs/container/diracx-charts%2Fdiracx). To see what a version contains:
 
-=== "SSH"
-
-    ```bash
-    git clone git@github.com:DIRACGrid/diracx-charts.git
-    ```
-
-=== "GitHub CLI"
-
-    ```bash
-    gh repo fork DIRACGrid/diracx-charts # (1)!
-    ```
-
-    1. The GitHub CLI can be installed as a [`pixi global` tool](https://pixi.sh/dev/global_tools/introduction/) using:
-
-        ```bash
-        pixi global install gh
-        ```
-
-=== "HTTPS"
-
-    ```bash
-    git clone https://github.com/DIRACGrid/diracx-charts.git
-    ```
-
-
-!!! question "Why do I need to clone the repository?"
-
-    In the near future, there will be a proper URL for a helm repo, and you will not need to clone the git repository anymore.
+``` bash
+helm show chart oci://ghcr.io/diracgrid/diracx-charts/diracx --version <chart-version>
+helm show values oci://ghcr.io/diracgrid/diracx-charts/diracx --version <chart-version>
+```
 
 You can now deploy `diracx`
 
 ``` bash
-helm install --timeout 3600s <release-name> ./diracx-charts/diracx/ -f my_values.yaml
+helm install --timeout 3600s <release-name> oci://ghcr.io/diracgrid/diracx-charts/diracx --version <chart-version> -f my_values.yaml
 ```
+
+!!! note "The former chart repository"
+
+    Until version 1.1.20 the chart was published on `https://charts.diracgrid.org/`. That address no longer receives new versions.
 
 !!! question "What is this release name anyway ?"
 
