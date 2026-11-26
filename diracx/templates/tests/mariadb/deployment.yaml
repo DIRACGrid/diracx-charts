@@ -1,4 +1,7 @@
-{{- if .Values.testDatabases.mariadb.enabled }}
+{{- if and .Values.developer.enabled .Values.developer.testDatabases.mariadb.enabled }}
+{{- if not .Values.mysql.enabled }}
+{{- fail "developer.testDatabases.mariadb.enabled requires mysql.enabled=true: the test MariaDB reuses the root password of the MySQL of this chart" }}
+{{- end }}
 # Empty MariaDB server, only used by the diracx unit tests (which create their
 # own databases in it). Nothing in DiracX itself connects to it.
 apiVersion: apps/v1
@@ -27,14 +30,14 @@ spec:
     spec:
       containers:
         - name: mariadb
-          image: "{{ .Values.testDatabases.mariadb.image.repository }}:{{ .Values.testDatabases.mariadb.image.tag }}"
+          image: "{{ .Values.developer.testDatabases.mariadb.image.repository }}:{{ .Values.developer.testDatabases.mariadb.image.tag }}"
           imagePullPolicy: {{ .Values.global.imagePullPolicy }}
           env:
             - name: MARIADB_ROOT_PASSWORD
               valueFrom:
                 secretKeyRef:
-                  name: {{ .Values.testDatabases.mariadb.existingSecret }}
-                  key: mariadb-root-password
+                  name: {{ .Values.mysql.auth.existingSecret }}
+                  key: mysql-root-password
           ports:
             - name: mysql
               containerPort: 3306
