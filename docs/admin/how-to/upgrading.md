@@ -8,10 +8,10 @@ Upgrades are managed via ``helm`` but can either be done manually, or in an auto
 
 ## Manual upgrade
 
-First, update the ``values.yaml`` if you need to. Then simply run
+First, update the ``values.yaml`` if you need to, and choose the chart version to move to. Then simply run
 
 ``` bash
-helm upgrade --timeout 3600s --wait --cleanup-on-fail <release-name> diracx -f my_values.yaml
+helm upgrade --timeout 3600s --wait --cleanup-on-fail <release-name> oci://ghcr.io/diracgrid/diracx-charts/diracx --version <chart-version> -f my_values.yaml
 ```
 
 ## Automated update
