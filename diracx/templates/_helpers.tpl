@@ -242,3 +242,37 @@ Return the fullname template for the cleanupAuthDB cronjob.
 {{- define "cleanupAuthDB.fullname" -}}
 {{- printf "%s-cleanup-authdb" .Release.Name -}}
 {{- end -}}
+
+{{/* Resolve shared external connection details before generating secrets. */}}
+{{- define "diracx.externalDatabaseConnection" -}}
+{{- $shared := default dict .shared -}}
+{{- $overrides := dict -}}
+{{- if kindIs "map" .overrides -}}
+  {{- $overrides = .overrides -}}
+{{- end -}}
+{{- $connection := dict -}}
+{{- $missing := list -}}
+{{- range $key := list "host" "user" "password" "rootUser" "rootPassword" -}}
+  {{- $value := get $overrides $key | default (get $shared $key) -}}
+  {{- if eq (trim (toString (default "" $value))) "" -}}
+    {{- $missing = append $missing $key -}}
+  {{- end -}}
+  {{- $_ := set $connection $key $value -}}
+{{- end -}}
+{{- if $missing -}}
+  {{- fail (printf "%s database %s is missing connection settings: %s. Set them in diracx.%s.default or diracx.%s.dbs.%s." .backend .name (join ", " $missing) .section .section .name) -}}
+{{- end -}}
+{{- with get $overrides "internalName" -}}
+  {{- $_ := set $connection "internalName" . -}}
+{{- end -}}
+{{- toYaml $connection -}}
+{{- end -}}
+
+{{/* Create the databases and grant access on the chart's MySQL server. */}}
+{{- define "diracx.createMysqlDatabases" -}}
+{{- range $name, $settings := .Values.diracx.sqlDbs.dbs }}
+{{- $schemaName := (default dict $settings).internalName | default $name | replace "`" "``" }}
+CREATE DATABASE IF NOT EXISTS `{{ $schemaName }}`;
+GRANT SELECT, INSERT, UPDATE, DELETE, INDEX, CREATE TEMPORARY TABLES, LOCK TABLES ON `{{ $schemaName }}`.* TO '{{ $.Values.mysql.auth.username }}'@'%';
+{{- end -}}
+{{- end -}}

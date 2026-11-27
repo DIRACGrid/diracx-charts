@@ -13,16 +13,16 @@ diracx:
     DIRACX_SANDBOX_STORE_AUTO_CREATE_BUCKET: "true"
   sqlDbs:
     dbs:
-      AuthDB:
-      JobDB:
-      JobLoggingDB:
-      SandboxMetadataDB:
-      TaskQueueDB:
-      PilotAgentsDB:
+      AuthDB: {}
+      JobDB: {}
+      JobLoggingDB: {}
+      SandboxMetadataDB: {}
+      TaskQueueDB: {}
+      PilotAgentsDB: {}
   osDbs:
     dbs:
-      JobParametersDB:
-      PilotLogsDB:
+      JobParametersDB: {}
+      PilotLogsDB: {}
 ingress:
   enabled: true
   className: "traefik"

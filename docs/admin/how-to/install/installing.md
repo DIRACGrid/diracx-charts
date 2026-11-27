@@ -108,7 +108,8 @@ $ dirac internal legacy generate-helm-values --public-cfg public_cs.cfg --secret
     The file is incomplete and needs manual editing (grep for 'FILL ME')
 ```
 
-The file generated looks like the following
+For a chart with database defaults, replace `null` with `{}` for each built-in
+database you want to use.
 
 ??? example "my_values.yaml"
 
@@ -125,7 +126,7 @@ The file generated looks like the following
         hostname: mydiracx.k8s.institute.invalid
         osDbs:
             dbs:
-                JobParametersDB: null
+                JobParametersDB: {}
             default:
                 host: FILL ME
                 password: DiracOsPassword
@@ -148,11 +149,11 @@ The file generated looks like the following
             dbs:
                 AuthDB:
                     internalName: DiracXAuthDB
-                JobDB: null
-                JobLoggingDB: null
-                PilotAgentsDB: null
-                SandboxMetadataDB: null
-                TaskQueueDB: null
+                JobDB: {}
+                JobLoggingDB: {}
+                PilotAgentsDB: {}
+                SandboxMetadataDB: {}
+                TaskQueueDB: {}
             default:
                 host: FILL ME:FILL ME
                 password: DiracPassword
