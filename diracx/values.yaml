@@ -203,7 +203,7 @@ developer:
       enabled: false
       image:
         repository: mariadb
-        tag: "11.4"
+        tag: "11.7"
 
 diracx:
   # -- Required: The hostname where the webapp/API is running
